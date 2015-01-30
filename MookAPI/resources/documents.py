@@ -1,12 +1,15 @@
 from MookAPI import db
 import datetime
 
-class ResourceContent(db.DynamicEmbeddedDocument):
+class ResourceContent(db.EmbeddedDocument):
 	"""
 	Generic collection, every resource type will inherit from this.
 	"""
 	
-	pass
+	meta = {
+		'allow_inheritence': True,
+		'abstract': True
+	}
 
 
 class Resource(db.Document):
@@ -43,7 +46,7 @@ class Resource(db.Document):
 	### PROPERTIES - CONTENT
 
 	## Content of the resource
-	content = db.EmbeddedDocumentField('ResourceContent')
+	content = db.EmbeddedDocumentField(ResourceContent)
 
 	### METHODS
 
