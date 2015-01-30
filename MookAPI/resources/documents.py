@@ -1,15 +1,7 @@
 from MookAPI import db
 import datetime
 
-class ResourceContent(db.EmbeddedDocument):
-	"""
-	Generic collection, every resource type will inherit from this.
-	"""
-	
-	meta = {
-		'allow_inheritence': True,
-		'abstract': True
-	}
+from content_documents import *
 
 
 class Resource(db.Document):
@@ -23,8 +15,8 @@ class Resource(db.Document):
 	## Title of the resource
 	title = db.StringField(required=True)
 
-	## Type of resource
-	type = db.StringField(required=True)
+	## Type of content
+	content_type = db.StringField(required=True)
 	
 	## Creator should reference a user
 	## Will be implemented later
