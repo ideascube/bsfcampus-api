@@ -15,3 +15,9 @@ db = MongoEngine(app)
 ### LOAD APP-LEVEL MODULES
 ## Views: define HTTP endpoints
 import views
+
+
+### LOAD BLUEPRINTS
+## Resources
+import resources
+app.register_blueprint(resources.bp, url_prefix="/resources")
