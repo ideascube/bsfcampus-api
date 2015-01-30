@@ -16,6 +16,9 @@ class Resource(db.Document):
 	title = db.StringField(required=True)
 
 	## Type of content
+	## Allowed values: 
+	## - video
+	## - rich_text
 	content_type = db.StringField(required=True)
 	
 	## Creator should reference a user

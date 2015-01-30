@@ -9,6 +9,14 @@ class ResourceContent(db.EmbeddedDocument):
 		'abstract': True
 	}
 
+
+class RichTextContent(ResourceContent):
+	"""Store rich text content."""
+
+	## HTML code of the rich text
+	html = db.StringField(required=True)
+
+
 class ExternalVideoContent(ResourceContent):
 	"""Reference a video from the Internet."""
 
