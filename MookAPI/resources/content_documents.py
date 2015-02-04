@@ -1,7 +1,7 @@
 from MookAPI import db
 import datetime
 
-class ResourceContent(db.EmbeddedDocument):
+class ResourceContent(db.DynamicEmbeddedDocument):
 	"""Generic collection, every resource type will inherit from this."""
 	
 	meta = {
