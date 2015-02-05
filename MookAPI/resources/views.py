@@ -22,4 +22,5 @@ def get_resource(resource_id):
 	print (resource_id)
 	resource = docs.Resource.objects.get_or_404(id=resource_id)
 	print("before toJSONObject")
-	return flask.jsonify(resource=formatObjectToJSONCompliant(resource, True))
+	formattedResource = formatObjectToJSONCompliant(resource, True)
+	return flask.jsonify(resource=formattedResource)

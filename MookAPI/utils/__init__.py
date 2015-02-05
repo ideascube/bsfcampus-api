@@ -19,11 +19,14 @@ def formatObjectToJSONCompliant(resource, firstPass=False):
 			elif resource[prop] == None:
 				print(2)
 				ret[prop] = None
-			elif hasattr(resource[prop], '__dict__'):
+			elif isinstance(resource[prop], list):
 				print(3)
+				ret[prop] = resource[prop]
+			elif isinstance(resource[prop], dict):
+				print(4)
 				ret[prop] = formatObjectToJSONCompliant(resource[prop])
 			else:
-				print(4)
+				print(5)
 				ret[prop] = resource[prop]
 	print(ret)
 	return ret
