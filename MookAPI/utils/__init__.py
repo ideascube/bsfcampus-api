@@ -22,7 +22,7 @@ def formatObjectToJSONCompliant(resource, firstPass=False):
 			elif isinstance(resource[prop], list):
 				print(3)
 				ret[prop] = resource[prop]
-			elif isinstance(resource[prop], dict):
+			elif isinstance(resource[prop], db.EmbeddedDocument):
 				print(4)
 				ret[prop] = formatObjectToJSONCompliant(resource[prop])
 			else:

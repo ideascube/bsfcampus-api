@@ -41,7 +41,7 @@ class Resource(db.Document):
 	### PROPERTIES - CONTENT
 
 	## Content of the resource
-	content = db.EmbeddedDocumentField(ResourceContent)
+	resource_content = db.EmbeddedDocumentField(ResourceContent)
 
 	### METHODS
 
@@ -57,6 +57,6 @@ class Resource(db.Document):
 		if ret["content_type"] == "video":
 			resourceContent = ExternalVideoContent(self.content)
 		elif ret["content_type"] == "rich_text":
-			resourceContent = RichTextContent(self.content)
-		ret["content"] = resourceContent.toJSONObject()
+			resourceContent = RichTextContent(self.resource_content)
+		ret["resource_content"] = resourceContent.toJSONObject()
 		return ret
