@@ -4,4 +4,4 @@ from MookAPI import app
 def hello_world():
 	"""GET Hello World! page"""
 
-	return "Hello World!"
+	return "Hello World, yeah!"

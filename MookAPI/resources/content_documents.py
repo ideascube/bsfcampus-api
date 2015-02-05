@@ -9,6 +9,10 @@ class ResourceContent(db.EmbeddedDocument):
 		'abstract': True
 	}
 
+	def toJSONObject(self):
+		ret = {}
+		return ret
+
 
 class RichTextContent(ResourceContent):
 	"""Store rich text content."""
@@ -25,3 +29,9 @@ class ExternalVideoContent(ResourceContent):
 
 	## Video unique id on the source website
 	video_id = db.StringField(required=True)
+
+	def toJSONObject(self):
+		ret = {}
+		ret["source"] = self.source.encode('utf_8')
+		ret["video_id"] = self.video_id.encode('utf_8')
+		return ret

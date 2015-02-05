@@ -47,3 +47,12 @@ class Resource(db.Document):
 
 	def __unicode__(self):
 		return self.title
+
+	def toJSONObject(self):
+		ret = {}
+		ret["title"] = self.title.encode('utf_8')
+		ret["content_type"] = self.content_type.encode('utf_8')
+		ret["description"] = self.description.encode('utf_8')
+		ret["date"] = self.date
+		ret["content"] = self.content.toJSONObject()
+		return ret
