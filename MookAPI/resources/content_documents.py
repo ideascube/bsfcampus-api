@@ -9,16 +9,17 @@ class ResourceContent(db.DynamicEmbeddedDocument):
 		'abstract': True
 	}
 
-	def toJSONObject(self):
-		ret = {}
-		return ret
-
 
 class RichTextContent(ResourceContent):
 	"""Store rich text content."""
 
 	## HTML code of the rich text
 	html = db.StringField(required=True)
+
+	def toJSONObject(self):
+		ret = {}
+		ret["html"] = self.html.encode('utf_8')
+		return ret
 
 
 class ExternalVideoContent(ResourceContent):

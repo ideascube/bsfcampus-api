@@ -54,5 +54,9 @@ class Resource(db.Document):
 		ret["content_type"] = self.content_type.encode('utf_8')
 		ret["description"] = self.description.encode('utf_8')
 		ret["date"] = self.date
-		ret["content"] = self.content.toJSONObject()
+		if ret["content_type"] == "video":
+			resourceContent = ExternalVideoContent(self.content)
+		elif ret["content_type"] == "rich_text":
+			resourceContent = RichTextContent(self.content)
+		ret["content"] = resourceContent.toJSONObject()
 		return ret
