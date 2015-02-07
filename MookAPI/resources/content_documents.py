@@ -16,11 +16,6 @@ class RichTextContent(ResourceContent):
 	## HTML code of the rich text
 	html = db.StringField(required=True)
 
-	def toJSONObject(self):
-		ret = {}
-		ret["html"] = self.html.encode('utf_8')
-		return ret
-
 
 class ExternalVideoContent(ResourceContent):
 	"""Reference a video from the Internet."""
@@ -30,9 +25,3 @@ class ExternalVideoContent(ResourceContent):
 
 	## Video unique id on the source website
 	video_id = db.StringField(required=True)
-
-	def toJSONObject(self):
-		ret = {}
-		ret["source"] = self.source.encode('utf_8')
-		ret["video_id"] = self.video_id.encode('utf_8')
-		return ret

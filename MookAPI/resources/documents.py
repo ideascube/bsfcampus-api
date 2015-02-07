@@ -47,16 +47,3 @@ class Resource(db.Document):
 
 	def __unicode__(self):
 		return self.title
-
-	def toJSONObject(self):
-		ret = {}
-		ret["title"] = self.title.encode('utf_8')
-		ret["content_type"] = self.content_type.encode('utf_8')
-		ret["description"] = self.description.encode('utf_8')
-		ret["date"] = self.date
-		if ret["content_type"] == "video":
-			resourceContent = ExternalVideoContent(self.content)
-		elif ret["content_type"] == "rich_text":
-			resourceContent = RichTextContent(self.resource_content)
-		ret["resource_content"] = resourceContent.toJSONObject()
-		return ret
