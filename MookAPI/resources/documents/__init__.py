@@ -1,26 +1,29 @@
 from MookAPI import db
 import datetime
 
-from content_documents import *
-
+class ResourceContent(db.DynamicEmbeddedDocument):
+	"""Generic collection, every resource type will inherit from this."""
+	
+	meta = {
+		'allow_inheritance': True,
+		'abstract': True
+	}
 
 class Resource(db.Document):
 	"""
 	Any elementary pedagogical resource.
 	Contains the metadata and an embedded ResourceContent document.
 	"""
+
+	meta = {
+		'allow_inheritance': True,
+	}
 	
 	### PROPERTIES - METADATA
 
 	## Title of the resource
 	title = db.StringField(required=True)
 
-	## Type of content
-	## Allowed values: 
-	## - video
-	## - rich_text
-	content_type = db.StringField(required=True)
-	
 	## Creator should reference a user
 	## Will be implemented later
 	# creator = db.ReferenceField('User')

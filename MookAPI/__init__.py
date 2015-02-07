@@ -35,5 +35,11 @@ app.register_blueprint(tracks.bp, url_prefix="/tracks")
 
 ### ADMINISTRATION INTERFACE
 admin = Admin(app)
-admin.add_view(ModelView(resources.documents.Resource))
+## Rich text resources
+import resources.documents.rich_text
+admin.add_view(ModelView(resources.documents.rich_text.RichTextResource))
+## External video resources
+import resources.documents.external_video
+admin.add_view(ModelView(resources.documents.external_video.ExternalVideoResource))
+## Tracks
 admin.add_view(ModelView(tracks.documents.Track))
