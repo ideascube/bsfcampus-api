@@ -26,3 +26,6 @@ import views
 ## Resources
 import resources
 app.register_blueprint(resources.bp, url_prefix="/resources")
+## Tracks
+import tracks
+app.register_blueprint(tracks.bp, url_prefix="/tracks")
