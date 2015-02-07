@@ -1,5 +1,7 @@
 from flask import Flask
 from flask.ext.mongoengine import MongoEngine
+from flask.ext.admin import Admin
+from flask.ext.admin.contrib.mongoengine import ModelView
 import flask_cors
 
 
@@ -29,3 +31,9 @@ app.register_blueprint(resources.bp, url_prefix="/resources")
 ## Tracks
 import tracks
 app.register_blueprint(tracks.bp, url_prefix="/tracks")
+
+
+### ADMINISTRATION INTERFACE
+admin = Admin(app)
+admin.add_view(ModelView(resources.documents.Resource))
+admin.add_view(ModelView(tracks.documents.Track))
