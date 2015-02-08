@@ -40,6 +40,11 @@ class Resource(db.Document):
 
 	## Date of creation
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
+
+	### PROPERTIES - HIERARCHY
+
+	## Lesson
+	lesson = db.ReferenceField('Lesson')
 	
 	### PROPERTIES - CONTENT
 
