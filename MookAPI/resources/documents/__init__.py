@@ -1,5 +1,6 @@
 from MookAPI import db
 import datetime
+import bson
 from slugify import slugify
 
 class ResourceContent(db.DynamicEmbeddedDocument):
@@ -72,6 +73,15 @@ class Resource(db.Document):
 
 	def clean(self):
 		self.set_slug()
-
+		
 	def __unicode__(self):
 		return self.title
+
+	@classmethod
+	def get_unique_object_or_404(cls, token):
+		try:
+			oid = bson.ObjectId(token)
+		except bson.errors.InvalidId:
+			return cls.objects.get_or_404(slug=token)
+		else:
+			return cls.objects.get_or_404(id=token)
