@@ -35,6 +35,9 @@ app.register_blueprint(hierarchy.bp, url_prefix="/browse")
 
 ### ADMINISTRATION INTERFACE
 admin = Admin(app)
+## Exercise resources
+import resources.documents.exercise
+admin.add_view(ModelView(resources.documents.exercise.ExerciseResource))
 ## Rich text resources
 import resources.documents.rich_text
 admin.add_view(ModelView(resources.documents.rich_text.RichTextResource))
