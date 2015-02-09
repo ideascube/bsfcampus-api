@@ -1,7 +1,6 @@
 import flask
 import documents
 from MookAPI.hierarchy import documents as hierarchy_documents
-import json
 from . import bp
 
 
@@ -20,7 +19,7 @@ def get_resource(resource_id):
 
 	print ("GETTING resource with id {resource_id}".format(resource_id=resource_id))
 	
-	resource = documents.Resource.objects.get_or_404(id=resource_id)
+	resource = documents.Resource.get_unique_object_or_404(resource_id)
 	return flask.jsonify(resource=resource)
 
 @bp.route("/<resource_id>/hierarchy")
@@ -29,7 +28,7 @@ def get_resource_hierarchy(resource_id):
 
 	print ("GETTING resource with id {resource_id}".format(resource_id=resource_id))
 	
-	resource = documents.Resource.objects.get_or_404(id=resource_id)
+	resource = documents.Resource.get_unique_object_or_404(resource_id)
 	
 	lesson = resource.lesson
 	skill = lesson.skill
