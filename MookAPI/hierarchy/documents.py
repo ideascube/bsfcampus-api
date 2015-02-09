@@ -1,7 +1,7 @@
 from MookAPI import db
 import datetime
 from slugify import slugify
-from ..documents import Resource
+from MookAPI.resources import documents as resources_documents
 
 class ResourceHierarchy(db.Document):
 	meta = {
@@ -48,7 +48,7 @@ class Lesson(ResourceHierarchy):
 	### METHODS
 
 	def resources(self):
-		return Resource.objects(lesson=self)
+		return resources_documents.Resource.objects(lesson=self)
 
 	def set_slug(self):
 		slug = slugify(self.title) if self.slug is None else slugify(self.slug)

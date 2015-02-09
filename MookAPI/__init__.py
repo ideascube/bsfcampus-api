@@ -28,6 +28,9 @@ import views
 ## Resources
 import resources
 app.register_blueprint(resources.bp, url_prefix="/resources")
+## Hierarchy
+import hierarchy
+app.register_blueprint(hierarchy.bp, url_prefix="/browse")
 
 
 ### ADMINISTRATION INTERFACE
@@ -39,7 +42,7 @@ admin.add_view(ModelView(resources.documents.rich_text.RichTextResource))
 import resources.documents.external_video
 admin.add_view(ModelView(resources.documents.external_video.ExternalVideoResource))
 ## Tracks
-import resources.hierarchy.documents as hierarchy_documents
+import hierarchy.documents as hierarchy_documents
 admin.add_view(ModelView(hierarchy_documents.Track))
 admin.add_view(ModelView(hierarchy_documents.Skill))
 admin.add_view(ModelView(hierarchy_documents.Lesson))

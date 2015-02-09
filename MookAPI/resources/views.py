@@ -1,6 +1,6 @@
 import flask
 import documents
-import hierarchy.documents as hierarchy_documents
+from MookAPI.hierarchy import documents as hierarchy_documents
 import json
 from . import bp
 
@@ -36,4 +36,4 @@ def get_resource(resource_id):
 		track=track,
 		siblings=siblings,
 		aunts=aunts
-		)
+	)
