@@ -21,6 +21,15 @@ def get_resource(resource_id):
 	print ("GETTING resource with id {resource_id}".format(resource_id=resource_id))
 	
 	resource = documents.Resource.objects.get_or_404(id=resource_id)
+	return flask.jsonify(resource=resource)
+
+@bp.route("/<resource_id>/hierarchy")
+def get_resource_hierarchy(resource_id):
+	"""GET one resource"""
+
+	print ("GETTING resource with id {resource_id}".format(resource_id=resource_id))
+	
+	resource = documents.Resource.objects.get_or_404(id=resource_id)
 	
 	lesson = resource.lesson
 	skill = lesson.skill
@@ -28,6 +37,7 @@ def get_resource(resource_id):
 	
 	siblings = documents.Resource.objects(lesson=lesson, id__ne=resource_id)
 	aunts = hierarchy_documents.Lesson.objects(skill=skill, id__ne=lesson.id)
+	cousins = documents.Resource.objects(lesson__in=aunts)
 	
 	return flask.jsonify(
 		resource=resource,
@@ -35,5 +45,6 @@ def get_resource(resource_id):
 		skill=skill,
 		track=track,
 		siblings=siblings,
-		aunts=aunts
+		aunts=aunts,
+		cousins=cousins
 	)
