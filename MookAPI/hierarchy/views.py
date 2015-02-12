@@ -1,5 +1,7 @@
 import flask
 import documents
+import MookAPI.resources.documents
+import MookAPI.resources.documents.exercise_question
 import json
 from . import bp
 from bson import json_util
@@ -11,7 +13,7 @@ def get_tracks():
 	
 	tracks = documents.Track.objects.all()
 	tracks_array = [ob.to_mongo() for ob in tracks]
-	for (index,track) in enumerate(tracks_array):
+	for (index, track) in enumerate(tracks_array):
 		track['skills'] = map(lambda s: s.id, tracks[index].skills())
 		tracks_array[index] = track
 
@@ -41,7 +43,7 @@ def get_skills():
 	
 	skills = documents.Skill.objects.all()
 	skills_array = [ob.to_mongo() for ob in skills]
-	for (index,skill) in enumerate(skills_array):
+	for (index, skill) in enumerate(skills_array):
 		skill['lessons'] = map(lambda s: s.id, skills[index].lessons())
 		skills_array[index] = skill
 
@@ -71,7 +73,7 @@ def get_lessons():
 	
 	lessons = documents.Lesson.objects.all()
 	lessons_array = [ob.to_mongo() for ob in lessons]
-	for (index,lesson) in enumerate(lessons_array):
+	for (index, lesson) in enumerate(lessons_array):
 		lesson['resources'] = map(lambda s: s.id, lessons[index].resources())
 		lessons_array[index] = lesson
 

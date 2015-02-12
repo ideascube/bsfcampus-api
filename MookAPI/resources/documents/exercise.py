@@ -1,7 +1,7 @@
 from MookAPI import db
 import datetime
 from . import *
-from exercise_question import ExerciseQuestion
+from exercise_question.base import *
 
 class ExerciseResourceContent(ResourceContent):
 	"""An exercise with a list of questions."""

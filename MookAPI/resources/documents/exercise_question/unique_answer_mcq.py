@@ -1,6 +1,6 @@
 from MookAPI import db
 import datetime
-from . import *
+from .base import ExerciseQuestion
 
 class UniqueAnswerMCQExerciseQuestion(ExerciseQuestion):
 	"""Multiple choice question with one possible answer only."""
