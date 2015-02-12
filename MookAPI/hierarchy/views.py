@@ -72,7 +72,7 @@ def get_lessons():
 	lessons = documents.Lesson.objects.all()
 	lessons_array = [ob.to_mongo() for ob in lessons]
 	for (index,lesson) in enumerate(lessons_array):
-		# lesson['resources'] = map(lambda s: s.id, lessons[index].resources())
+		lesson['resources'] = map(lambda s: s.id, lessons[index].resources())
 		lessons_array[index] = lesson
 
 	return flask.Response(
@@ -87,7 +87,7 @@ def get_lesson(lesson_id):
 
 	lesson = documents.Lesson.get_unique_object_or_404(lesson_id)
 	lesson_dict = lesson.to_mongo()
-	# lesson_dict['resources'] = map(lambda s: s.id, lesson.resources())
+	lesson_dict['resources'] = map(lambda s: s.id, lesson.resources())
 
 	return flask.Response(
 		response=json_util.dumps({'lesson': lesson_dict}),
