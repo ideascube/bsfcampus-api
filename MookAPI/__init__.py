@@ -30,7 +30,7 @@ import resources
 app.register_blueprint(resources.bp, url_prefix="/resources")
 ## Hierarchy
 import hierarchy
-app.register_blueprint(hierarchy.bp, url_prefix="/browse")
+app.register_blueprint(hierarchy.bp)
 
 
 ### ADMINISTRATION INTERFACE
