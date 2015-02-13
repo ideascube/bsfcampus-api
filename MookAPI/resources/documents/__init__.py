@@ -61,6 +61,15 @@ class Resource(db.Document):
 
 	### METHODS
 
+	def siblings(self):
+		return Resource.objects.order_by('order', 'title').filter(lesson=self.lesson, id__ne=self.id)
+		
+	def aunts(self):
+		return self.lesson.siblings()
+
+	def cousins(self):
+		return Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=self.aunts())
+	
 	def set_slug(self):
 		slug = slugify(self.title) if self.slug is None else slugify(self.slug)
 		def alternate_slug(text, k=1):

@@ -60,8 +60,12 @@ class Lesson(ResourceHierarchy):
 
 	### METHODS
 
+	def siblings(self):
+		return Lesson.objects.order_by('order', 'title').filter(skill=self.skill, id__ne=self.id)
+		
+	
 	def resources(self):
-		return resources_documents.Resource.objects(lesson=self)
+		return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
 
 	def set_slug(self):
 		slug = slugify(self.title) if self.slug is None else slugify(self.slug)
@@ -92,7 +96,7 @@ class Skill(ResourceHierarchy):
 	### METHODS
 	
 	def lessons(self):
-		return Lesson.objects(skill=self)
+		return Lesson.objects.order_by('order', 'title').filter(skill=self)
 
 	def set_slug(self):
 		slug = slugify(self.title) if self.slug is None else slugify(self.slug)
@@ -115,7 +119,7 @@ class Track(ResourceHierarchy):
 	### METHODS
 	
 	def skills(self):
-		return Skill.objects(track=self)
+		return Skill.objects.order_by('order', 'title').filter(track=self)
 
 	def set_slug(self):
 		slug = slugify(self.title) if self.slug is None else slugify(self.slug)

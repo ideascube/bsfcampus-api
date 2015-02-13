@@ -11,7 +11,7 @@ def get_tracks():
 	"""GET list of all tracks"""
 	print ("GETTING list of all tracks")
 	
-	tracks = documents.Track.objects.all()
+	tracks = documents.Track.objects.order_by('order', 'title').all()
 	tracks_array = [ob.to_mongo() for ob in tracks]
 	for (index, track) in enumerate(tracks_array):
 		track['skills'] = map(lambda s: s.id, tracks[index].skills())
@@ -41,7 +41,7 @@ def get_skills():
 	"""GET list of all skills"""
 	print ("GETTING list of all skills")
 	
-	skills = documents.Skill.objects.all()
+	skills = documents.Skill.objects.order_by('track', 'order', 'title').all()
 	skills_array = [ob.to_mongo() for ob in skills]
 	for (index, skill) in enumerate(skills_array):
 		skill['lessons'] = map(lambda s: s.id, skills[index].lessons())
@@ -71,7 +71,7 @@ def get_lessons():
 	"""GET list of all lessons"""
 	print ("GETTING list of all lessons")
 	
-	lessons = documents.Lesson.objects.all()
+	lessons = documents.Lesson.objects.order_by('skill', 'order', 'title').all()
 	lessons_array = [ob.to_mongo() for ob in lessons]
 	for (index, lesson) in enumerate(lessons_array):
 		lesson['resources'] = map(lambda s: s.id, lessons[index].resources())
