@@ -67,7 +67,7 @@ class Resource(db.Document):
 			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
 		k = 0
 		while k < 10**4:
-			if len(Resource.objects(slug=alternate_slug(slug, k))) > 0:
+			if len(Resource.objects(slug=alternate_slug(slug, k), id__ne=self.id)) > 0:
 				k = k + 1
 				continue
 			else:

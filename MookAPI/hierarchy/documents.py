@@ -69,7 +69,7 @@ class Lesson(ResourceHierarchy):
 			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
 		k = 0
 		while k < 10**4:
-			if len(Lesson.objects(slug=alternate_slug(slug, k))) > 0:
+			if len(Lesson.objects(slug=alternate_slug(slug, k), id__ne=self.id)) > 0:
 				k = k + 1
 				continue
 			else:
@@ -100,7 +100,7 @@ class Skill(ResourceHierarchy):
 			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
 		k = 0
 		while k < 10**4:
-			if len(Skill.objects(slug=alternate_slug(slug, k))) > 0:
+			if len(Skill.objects(slug=alternate_slug(slug, k), id__ne=self.id)) > 0:
 				k = k + 1
 				continue
 			else:
@@ -123,7 +123,7 @@ class Track(ResourceHierarchy):
 			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
 		k = 0
 		while k < 10**4:
-			if len(Track.objects(slug=alternate_slug(slug, k))) > 0:
+			if len(Track.objects(slug=alternate_slug(slug, k), id__ne=self.id)) > 0:
 				k = k + 1
 				continue
 			else:
