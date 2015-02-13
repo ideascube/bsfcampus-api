@@ -21,6 +21,9 @@ class ResourceHierarchy(db.Document):
 	## Short description of the track
 	description = db.StringField()
 
+	## Order of display (within sibligs)
+	order = db.IntField()
+
 	## Date of creation
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
 	

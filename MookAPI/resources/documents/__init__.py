@@ -36,6 +36,9 @@ class Resource(db.Document):
 	## Short description of the resource
 	description = db.StringField()
 
+	## Order of display (within sibligs)
+	order = db.IntField()
+
 	## List of keywords
 	keywords = db.ListField(db.StringField())
 
