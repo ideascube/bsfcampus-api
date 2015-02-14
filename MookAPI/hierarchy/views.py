@@ -44,7 +44,23 @@ def get_skills():
 	skills = documents.Skill.objects.order_by('track', 'order', 'title').all()
 	skills_array = [ob.to_mongo() for ob in skills]
 	for (index, skill) in enumerate(skills_array):
-		skill['lessons'] = map(lambda s: s.id, skills[index].lessons())
+		skill['lessons'] = map(lambda l: l.id, skills[index].lessons())
+		skills_array[index] = skill
+
+	return flask.Response(
+		response=json_util.dumps({'skills': skills_array}),
+		mimetype="application/json"
+		)
+
+@bp.route("/skills/track/<track_id>")
+def get_track_skills(track_id):
+	"""GET all skills in one track"""
+	print ("GETTING skills in track {track_id}".format(track_id=track_id))
+
+	skills = documents.Skill.objects.order_by('order', 'title').filter(track=track_id)
+	skills_array = [ob.to_mongo() for ob in skills]
+	for (index, skill) in enumerate(skills_array):
+		skill['lessons'] = map(lambda l: l.id, skills[index].lessons())
 		skills_array[index] = skill
 
 	return flask.Response(
@@ -59,7 +75,7 @@ def get_skill(skill_id):
 
 	skill = documents.Skill.get_unique_object_or_404(skill_id)
 	skill_dict = skill.to_mongo()
-	skill_dict['lessons'] = map(lambda s: s.id, skill.lessons())
+	skill_dict['lessons'] = map(lambda l: l.id, skill.lessons())
 
 	return flask.Response(
 		response=json_util.dumps({'skill': skill_dict}),
@@ -74,7 +90,23 @@ def get_lessons():
 	lessons = documents.Lesson.objects.order_by('skill', 'order', 'title').all()
 	lessons_array = [ob.to_mongo() for ob in lessons]
 	for (index, lesson) in enumerate(lessons_array):
-		lesson['resources'] = map(lambda s: s.id, lessons[index].resources())
+		lesson['resources'] = map(lambda r: r.id, lessons[index].resources())
+		lessons_array[index] = lesson
+
+	return flask.Response(
+		response=json_util.dumps({'lessons': lessons_array}),
+		mimetype="application/json"
+		)
+
+@bp.route("/lessons/skill/<skill_id>")
+def get_skill_lessons(skill_id):
+	"""GET all lessons in one skill"""
+	print ("GETTING lessons in skill {skill_id}".format(skill_id=skill_id))
+
+	lessons = documents.lesson.objects.order_by('order', 'title').filter(skill=skill_id)
+	lessons_array = [ob.to_mongo() for ob in lessons]
+	for (index, lesson) in enumerate(lessons_array):
+		lesson['resources'] = map(lambda r: r.id, lessons[index].resourcess())
 		lessons_array[index] = lesson
 
 	return flask.Response(
@@ -89,7 +121,7 @@ def get_lesson(lesson_id):
 
 	lesson = documents.Lesson.get_unique_object_or_404(lesson_id)
 	lesson_dict = lesson.to_mongo()
-	lesson_dict['resources'] = map(lambda s: s.id, lesson.resources())
+	lesson_dict['resources'] = map(lambda r: r.id, lesson.resources())
 
 	return flask.Response(
 		response=json_util.dumps({'lesson': lesson_dict}),
