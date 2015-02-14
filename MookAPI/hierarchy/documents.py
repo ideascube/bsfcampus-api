@@ -30,7 +30,22 @@ class ResourceHierarchy(db.Document):
 	### METHODS
 
 	def set_slug(self):
-		pass
+		slug = slugify(self.title) if self.slug is None else slugify(self.slug)
+		def alternate_slug(text, k=1):
+			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
+		k = 0
+		kmax = 10**4
+		while k < kmax:
+			if self.id is None:
+				req = self.__class__.objects(slug=alternate_slug(slug, k))
+			else:
+				req = self.__class__.objects(slug=alternate_slug(slug, k), id__ne=self.id)
+			if len(req) > 0:
+				k = k + 1
+				continue
+			else:
+				break
+		self.slug = alternate_slug(slug, k) if k <= kmax else None
 
 	def clean(self):
 		self.set_slug()
@@ -67,21 +82,6 @@ class Lesson(ResourceHierarchy):
 	def resources(self):
 		return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
 
-	def set_slug(self):
-		slug = slugify(self.title) if self.slug is None else slugify(self.slug)
-		def alternate_slug(text, k=1):
-			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
-		k = 0
-		while k < 10**4:
-			if len(Lesson.objects(slug=alternate_slug(slug, k), id__ne=self.id)) > 0:
-				k = k + 1
-				continue
-			else:
-				break
-		self.slug = alternate_slug(slug, k)
-
-	
-
 
 class Skill(ResourceHierarchy):
 	"""
@@ -98,18 +98,6 @@ class Skill(ResourceHierarchy):
 	def lessons(self):
 		return Lesson.objects.order_by('order', 'title').filter(skill=self)
 
-	def set_slug(self):
-		slug = slugify(self.title) if self.slug is None else slugify(self.slug)
-		def alternate_slug(text, k=1):
-			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
-		k = 0
-		while k < 10**4:
-			if len(Skill.objects(slug=alternate_slug(slug, k), id__ne=self.id)) > 0:
-				k = k + 1
-				continue
-			else:
-				break
-		self.slug = alternate_slug(slug, k)
 
 class Track(ResourceHierarchy):
 	"""
@@ -120,16 +108,3 @@ class Track(ResourceHierarchy):
 	
 	def skills(self):
 		return Skill.objects.order_by('order', 'title').filter(track=self)
-
-	def set_slug(self):
-		slug = slugify(self.title) if self.slug is None else slugify(self.slug)
-		def alternate_slug(text, k=1):
-			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
-		k = 0
-		while k < 10**4:
-			if len(Track.objects(slug=alternate_slug(slug, k), id__ne=self.id)) > 0:
-				k = k + 1
-				continue
-			else:
-				break
-		self.slug = alternate_slug(slug, k)

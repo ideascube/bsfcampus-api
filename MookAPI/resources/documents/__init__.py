@@ -75,13 +75,18 @@ class Resource(db.Document):
 		def alternate_slug(text, k=1):
 			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
 		k = 0
-		while k < 10**4:
-			if len(Resource.objects(slug=alternate_slug(slug, k), id__ne=self.id)) > 0:
+		kmax = 10**4
+		while k < kmax:
+			if self.id is None:
+				req = self.__class__.objects(slug=alternate_slug(slug, k))
+			else:
+				req = self.__class__.objects(slug=alternate_slug(slug, k), id__ne=self.id)
+			if len(req) > 0:
 				k = k + 1
 				continue
 			else:
 				break
-		self.slug = alternate_slug(slug, k)
+		self.slug = alternate_slug(slug, k) if k <= kmax else None
 
 	def clean(self):
 		self.set_slug()
