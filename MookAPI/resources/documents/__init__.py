@@ -27,7 +27,7 @@ class Resource(db.Document):
 	title = db.StringField(required=True)
 
 	## Slug
-	slug = db.StringField(required=True, unique=True)
+	slug = db.StringField(unique=True)
 
 	## Creator should reference a user
 	## Will be implemented later

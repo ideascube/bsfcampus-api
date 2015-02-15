@@ -1,6 +1,16 @@
 from MookAPI import db
 import datetime
+from bson import ObjectId
 from .base import ExerciseQuestion
+
+class MultipleAnswerMCQExerciseQuestionAnswer(db.EmbeddedDocument):
+
+	## Object Id
+	_id = db.ObjectIdField(default=ObjectId)
+
+	## Text
+	text = db.StringField()
+
 
 class MultipleAnswerMCQExerciseQuestion(ExerciseQuestion):
 	"""Multiple choice question with several possible answers."""
@@ -9,7 +19,8 @@ class MultipleAnswerMCQExerciseQuestion(ExerciseQuestion):
 	question_text = db.StringField(required=True)
 
 	## Right answers
-	right_answers = db.ListField(db.StringField())
+	right_answers = db.ListField(db.EmbeddedDocumentField(MultipleAnswerMCQExerciseQuestionAnswer))
 
 	## Wrong answers
-	wrong_answers = db.ListField(db.StringField())
+	wrong_answers = db.ListField(db.EmbeddedDocumentField(MultipleAnswerMCQExerciseQuestionAnswer))
+	
