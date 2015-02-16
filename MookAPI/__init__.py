@@ -31,6 +31,9 @@ app.register_blueprint(resources.bp, url_prefix="/resources")
 ## Hierarchy
 import hierarchy
 app.register_blueprint(hierarchy.bp)
+## Activity
+import activity
+app.register_blueprint(activity.bp, url_prefix="/activity")
 
 
 ### ADMINISTRATION INTERFACE
