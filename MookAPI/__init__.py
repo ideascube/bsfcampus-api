@@ -15,6 +15,12 @@ app.config["MONGODB_SETTINGS"] = {'DB': "mookbsf"}
 db = MongoEngine(app)
 
 
+### GLOBAL PARAMETERS
+params = {
+	'NUMBER_OF_QUESTIONS': 10,
+}
+
+
 ### ALLOW CROSS DOMAIN REQUESTS
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 

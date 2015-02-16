@@ -1,4 +1,4 @@
-from MookAPI import db
+from MookAPI import db, params
 from . import Activity
 from MookAPI.resources.documents.exercise import ExerciseResource
 from MookAPI.resources.documents.exercise_question import ExerciseQuestionAnswer
@@ -69,11 +69,9 @@ class ExerciseAttempt(Activity):
 		if 'exercise' in kwargs:
 			exercise = kwargs['exercise']
 
-			NUMBER_OF_QUESTIONS = 10
-
 			self.exercise = exercise
 
-			questions = exercise.random_questions(NUMBER_OF_QUESTIONS)
+			questions = exercise.random_questions(params['NUMBER_OF_QUESTIONS'])
 			self.question_answers = map(lambda q: ExerciseAttemptQuestionAnswer().init_with_question(q), questions)
 
 	def question_answer(question_id):
