@@ -1,9 +1,12 @@
 from MookAPI import db
 import datetime
 from bson import ObjectId
-from .base import ExerciseQuestion
+from . import ExerciseQuestion, ExerciseQuestionAnswer
+from random import shuffle
 
-class MultipleAnswerMCQExerciseQuestionAnswer(db.EmbeddedDocument):
+
+class MultipleAnswerMCQExerciseQuestionProposition(db.EmbeddedDocument):
+	"""Stores a proposition to a multiple-answer MCQ."""
 
 	## Object Id
 	_id = db.ObjectIdField(default=ObjectId)
@@ -18,9 +21,27 @@ class MultipleAnswerMCQExerciseQuestion(ExerciseQuestion):
 	## Question text
 	question_text = db.StringField(required=True)
 
-	## Right answers
-	right_answers = db.ListField(db.EmbeddedDocumentField(MultipleAnswerMCQExerciseQuestionAnswer))
+	## Right propositions
+	right_propositions = db.ListField(db.EmbeddedDocumentField(MultipleAnswerMCQExerciseQuestionProposition))
 
-	## Wrong answers
-	wrong_answers = db.ListField(db.EmbeddedDocumentField(MultipleAnswerMCQExerciseQuestionAnswer))
-	
+	## Wrong propositions
+	wrong_propositions = db.ListField(db.EmbeddedDocumentField(MultipleAnswerMCQExerciseQuestionProposition))
+
+	def without_answer(self):
+		son = self.to_mongo()
+		son['propositions'] = son['right_propositions'] + son['wrong_propositions']
+		son['right_propositions'] = None
+		son['wrong_propositions'] = None
+		shuffle(son['propositions'])
+		return son
+
+
+class MultipleAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
+	"""Answers given to a multiple-answer MCQ."""
+
+	## The list of chosen propositions, identified by their ObjectIds
+	given_propositions = db.ListField(db.ObjectIdField())
+
+	def is_correct(self, question):
+		expected_propositions = set(map(lambda rp: rp._id, question.right_propositions))
+		return expected_propositions == set(self.given_propositions)

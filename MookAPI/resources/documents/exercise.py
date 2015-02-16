@@ -27,3 +27,8 @@ class ExerciseResource(Resource):
 			if question._id == oid:
 				return question
 		raise exceptions.KeyError("Question not found.")
+
+	def random_questions(self, number):
+		all_questions = self.questions()
+		shuffle(all_questions)
+		return all_questions[:number]

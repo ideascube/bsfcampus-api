@@ -1,8 +1,12 @@
 from MookAPI import db
 import datetime
-from .base import ExerciseQuestion
+from bson import ObjectId
+from . import ExerciseQuestion, ExerciseQuestionAnswer
+from random import shuffle
 
-class UniqueAnswerMCQExerciseQuestionAnswer(db.EmbeddedDocument):
+
+class UniqueAnswerMCQExerciseQuestionProposition(db.EmbeddedDocument):
+	"""Stores a proposition to a unique-answer MCQ."""
 
 	## Object Id
 	_id = db.ObjectIdField(default=ObjectId)
@@ -17,9 +21,26 @@ class UniqueAnswerMCQExerciseQuestion(ExerciseQuestion):
 	## Question text
 	question_text = db.StringField(required=True)
 
-	## Right answer
-	right_answer = db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestionAnswer)
+	## Right proposition
+	right_proposition = db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestionProposition)
 
-	## Wrong answers
-	wrong_answers = db.ListField(db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestionAnswer))
-	
+	## Wrong propositions
+	wrong_propositions = db.ListField(db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestionProposition))
+
+	def without_answer(self):
+		son = self.to_mongo()
+		son['propositions'] = [son['right_proposition']] + son['wrong_propositions']
+		son['right_proposition'] = None
+		son['wrong_propositions'] = None
+		shuffle(son['propositions'])
+		return son
+
+
+class UniqueAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
+	"""Answer given to a unique-answer MCQ."""
+
+	## The chosen propositions, identified by its ObjectId
+	given_proposition = db.ObjectIdField()
+
+	def is_correct(self, question):
+		return self.given_propositions == question.right_proposition._id
