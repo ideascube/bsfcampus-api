@@ -1,5 +1,6 @@
 import flask
 import documents
+from documents.exercise_question import *
 from MookAPI.hierarchy import documents as hierarchy_documents
 from . import bp
 
@@ -62,3 +63,46 @@ def get_resource_hierarchy(resource_id):
 		aunts=resource.aunts(),
 		cousins=resource.cousins()
 	)
+
+@bp.route("/tests/create_exercise")
+def test_create_exercise():
+	
+	question1 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestion()
+	q1prop1 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestionProposition()
+	q1prop1.text = "A"
+	q1prop2 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestionProposition()
+	q1prop2.text = "B"
+	q1prop3 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestionProposition()
+	q1prop3.text = "C"
+	q1prop4 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestionProposition()
+	q1prop4.text = "D"
+	question1.question_text = "La voyelle ?"
+	question1.right_proposition = q1prop1
+	question1.wrong_propositions = [q1prop2, q1prop3, q1prop4]
+
+	
+	question2 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestion()
+	q2prop1 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestionProposition()
+	q2prop1.text = "E"
+	q2prop2 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestionProposition()
+	q2prop2.text = "F"
+	q2prop3 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestionProposition()
+	q2prop3.text = "G"
+	q2prop4 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestionProposition()
+	q2prop4.text = "H"
+	question2.question_text = "Les consonnes ?"
+	question2.wrong_propositions = [q2prop1]
+	question2.right_propositions = [q2prop2, q2prop3, q2prop4]
+	
+	exercise_content = documents.exercise.ExerciseResourceContent()
+	exercise_content.questions = [question1, question2]
+
+	exercise = documents.exercise.ExerciseResource()
+	exercise.title = "Alphabet"
+	exercise.description = "Pour apprendre les lettres"
+	exercise.lesson = hierarchy_documents.Lesson.objects.first()
+	exercise.resource_content = exercise_content
+
+	exercise.save()
+
+	return flask.jsonify(exercise=exercise)
