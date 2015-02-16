@@ -6,6 +6,7 @@ import json
 from . import bp
 from bson import json_util
 
+
 @bp.route("/tracks")
 def get_tracks():
 	"""GET list of all tracks"""
@@ -35,6 +36,7 @@ def get_track(track_id):
 		response=json_util.dumps({'track': track_dict}),
 		mimetype="application/json"
 		)
+
 
 @bp.route("/skills")
 def get_skills():
@@ -81,6 +83,7 @@ def get_skill(skill_id):
 		response=json_util.dumps({'skill': skill_dict}),
 		mimetype="application/json"
 		)
+
 
 @bp.route("/lessons")
 def get_lessons():

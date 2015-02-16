@@ -2,7 +2,7 @@ from flask import Flask
 from flask.ext.mongoengine import MongoEngine
 from flask.ext.admin import Admin
 from flask.ext.admin.contrib.mongoengine import ModelView
-import flask_cors
+from flask_cors import CORS
 
 
 ### CREATE FLASK APP
@@ -16,7 +16,7 @@ db = MongoEngine(app)
 
 
 ### ALLOW CROSS DOMAIN REQUESTS
-cors = flask_cors.CORS(app, resources={r"/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 ### LOAD APP-LEVEL MODULES

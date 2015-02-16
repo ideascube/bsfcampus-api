@@ -4,6 +4,7 @@ import bson
 from slugify import slugify
 from MookAPI.resources import documents as resources_documents
 
+
 class ResourceHierarchy(db.Document):
 	meta = {
 		'allow_inheritance': True,

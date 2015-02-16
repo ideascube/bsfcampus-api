@@ -3,6 +3,7 @@ import datetime
 import bson
 from slugify import slugify
 
+
 class ResourceContent(db.DynamicEmbeddedDocument):
 	"""Generic collection, every resource type will inherit from this."""
 	
@@ -10,6 +11,7 @@ class ResourceContent(db.DynamicEmbeddedDocument):
 		'allow_inheritance': True,
 		'abstract': True
 	}
+
 
 class Resource(db.Document):
 	"""
