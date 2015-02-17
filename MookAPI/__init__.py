@@ -23,6 +23,7 @@ params = {
 
 ### ALLOW CROSS DOMAIN REQUESTS
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 ### LOAD APP-LEVEL MODULES
@@ -40,7 +41,6 @@ app.register_blueprint(hierarchy.bp)
 ## Activity
 import activity
 app.register_blueprint(activity.bp, url_prefix="/activity")
-
 
 ### ADMINISTRATION INTERFACE
 admin = Admin(app)
