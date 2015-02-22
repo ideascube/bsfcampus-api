@@ -12,14 +12,14 @@ from flask_cors import cross_origin
 
 @bp.route("/ex_attempts", methods=['POST'])
 @cross_origin() # allow all origins all methods.
-def new_exercise_attempt():
-	content = flask.request.get_json(force=True)['attempt']
-	print(content)
-	id = content['exercise']
-	print ("CREATING exercise attempt for exercise {exercise_id}".format(exercise_id=id))
-	exercise = resources_documents.Resource.objects.get_or_404(id=id)
+def post_exercise_attempt():
+	exercise_id = json.loads(flask.request.data)['attempt']['exercise']
+	exercise = resources_documents.Resource.objects.get_or_404(id=exercise_id)
 
-	attempt = documents.exercise_attempt.ExerciseAttempt(exercise=exercise)
+	print ("CREATING exercise attempt for exercise {exercise}".format(exercise=exercise.id))
+	
+	attempt = documents.exercise_attempt.ExerciseAttempt().init_with_exercise(exercise)
+	attempt.save()
 
 	return flask.jsonify(attempt=attempt)
 

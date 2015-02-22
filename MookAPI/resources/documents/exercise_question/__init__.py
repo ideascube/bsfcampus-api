@@ -39,13 +39,23 @@ class ExerciseQuestionAnswer(db.DynamicEmbeddedDocument):
 
 	### METHODS
 
+	def init_with_data(data):
+		"""
+		This is a hack to bypass __init__ (I don't know how to use it yet).
+		'data' is the form data sent by the client.
+		MUST return self.
+		"""
+
+		raise exceptions.NotImplementedError("This question type has no initializer.")
+
 	## This method needs to be overridden for each question type.
 	def is_correct(self, question, parameters):
 		"""
 		Whether the answer is correct.
 		Pass the question itself and the parameters, if any.
 		"""
-		raise exceptions.NotImplementedError("This exercise type has no correction method.")
+
+		raise exceptions.NotImplementedError("This question type has no correction method.")
 
 
 __all__ = [

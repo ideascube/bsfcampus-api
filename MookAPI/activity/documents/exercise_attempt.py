@@ -59,29 +59,24 @@ class ExerciseAttempt(Activity):
 
 	### METHODS
 
-	def __init__(self, *args, **kwargs):
-		"""
-		Initiates an attempt to an exercise, given an ExerciseResource object.
-		"""
+	## Hack to bypass __init__ which I could not figure out how to use just now.
+	def init_with_exercise(self, exercise):
+		"""Initiate an attempt for a given exercise."""
+		self.exercise = exercise
 
-		super(ExerciseAttempt, self).__init__(self, *args, **kwargs)
+		questions = exercise.random_questions(params['NUMBER_OF_QUESTIONS'])
+		self.question_answers = map(lambda q: ExerciseAttemptQuestionAnswer().init_with_question(q), questions)
 
-		if 'exercise' in kwargs:
-			exercise = kwargs['exercise']
+		return self
 
-			self.exercise = exercise
-
-			questions = exercise.random_questions(params['NUMBER_OF_QUESTIONS'])
-			self.question_answers = map(lambda q: ExerciseAttemptQuestionAnswer().init_with_question(q), questions)
-
-	def question_answer(question_id):
+	def question_answer(self, question_id):
 		oid = ObjectId(question_id)
 		for question_answer in self.question_answers:
 			if question_answer.question_id == oid:
 				return question_answer
 		raise exceptions.KeyError("Question not found.")
 
-	def set_question_answer(question_id, question_answer):
+	def set_question_answer(self, question_id, question_answer):
 		oid = ObjectId(question_id)
 		for (index, qa) in enumerate(self.question_answers):
 			if qa.question_id == oid:

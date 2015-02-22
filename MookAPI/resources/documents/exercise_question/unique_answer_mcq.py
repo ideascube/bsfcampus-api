@@ -42,5 +42,9 @@ class UniqueAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
 	## The chosen propositions, identified by its ObjectId
 	given_proposition = db.ObjectIdField()
 
+	def init_with_data(data):
+		self.given_proposition = ObjectId(data['proposition'])
+		return self
+
 	def is_correct(self, question):
 		return self.given_propositions == question.right_proposition._id

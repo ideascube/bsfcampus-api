@@ -42,6 +42,12 @@ class MultipleAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
 	## The list of chosen propositions, identified by their ObjectIds
 	given_propositions = db.ListField(db.ObjectIdField())
 
+	def init_with_data(data):
+		self.given_propositions = []
+		for proposition in data['propositions']:
+			self.given_propositions.append(ObjectId(proposition))
+		return self
+
 	def is_correct(self, question):
 		expected_propositions = set(map(lambda rp: rp._id, question.right_propositions))
 		return expected_propositions == set(self.given_propositions)
