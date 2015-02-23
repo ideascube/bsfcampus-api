@@ -37,7 +37,7 @@ import resources
 app.register_blueprint(resources.bp, url_prefix="/resources")
 ## Hierarchy
 import hierarchy
-app.register_blueprint(hierarchy.bp)
+app.register_blueprint(hierarchy.bp, url_prefix="/hierarchy")
 ## Activity
 import activity
 app.register_blueprint(activity.bp, url_prefix="/activity")
