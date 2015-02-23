@@ -18,22 +18,11 @@ class UniqueAnswerMCQExerciseQuestionProposition(db.EmbeddedDocument):
 class UniqueAnswerMCQExerciseQuestion(ExerciseQuestion):
 	"""Multiple choice question with one possible answer only."""
 
-	## Question text
-	question_text = db.StringField(required=True)
+	## Propositions
+	propositions = db.ListField(db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestionProposition))
 
-	## Right proposition
-	right_proposition = db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestionProposition)
-
-	## Wrong propositions
-	wrong_propositions = db.ListField(db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestionProposition))
-
-	def without_answer(self):
-		son = self.to_mongo()
-		son['propositions'] = [son['right_proposition']] + son['wrong_propositions']
-		son['right_proposition'] = None
-		son['wrong_propositions'] = None
-		shuffle(son['propositions'])
-		return son
+	## Correct answer
+	correct_answer = db.ObjectIdField()
 
 
 class UniqueAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
@@ -42,7 +31,7 @@ class UniqueAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
 	## The chosen propositions, identified by its ObjectId
 	given_proposition = db.ObjectIdField()
 
-	def init_with_data(data):
+	def init_with_data(self, data):
 		self.given_proposition = ObjectId(data['proposition'])
 		return self
 

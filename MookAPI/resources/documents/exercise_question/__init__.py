@@ -17,8 +17,16 @@ class ExerciseQuestion(db.DynamicEmbeddedDocument):
 
 	_id = db.ObjectIdField(default=ObjectId)
 
+	## Question text
+	question_text = db.StringField(required=True)
+
+	## Correct answer (field type depends on question type)
+	correct_answer = db.DynamicField()
+
 	def without_answer(self):
-		raise exceptions.NotImplementedError("This exercise type has no method to be sent without containing the answer.")
+		son = self.to_mongo()
+		son['correct_answer'] = None
+		return son
 
 
 class ExerciseQuestionAnswer(db.DynamicEmbeddedDocument):
@@ -39,7 +47,7 @@ class ExerciseQuestionAnswer(db.DynamicEmbeddedDocument):
 
 	### METHODS
 
-	def init_with_data(data):
+	def init_with_data(self, data):
 		"""
 		This is a hack to bypass __init__ (I don't know how to use it yet).
 		'data' is the form data sent by the client.
