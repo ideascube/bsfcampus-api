@@ -94,6 +94,9 @@ class Skill(ResourceHierarchy):
 	## Parent track
 	track = db.ReferenceField('Track')
 
+	## illustrative image
+	image = db.ImageField()
+
 	### METHODS
 	
 	def lessons(self):
@@ -104,6 +107,9 @@ class Track(ResourceHierarchy):
 	"""
 	Top level of resources hierarchy 
 	"""
+
+	## illustrative image
+	image = db.ImageField()
 
 	### METHODS
 	
