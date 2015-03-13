@@ -82,7 +82,7 @@ def get_track_skills(track_id):
 	skills_array = []
 	for ob in skills:
 		skill = ob.to_mongo();
-		skill['lessons'] = map(lambda l: l.id, skills[index].lessons())
+		skill['lessons'] = map(lambda l: l.id, ob.lessons())
 		skill['imageUrl'] = flask.url_for('hierarchy.get_skill_image', skill_id=str(ob.id), _external=True)
 		skills_array.append(skill)
 
