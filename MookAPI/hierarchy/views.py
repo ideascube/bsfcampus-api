@@ -18,7 +18,8 @@ def get_tracks():
 	for ob in tracks:
 		track = ob.to_mongo() 
 		track['skills'] = map(lambda s: s.id, ob.skills())
-		track['imageUrl'] = flask.url_for('hierarchy.get_track_image', track_id=str(ob.id), _external=True)
+		track['imageTnUrl'] = flask.url_for('hierarchy.get_track_image_tn', track_id=ob.id, _external=True)
+		track['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.id, _external=True)
 		tracks_array.append(track)
 
 	return flask.Response(
@@ -34,20 +35,34 @@ def get_track(track_id):
 	track = documents.Track.get_unique_object_or_404(track_id)
 	track_dict = track.to_mongo()
 	track_dict['skills'] = map(lambda s: s.id, track.skills())
-	track_dict['imageUrl'] = flask.url_for('hierarchy.get_track_image', track_id=track_id, _external=True)
+	track_dict['imageTnUrl'] = flask.url_for('hierarchy.get_track_image_tn', track_id=track_id, _external=True)
+	track_dict['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=track_id, _external=True)
 
 	return flask.Response(
 		response=json_util.dumps({'track': track_dict}),
 		mimetype="application/json"
 		)
 
-@bp.route("/tracks/<track_id>/image")
-def get_track_image(track_id):
-	"""GET image for a specific track"""
+@bp.route("/tracks/<track_id>/image-tn")
+def get_track_image_tn(track_id):
+	"""GET background image for a specific track"""
 	print ("GETTING track {track_id}".format(track_id=track_id))
 
 	track = documents.Track.get_unique_object_or_404(track_id)
-	imageField = track.image
+	imageField = track.image_tn
+	image = imageField.read()
+
+	return flask.send_file(io.BytesIO(image),
+                     attachment_filename=imageField.filename,
+                     mimetype=imageField.contentType)
+
+@bp.route("/tracks/<track_id>/bg-image")
+def get_track_bg_image(track_id):
+	"""GET background image for a specific track"""
+	print ("GETTING track {track_id}".format(track_id=track_id))
+
+	track = documents.Track.get_unique_object_or_404(track_id)
+	imageField = track.bg_image
 	image = imageField.read()
 
 	return flask.send_file(io.BytesIO(image),
@@ -65,7 +80,8 @@ def get_skills():
 	for ob in skills:
 		skill = ob.to_mongo();
 		skill['lessons'] = map(lambda l: l.id, ob.lessons())
-		skill['imageUrl'] = flask.url_for('hierarchy.get_skill_image', skill_id=str(ob.id), _external=True)
+		skill['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=ob.id, _external=True)
+		skill['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.track.id, _external=True)
 		skills_array.append(skill)
 
 	return flask.Response(
@@ -83,7 +99,8 @@ def get_track_skills(track_id):
 	for ob in skills:
 		skill = ob.to_mongo();
 		skill['lessons'] = map(lambda l: l.id, ob.lessons())
-		skill['imageUrl'] = flask.url_for('hierarchy.get_skill_image', skill_id=str(ob.id), _external=True)
+		skill['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=ob.id, _external=True)
+		skill['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.track.id, _external=True)
 		skills_array.append(skill)
 
 	return flask.Response(
@@ -99,20 +116,21 @@ def get_skill(skill_id):
 	skill = documents.Skill.get_unique_object_or_404(skill_id)
 	skill_dict = skill.to_mongo()
 	skill_dict['lessons'] = map(lambda l: l.id, skill.lessons())
-	skill_dict['imageUrl'] = flask.url_for('hierarchy.get_skill_image', skill_id=skill_id, _external=True)
+	skill_dict['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=skill_id, _external=True)
+	skill_dict['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=skill.track.id, _external=True)
 
 	return flask.Response(
 		response=json_util.dumps({'skill': skill_dict}),
 		mimetype="application/json"
 		)
 
-@bp.route("/skills/<skill_id>/image")
-def get_skill_image(skill_id):
-	"""GET image for a specific skill"""
-	print ("GETTING skill image for skill {skill_id}".format(skill_id=skill_id))
+@bp.route("/skills/<skill_id>/icon")
+def get_skill_icon(skill_id):
+	"""GET icon image for a specific skill"""
+	print ("GETTING skill icon for skill {skill_id}".format(skill_id=skill_id))
 
 	skill = documents.Skill.get_unique_object_or_404(skill_id)
-	imageField = skill.image
+	imageField = skill.icon
 	image = imageField.read()
 
 	return flask.send_file(io.BytesIO(image),
@@ -165,15 +183,3 @@ def get_lesson(lesson_id):
 		response=json_util.dumps({'lesson': lesson_dict}),
 		mimetype="application/json"
 		)
-
-@bp.route("/image/<image_id>")
-def get_image(image_id):
-	"""GET one image from its id"""
-	print("GETTING image {image_id}".format(image_id=image_id))
-
-	imageField = documents.images.files.get_or_404(image_id)
-	image = imageField.read();
-
-	return send_file(io.BytesIO(image),
-                     attachment_filename=imageField.filename,
-                     mimetype=imageField.contentType)

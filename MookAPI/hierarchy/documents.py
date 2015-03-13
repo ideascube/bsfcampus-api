@@ -94,8 +94,8 @@ class Skill(ResourceHierarchy):
 	## Parent track
 	track = db.ReferenceField('Track')
 
-	## illustrative image
-	image = db.ImageField()
+	## icon image
+	icon = db.ImageField()
 
 	### METHODS
 	
@@ -108,8 +108,11 @@ class Track(ResourceHierarchy):
 	Top level of resources hierarchy 
 	"""
 
-	## illustrative image
-	image = db.ImageField()
+	## thumbnail image
+	image_tn = db.ImageField()
+
+	## background image
+	bg_image = db.ImageField()
 
 	### METHODS
 	
