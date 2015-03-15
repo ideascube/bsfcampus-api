@@ -159,10 +159,10 @@ def get_skill_lessons(skill_id):
 	"""GET all lessons in one skill"""
 	print ("GETTING lessons in skill {skill_id}".format(skill_id=skill_id))
 
-	lessons = documents.lesson.objects.order_by('order', 'title').filter(skill=skill_id)
+	lessons = documents.Lesson.objects.order_by('order', 'title').filter(skill=skill_id)
 	lessons_array = [ob.to_mongo() for ob in lessons]
 	for (index, lesson) in enumerate(lessons_array):
-		lesson['resources'] = map(lambda r: r.id, lessons[index].resourcess())
+		lesson['resources'] = map(lambda r: r.id, lessons[index].resources())
 		lessons_array[index] = lesson
 
 	return flask.Response(
