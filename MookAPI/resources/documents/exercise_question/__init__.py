@@ -25,7 +25,7 @@ class ExerciseQuestion(db.DynamicEmbeddedDocument):
 
 	def without_answer(self):
 		son = self.to_mongo()
-		son['correct_answer'] = None
+		son.pop('correct_answer', None)
 		return son
 
 
