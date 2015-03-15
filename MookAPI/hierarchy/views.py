@@ -175,7 +175,7 @@ def get_lesson(lesson_id):
 	"""GET one lesson"""
 	print ("GETTING lesson {lesson_id}".format(lesson_id=lesson_id))
 
-	lesson = documents.lesson.get_unique_object_or_404(lesson_id)
+	lesson = documents.Lesson.get_unique_object_or_404(lesson_id)
 	lesson_dict = lesson.to_mongo()
 	lesson_dict['resources'] = map(lambda r: r.id, lesson.resources())
 

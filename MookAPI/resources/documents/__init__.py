@@ -64,13 +64,22 @@ class Resource(db.Document):
 	### METHODS
 
 	def siblings(self):
+		return Resource.objects.order_by('order', 'title').filter(lesson=self.lesson)
+		
+	def siblings_strict(self):
 		return Resource.objects.order_by('order', 'title').filter(lesson=self.lesson, id__ne=self.id)
 		
 	def aunts(self):
 		return self.lesson.siblings()
 
+	def aunts_strict(self):
+		return self.lesson.siblings_strict()
+
 	def cousins(self):
 		return Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=self.aunts())
+	
+	def cousins_strict(self):
+		return Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=self.aunts_strict())
 	
 	def set_slug(self):
 		slug = slugify(self.title) if self.slug is None else slugify(self.slug)

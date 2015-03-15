@@ -77,8 +77,10 @@ class Lesson(ResourceHierarchy):
 	### METHODS
 
 	def siblings(self):
-		return Lesson.objects.order_by('order', 'title').filter(skill=self.skill, id__ne=self.id)
+		return Lesson.objects.order_by('order', 'title').filter(skill=self.skill)
 		
+	def siblings_strict(self):
+		return Lesson.objects.order_by('order', 'title').filter(skill=self.skill, id__ne=self.id)
 	
 	def resources(self):
 		return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
