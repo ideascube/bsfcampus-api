@@ -18,8 +18,8 @@ def get_tracks():
 	for ob in tracks:
 		track = ob.to_mongo() 
 		track['skills'] = map(lambda s: s.id, ob.skills())
-		track['imageTnUrl'] = flask.url_for('hierarchy.get_track_image_tn', track_id=ob.id, _external=True)
-		track['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.id, _external=True)
+		track['image_tn_url'] = flask.url_for('hierarchy.get_track_image_tn', track_id=ob.id, _external=True)
+		track['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.id, _external=True)
 		tracks_array.append(track)
 
 	return flask.Response(
@@ -35,8 +35,8 @@ def get_track(track_id):
 	track = documents.Track.get_unique_object_or_404(track_id)
 	track_dict = track.to_mongo()
 	track_dict['skills'] = map(lambda s: s.id, track.skills())
-	track_dict['imageTnUrl'] = flask.url_for('hierarchy.get_track_image_tn', track_id=track_id, _external=True)
-	track_dict['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=track_id, _external=True)
+	track_dict['image_tn_url'] = flask.url_for('hierarchy.get_track_image_tn', track_id=track_id, _external=True)
+	track_dict['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=track_id, _external=True)
 
 	return flask.Response(
 		response=json_util.dumps({'track': track_dict}),
@@ -81,7 +81,8 @@ def get_skills():
 		skill = ob.to_mongo();
 		skill['lessons'] = map(lambda l: l.id, ob.lessons())
 		skill['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=ob.id, _external=True)
-		skill['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.track.id, _external=True)
+		skill['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.track.id, _external=True)
+		skill['bg_color'] = ob.track.bg_color
 		skills_array.append(skill)
 
 	return flask.Response(
@@ -100,7 +101,8 @@ def get_track_skills(track_id):
 		skill = ob.to_mongo();
 		skill['lessons'] = map(lambda l: l.id, ob.lessons())
 		skill['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=ob.id, _external=True)
-		skill['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.track.id, _external=True)
+		skill['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.track.id, _external=True)
+		skill['bg_color'] = ob.track.bg_color
 		skills_array.append(skill)
 
 	return flask.Response(
@@ -117,7 +119,8 @@ def get_skill(skill_id):
 	skill_dict = skill.to_mongo()
 	skill_dict['lessons'] = map(lambda l: l.id, skill.lessons())
 	skill_dict['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=skill_id, _external=True)
-	skill_dict['bgImageUrl'] = flask.url_for('hierarchy.get_track_bg_image', track_id=skill.track.id, _external=True)
+	skill_dict['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=skill.track.id, _external=True)
+	skill_dict['bg_color'] = skill.track.bg_color
 
 	return flask.Response(
 		response=json_util.dumps({'skill': skill_dict}),

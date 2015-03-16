@@ -116,6 +116,9 @@ class Track(ResourceHierarchy):
 	## background image
 	bg_image = db.ImageField()
 
+	## background color
+	bg_color = db.StringField()
+
 	### METHODS
 	
 	def skills(self):
