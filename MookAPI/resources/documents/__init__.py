@@ -55,6 +55,9 @@ class Resource(db.Document):
 
 	## Lesson
 	lesson = db.ReferenceField('Lesson')
+
+	## wether the hierarchy object has been validated (through test or completion of children resources)
+	is_validated = db.BooleanField()
 	
 	### PROPERTIES - CONTENT
 
