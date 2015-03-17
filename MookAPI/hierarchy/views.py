@@ -96,8 +96,6 @@ def get_skills():
 		skill['is_validated'] = utils.getSkillValidated(ob.id)
 		skill['progress'] = utils.getSkillProgress(ob.id)
 
-		skill['breadcrumb']: utils.generateBreadcrumb(ob)
-
 		skills_array.append(skill)
 
 	return flask.Response(
