@@ -3,6 +3,8 @@ import documents
 from documents.exercise_question import *
 from MookAPI.hierarchy import documents as hierarchy_documents
 from . import bp
+from MookAPI import utils
+from bson import json_util
 
 
 @bp.route("/")
@@ -40,11 +42,16 @@ def get_resource(resource_id):
 	print ("GETTING resource with id {resource_id}".format(resource_id=resource_id))
 	
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
-	return flask.jsonify(resource=resource)
+	resource_dict = resource.to_mongo()
+	resource_dict['breadcrumb'] = utils.generateBreadcrumb(resource)
+	return flask.Response(
+		response=json_util.dumps({'resource': resource_dict}),
+		mimetype="application/json"
+		)
 
 @bp.route("/<resource_id>/hierarchy")
 def get_resource_hierarchy(resource_id):
-	"""GET one resource"""
+	"""GET one resource's hierarchy"""
 
 	print ("GETTING resource with id {resource_id}".format(resource_id=resource_id))
 	

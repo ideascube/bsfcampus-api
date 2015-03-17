@@ -4,7 +4,7 @@ import MookAPI.resources.documents
 import MookAPI.resources.documents.exercise_question
 import json
 from . import bp
-import utils
+from MookAPI import utils
 from bson import json_util
 import io
 
@@ -24,6 +24,8 @@ def get_tracks():
 
 		track['is_validated'] = utils.getTrackValidated(ob.id)
 		track['progress'] = utils.getTrackProgress(ob.id)
+
+		track['breadcrumb'] = utils.generateBreadcrumb(ob)
 
 		tracks_array.append(track)
 
@@ -45,6 +47,8 @@ def get_track(track_id):
 
 	track_dict['is_validated'] = utils.getTrackValidated(track.id)
 	track_dict['progress'] = utils.getTrackProgress(track.id)
+
+	track_dict['breadcrumb'] = utils.generateBreadcrumb(track)
 
 	return flask.Response(
 		response=json_util.dumps({'track': track_dict}),
@@ -96,6 +100,8 @@ def get_skills():
 		skill['is_validated'] = utils.getSkillValidated(ob.id)
 		skill['progress'] = utils.getSkillProgress(ob.id)
 
+		skill['breadcrumb'] = utils.generateBreadcrumb(ob)
+
 		skills_array.append(skill)
 
 	return flask.Response(
@@ -121,6 +127,8 @@ def get_track_skills(track_id):
 		skill['is_validated'] = utils.getSkillValidated(ob.id)
 		skill['progress'] = utils.getSkillProgress(ob.id)
 
+		skill['breadcrumb'] = utils.generateBreadcrumb(ob)
+
 		skills_array.append(skill)
 
 	return flask.Response(
@@ -143,6 +151,8 @@ def get_skill(skill_id):
 
 	skill_dict['is_validated'] = utils.getSkillValidated(skill.id)
 	skill_dict['progress'] = utils.getSkillProgress(skill.id)
+
+	skill_dict['breadcrumb'] = utils.generateBreadcrumb(skill)
 
 	return flask.Response(
 		response=json_util.dumps({'skill': skill_dict}),
