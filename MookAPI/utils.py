@@ -5,18 +5,24 @@ from random import randint
 
 # #FIXME: the calculation of the progress is done randomly until we have a real user account management, which keeps track of actual user's progress
 def getTrackValidated(trackId):
-	rd = randint(0, 99)
-	return (rd < 50)
+	# we must remove all validation from the project, as it is not meant to be implemented yet
+	# rd = randint(0, 99)
+	# return (rd < 50)
+	return False
 
 # #FIXME: the calculation of the progress is done randomly until we have a real user account management, which keeps track of actual user's progress
 def getSkillValidated(skillId):
-	rd = randint(0, 99)
-	return (rd < 50)
+	# we must remove all validation from the project, as it is not meant to be implemented yet
+	# rd = randint(0, 99)
+	# return (rd < 50)
+	return False
 
 # #FIXME: the calculation of the progress is done randomly until we have a real user account management, which keeps track of actual user's progress
 def getResourceValidated(resourceId):
-	rd = randint(0, 99)
-	return (rd < 50)
+	# we must remove all validation from the project, as it is not meant to be implemented yet
+	# rd = randint(0, 99)
+	# return (rd < 50)
+	return False
 
 def getTrackProgress(trackId):
 	track = hierarchyDocuments.Track.get_unique_object_or_404(trackId)
