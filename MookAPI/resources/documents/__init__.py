@@ -57,7 +57,8 @@ class Resource(db.Document):
 	lesson = db.ReferenceField('Lesson')
 
 	## wether the hierarchy object has been validated (through test or completion of children resources)
-	is_validated = db.BooleanField()
+	# we must remove all validation from the project, as it is not meant to be implemented yet
+	# is_validated = db.BooleanField()
 	
 	### PROPERTIES - CONTENT
 

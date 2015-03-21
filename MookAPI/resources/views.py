@@ -5,6 +5,7 @@ from MookAPI.hierarchy import documents as hierarchy_documents
 from . import bp
 from MookAPI import utils
 from bson import json_util
+import io
 
 
 @bp.route("/")
@@ -46,6 +47,10 @@ def get_resource(resource_id):
 	resource_dict['breadcrumb'] = utils.generateBreadcrumb(resource)
 	resource_dict['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=resource.lesson.skill.track.id, _external=True)
 	resource_dict['bg_color'] = resource.lesson.skill.track.bg_color
+
+	if isinstance(resource, documents.audio.AudioResource):
+		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, _external=True)
+
 	return flask.Response(
 		response=json_util.dumps({'resource': resource_dict}),
 		mimetype="application/json"
@@ -72,6 +77,19 @@ def get_resource_hierarchy(resource_id):
 		aunts=resource.aunts(),
 		cousins=resource.cousins()
 	)
+
+@bp.route("/<resource_id>/content-file")
+def get_resource_content_file(resource_id):
+	"""GET one resource's content file"""
+
+	resource = documents.Resource.get_unique_object_or_404(resource_id)
+	resource_content = resource.resource_content
+	if isinstance(resource_content, documents.audio.AudioResourceContent):
+		fileField = resource_content.audio_file
+
+	return flask.send_file(io.BytesIO(fileField.read()),
+                     attachment_filename=fileField.filename,
+                     mimetype=fileField.contentType)
 
 @bp.route("/tests/create_exercise")
 def test_create_exercise():
