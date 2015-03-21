@@ -44,6 +44,8 @@ def get_resource(resource_id):
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
 	resource_dict = resource.to_mongo()
 	resource_dict['breadcrumb'] = utils.generateBreadcrumb(resource)
+	resource_dict['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=resource.lesson.skill.track.id, _external=True)
+	resource_dict['bg_color'] = resource.lesson.skill.track.bg_color
 	return flask.Response(
 		response=json_util.dumps({'resource': resource_dict}),
 		mimetype="application/json"
