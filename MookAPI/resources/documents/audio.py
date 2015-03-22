@@ -4,7 +4,7 @@ from . import *
 
 
 class AudioResourceContent(ResourceContent):
-	"""Reference a video from the Internet."""
+	"""Reference an audio file stored on the server."""
 
 	## Audio file
 	audio_file = db.FileField(required=True)

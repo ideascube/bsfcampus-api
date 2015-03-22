@@ -50,6 +50,8 @@ def get_resource(resource_id):
 
 	if isinstance(resource, documents.audio.AudioResource):
 		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, _external=True)
+	elif isinstance(resource, documents.video.VideoResource):
+		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, _external=True)
 
 	return flask.Response(
 		response=json_util.dumps({'resource': resource_dict}),
@@ -86,6 +88,8 @@ def get_resource_content_file(resource_id):
 	resource_content = resource.resource_content
 	if isinstance(resource_content, documents.audio.AudioResourceContent):
 		fileField = resource_content.audio_file
+	elif isinstance(resource_content, documents.video.VideoResourceContent):
+		fileField = resource_content.video_file
 
 	return flask.send_file(io.BytesIO(fileField.read()),
                      attachment_filename=fileField.filename,

@@ -56,6 +56,9 @@ admin.add_view(ModelView(resources.documents.external_video.ExternalVideoResourc
 ## Audio resources
 import resources.documents.audio
 admin.add_view(ModelView(resources.documents.audio.AudioResource))
+## Video resources
+import resources.documents.video
+admin.add_view(ModelView(resources.documents.video.VideoResource))
 ## Tracks
 import hierarchy.documents as hierarchy_documents
 admin.add_view(ModelView(hierarchy_documents.Track))
