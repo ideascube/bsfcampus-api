@@ -18,9 +18,6 @@ def get_tracks():
 	tracks_array = []
 	for ob in tracks:
 		track = ob.to_mongo() 
-		track['skills'] = map(lambda s: s.id, ob.skills())
-		track['image_tn_url'] = flask.url_for('hierarchy.get_track_image_tn', track_id=ob.id, _external=True)
-		track['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.id, _external=True)
 
 		track['is_validated'] = utils.getTrackValidated(ob.id)
 		track['progress'] = utils.getTrackProgress(ob.id)
@@ -41,9 +38,6 @@ def get_track(track_id):
 
 	track = documents.Track.get_unique_object_or_404(track_id)
 	track_dict = track.to_mongo()
-	track_dict['skills'] = map(lambda s: s.id, track.skills())
-	track_dict['image_tn_url'] = flask.url_for('hierarchy.get_track_image_tn', track_id=track_id, _external=True)
-	track_dict['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=track_id, _external=True)
 
 	track_dict['is_validated'] = utils.getTrackValidated(track.id)
 	track_dict['progress'] = utils.getTrackProgress(track.id)
@@ -91,12 +85,7 @@ def get_skills():
 	skills_array = []
 	for ob in skills:
 		skill = ob.to_mongo()
-		lessons = ob.lessons()
-		skill['lessons'] = map(lambda l: l.id, lessons)
-		skill['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=ob.id, _external=True)
-		skill['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.track.id, _external=True)
-		skill['bg_color'] = ob.track.bg_color
-
+		
 		skill['is_validated'] = utils.getSkillValidated(ob.id)
 		skill['progress'] = utils.getSkillProgress(ob.id)
 
@@ -118,11 +107,6 @@ def get_track_skills(track_id):
 	skills_array = []
 	for ob in skills:
 		skill = ob.to_mongo()
-		lessons = ob.lessons()
-		skill['lessons'] = map(lambda l: l.id, lessons)
-		skill['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=ob.id, _external=True)
-		skill['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=ob.track.id, _external=True)
-		skill['bg_color'] = ob.track.bg_color
 
 		skill['is_validated'] = utils.getSkillValidated(ob.id)
 		skill['progress'] = utils.getSkillProgress(ob.id)
@@ -144,10 +128,6 @@ def get_skill(skill_id):
 	skill = documents.Skill.get_unique_object_or_404(skill_id)
 	lessons = skill.lessons()
 	skill_dict = skill.to_mongo()
-	skill_dict['lessons'] = map(lambda l: l.id, lessons)
-	skill_dict['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=skill_id, _external=True)
-	skill_dict['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=skill.track.id, _external=True)
-	skill_dict['bg_color'] = skill.track.bg_color
 
 	skill_dict['is_validated'] = utils.getSkillValidated(skill.id)
 	skill_dict['progress'] = utils.getSkillProgress(skill.id)
@@ -180,9 +160,6 @@ def get_lessons():
 	
 	lessons = documents.Lesson.objects.order_by('skill', 'order', 'title').all()
 	lessons_array = [ob.to_mongo() for ob in lessons]
-	for (index, lesson) in enumerate(lessons_array):
-		lesson['resources'] = map(lambda r: r.id, lessons[index].resources())
-		lessons_array[index] = lesson
 
 	return flask.Response(
 		response=json_util.dumps({'lessons': lessons_array}),
@@ -196,9 +173,6 @@ def get_skill_lessons(skill_id):
 
 	lessons = documents.Lesson.objects.order_by('order', 'title').filter(skill=skill_id)
 	lessons_array = [ob.to_mongo() for ob in lessons]
-	for (index, lesson) in enumerate(lessons_array):
-		lesson['resources'] = map(lambda r: r.id, lessons[index].resources())
-		lessons_array[index] = lesson
 
 	return flask.Response(
 		response=json_util.dumps({'lessons': lessons_array}),
@@ -212,7 +186,6 @@ def get_lesson(lesson_id):
 
 	lesson = documents.Lesson.get_unique_object_or_404(lesson_id)
 	lesson_dict = lesson.to_mongo()
-	lesson_dict['resources'] = map(lambda r: r.id, lesson.resources())
 
 	return flask.Response(
 		response=json_util.dumps({'lesson': lesson_dict}),
