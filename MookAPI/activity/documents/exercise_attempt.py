@@ -55,7 +55,7 @@ class ExerciseAttempt(Activity):
 	exercise = db.ReferenceField(ExerciseResource)
 	
 	## Question answers
-	question_answers = db.SortedListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
+	question_answers = db.ListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
 
 	### METHODS
 
