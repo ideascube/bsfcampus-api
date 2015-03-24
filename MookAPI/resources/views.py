@@ -49,9 +49,17 @@ def get_resource(resource_id):
 	resource_dict['bg_color'] = resource.lesson.skill.track.bg_color
 
 	if isinstance(resource, documents.audio.AudioResource):
-		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, _external=True)
+		filename = resource.resource_content.audio_file.filename
+		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, filename=filename, _external=True)
+		resource_dict['resource_content']['content_file_name'] = filename
 	elif isinstance(resource, documents.video.VideoResource):
-		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, _external=True)
+		filename = resource.resource_content.video_file.filename
+		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, filename=filename, _external=True)
+		resource_dict['resource_content']['content_file_name'] = filename
+	elif isinstance(resource, documents.downloadable_file.DownloadableFileResource):
+		filename = resource.resource_content.downloadable_file.filename
+		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, filename=filename, _external=True)
+		resource_dict['resource_content']['content_file_name'] = filename
 
 	return flask.Response(
 		response=json_util.dumps({'resource': resource_dict}),
@@ -80,8 +88,8 @@ def get_resource_hierarchy(resource_id):
 		cousins=resource.cousins()
 	)
 
-@bp.route("/<resource_id>/content-file")
-def get_resource_content_file(resource_id):
+@bp.route("/<resource_id>/content-file/<filename>")
+def get_resource_content_file(resource_id, filename):
 	"""GET one resource's content file"""
 
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
@@ -90,9 +98,12 @@ def get_resource_content_file(resource_id):
 		fileField = resource_content.audio_file
 	elif isinstance(resource_content, documents.video.VideoResourceContent):
 		fileField = resource_content.video_file
+	elif isinstance(resource_content, documents.downloadable_file.DownloadableFileResourceContent):
+		fileField = resource_content.downloadable_file
+		fileField.contentType = "application/octet-stream"
 
 	return flask.send_file(io.BytesIO(fileField.read()),
-                     attachment_filename=fileField.filename,
+                     attachment_filename=filename,
                      mimetype=fileField.contentType)
 
 @bp.route("/tests/create_exercise")
