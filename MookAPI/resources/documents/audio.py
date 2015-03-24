@@ -9,6 +9,9 @@ class AudioResourceContent(ResourceContent):
 	## Audio file
 	audio_file = db.FileField(required=True)
 
+	## Illustrative image file for the audio file
+	image = db.ImageField()
+
 
 class AudioResource(Resource):
 	resource_content = db.EmbeddedDocumentField(AudioResourceContent)

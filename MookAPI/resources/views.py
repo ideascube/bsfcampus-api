@@ -52,6 +52,9 @@ def get_resource(resource_id):
 		filename = resource.resource_content.audio_file.filename
 		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, filename=filename, _external=True)
 		resource_dict['resource_content']['content_file_name'] = filename
+		print dir(resource.resource_content)
+		if resource.resource_content.image:
+			resource_dict['resource_content']['content_image_url'] = flask.url_for('resources.get_resource_content_image', resource_id=resource_id, filename=resource.resource_content.image.filename, _external=True)
 	elif isinstance(resource, documents.video.VideoResource):
 		filename = resource.resource_content.video_file.filename
 		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, filename=filename, _external=True)
@@ -105,6 +108,19 @@ def get_resource_content_file(resource_id, filename):
 	return flask.send_file(io.BytesIO(fileField.read()),
                      attachment_filename=filename,
                      mimetype=fileField.contentType)
+
+@bp.route("/<resource_id>/content-image/<filename>")
+def get_resource_content_image(resource_id, filename):
+	"""GET one resource's content image"""
+
+	resource = documents.Resource.get_unique_object_or_404(resource_id)
+	resource_content = resource.resource_content
+	if isinstance(resource_content, documents.audio.AudioResourceContent):
+		imageField = resource_content.image
+
+	return flask.send_file(io.BytesIO(imageField.read()),
+                     attachment_filename=imageField.filename,
+                     mimetype=imageField.contentType)
 
 @bp.route("/tests/create_exercise")
 def test_create_exercise():
