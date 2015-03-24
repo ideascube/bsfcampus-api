@@ -28,6 +28,9 @@ class ExerciseQuestion(db.DynamicEmbeddedDocument):
 		son.pop('correct_answer', None)
 		return son
 
+	def answer_with_data(self, data):
+		return ExerciseQuestionAnswer().init_with_data(data)
+
 
 class ExerciseQuestionAnswer(db.DynamicEmbeddedDocument):
 	"""

@@ -21,13 +21,38 @@ def post_exercise_attempt():
 	attempt = documents.exercise_attempt.ExerciseAttempt().init_with_exercise(exercise)
 	attempt.save()
 
-	return flask.jsonify(exercise_attempt=attempt)
+	# return flask.jsonify(exercise_attempt=attempt)
+	return flask.Response(
+		response=json_util.dumps({'exercise_attempt': attempt.to_mongo()}),
+		mimetype="application/json"
+		)
 
 @bp.route("/exercise_attempts/<attempt_id>")
-def get_ex_attempt(attempt_id):
+def get_exercise_attempt(attempt_id):
 	"""GET one exercise attempt"""
 
 	print ("GETTING exercise attempt with id {attempt_id}".format(attempt_id=attempt_id))
 	
-	ex_attempt = documents.exercise_attempt.ExerciseAttempt.objects.get_or_404(id=attempt_id)
-	return flask.jsonify(ex_attempt=ex_attempt)
+	exercise_attempt = documents.exercise_attempt.ExerciseAttempt.objects.get_or_404(id=attempt_id)
+	# return flask.jsonify(exercise_attempt=exercise_attempt)
+	return flask.Response(
+		response=json_util.dumps({'exercise_attempt': attempt.to_mongo()}),
+		mimetype="application/json"
+		)
+
+@bp.route("/exercise_attempts/<attempt_id>/answer", methods=['POST'])
+def post_exercise_attempt_question_answer(attempt_id):
+	"""POST answer to current question of an exercise attempt"""
+
+	print ("POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id))
+	
+	attempt = documents.exercise_attempt.ExerciseAttempt.objects.get_or_404(id=attempt_id)
+	
+	question_id = flask.request.form['question_id']
+	attempt.save_answer(question_id, flask.request.form)
+	attempt.save()
+
+	return flask.Response(
+		response=json_util.dumps({'exercise_attempt': attempt.to_mongo()}),
+		mimetype="application/json"
+		)

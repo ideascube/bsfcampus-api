@@ -4,6 +4,7 @@ from MookAPI.resources.documents.exercise import ExerciseResource
 from MookAPI.resources.documents.exercise_question import ExerciseQuestionAnswer
 from random import shuffle
 from bson import ObjectId
+import exceptions
 
 
 class ExerciseAttemptQuestionAnswer(db.EmbeddedDocument):
@@ -81,17 +82,28 @@ class ExerciseAttempt(Activity):
 		for (index, qa) in enumerate(self.question_answers):
 			if qa.question_id == oid:
 				self.question_answers[index] = question_answer
-				return
+				return question_answer
 		raise exceptions.KeyError("Question not found.")
 
-	def save_answer(self, question_id, answer):
+	def save_answer(self, question_id, data):
 		"""
 		Saves an answer (ExerciseQuestionAnswer) to a question (referenced by its ObjectId).
 		"""
 
 		question = self.exercise.question(question_id)
-		question_answer = self.question_answer(question_id)
-		question_answer.given_answer = answer
-		question_answer.is_answered_correctly = answer.is_correct(question, question_answer.parameters)
-		self.set_question_answer(question_id, question_answer)
+		attempt_question_answer = self.question_answer(question_id)
+		question_answer = question.answer_with_data(data)
+		attempt_question_answer.given_answer = question_answer
+		attempt_question_answer.is_answered_correctly = question_answer.is_correct(question, attempt_question_answer.parameters)
+		self.set_question_answer(question_id, attempt_question_answer)
+
+	def to_mongo(self):
+		son = super(self.__class__, self).to_mongo()
+		# Find the first unanswered question.
+		# For that question, include the full question (without the correct answer) in the returned object
+		for (index, qa) in enumerate(self.question_answers):
+			if qa.given_answer is None:
+				son['question_answers'][index]['question'] = self.exercise.question(qa.question_id).without_answer()
+				break
+		return son
 

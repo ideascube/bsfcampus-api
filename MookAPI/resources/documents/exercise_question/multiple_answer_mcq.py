@@ -24,6 +24,9 @@ class MultipleAnswerMCQExerciseQuestion(ExerciseQuestion):
 	## Correct answer
 	correct_answer = db.ListField(db.ObjectIdField())
 
+	def answer_with_data(self, data):
+		return MultipleAnswerMCQExerciseQuestionAnswer().init_with_data(data)
+
 
 class MultipleAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
 	"""Answers given to a multiple-answer MCQ."""
@@ -33,10 +36,9 @@ class MultipleAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
 
 	def init_with_data(self, data):
 		self.given_propositions = []
-		for proposition in data['propositions']:
+		for proposition in data.getlist('propositions[]'):
 			self.given_propositions.append(ObjectId(proposition))
 		return self
 
-	def is_correct(self, question):
-		expected_propositions = set(map(lambda rp: rp._id, question.correct_answer))
-		return expected_propositions == set(self.given_propositions)
+	def is_correct(self, question, parameters):
+		return set(question.correct_answer) == set(self.given_propositions)
