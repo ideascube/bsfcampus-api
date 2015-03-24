@@ -36,7 +36,7 @@ class MultipleAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
 
 	def init_with_data(self, data):
 		self.given_propositions = []
-		for proposition in data['propositions']:
+		for proposition in data.getlist('propositions[]'):
 			self.given_propositions.append(ObjectId(proposition))
 		return self
 
