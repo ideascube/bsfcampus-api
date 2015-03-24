@@ -102,8 +102,10 @@ class ExerciseAttempt(Activity):
 		# Find the first unanswered question.
 		# For that question, include the full question (without the correct answer) in the returned object
 		for (index, qa) in enumerate(self.question_answers):
-			if qa.given_answer is None:
-				son['question_answers'][index]['question'] = self.exercise.question(qa.question_id).without_answer()
+			if qa.given_answer is not None:
+				son['question_answers'][index]['question'] = self.exercise.question(qa.question_id).with_computed_correct_answer(qa.parameters)
+			else:
+				son['question_answers'][index]['question'] = self.exercise.question(qa.question_id).without_correct_answer()
 				break
 		return son
 
