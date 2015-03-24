@@ -7,7 +7,8 @@ import exceptions
 class ExerciseQuestion(db.DynamicEmbeddedDocument):
 	"""
 	Generic collection, every question type will inherit from this.
-	Subclasses should override method "without_answer" in order to define the version sent to clients.
+	Subclasses should override method "without_correct_answer" in order to define the version sent to clients.
+	Subclasses of questions depending on presentation parameters should also override method "with_computed_correct_answer".
 	"""
 	
 	meta = {
@@ -23,9 +24,13 @@ class ExerciseQuestion(db.DynamicEmbeddedDocument):
 	## Correct answer (field type depends on question type)
 	correct_answer = db.DynamicField()
 
-	def without_answer(self):
+	def without_correct_answer(self):
 		son = self.to_mongo()
 		son.pop('correct_answer', None)
+		return son
+
+	def with_computed_correct_answer(self, parameters):
+		son = self.to_mongo()
 		return son
 
 	def answer_with_data(self, data):
