@@ -100,7 +100,7 @@ def get_resource_content_file(resource_id, filename):
 		fileField = resource_content.video_file
 	elif isinstance(resource_content, documents.downloadable_file.DownloadableFileResourceContent):
 		fileField = resource_content.downloadable_file
-		fileField.contentType = "application/octet-stream"
+		# fileField.contentType = "application/octet-stream" // we let the browser choose how it handles the file based on its type
 
 	return flask.send_file(io.BytesIO(fileField.read()),
                      attachment_filename=filename,
