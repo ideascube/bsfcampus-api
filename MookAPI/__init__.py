@@ -41,6 +41,9 @@ app.register_blueprint(hierarchy.bp, url_prefix="/hierarchy")
 ## Activity
 import activity
 app.register_blueprint(activity.bp, url_prefix="/activity")
+## Config
+import config
+app.register_blueprint(config.bp, url_prefix="/config")
 
 ### ADMINISTRATION INTERFACE
 admin = Admin(app)
@@ -67,3 +70,6 @@ import hierarchy.documents as hierarchy_documents
 admin.add_view(ModelView(hierarchy_documents.Track))
 admin.add_view(ModelView(hierarchy_documents.Skill))
 admin.add_view(ModelView(hierarchy_documents.Lesson))
+## Config
+import config.documents
+admin.add_view(ModelView(config.documents.ConfigParameters))

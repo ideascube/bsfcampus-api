@@ -52,7 +52,6 @@ def get_resource(resource_id):
 		filename = resource.resource_content.audio_file.filename
 		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, filename=filename, _external=True)
 		resource_dict['resource_content']['content_file_name'] = filename
-		print dir(resource.resource_content)
 		if resource.resource_content.image:
 			resource_dict['resource_content']['content_image_url'] = flask.url_for('resources.get_resource_content_image', resource_id=resource_id, filename=resource.resource_content.image.filename, _external=True)
 	elif isinstance(resource, documents.video.VideoResource):
