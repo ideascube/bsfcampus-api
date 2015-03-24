@@ -24,6 +24,9 @@ class UniqueAnswerMCQExerciseQuestion(ExerciseQuestion):
 	## Correct answer
 	correct_answer = db.ObjectIdField()
 
+	def answer_with_data(self, data):
+		return UniqueAnswerMCQExerciseQuestionAnswer().init_with_data(data)
+
 
 class UniqueAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
 	"""Answer given to a unique-answer MCQ."""
@@ -35,5 +38,5 @@ class UniqueAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
 		self.given_proposition = ObjectId(data['proposition'])
 		return self
 
-	def is_correct(self, question):
-		return self.given_propositions == question.right_proposition._id
+	def is_correct(self, question, parameters):
+		return self.given_proposition == question.correct_answer
