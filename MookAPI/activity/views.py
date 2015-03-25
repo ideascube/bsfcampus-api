@@ -23,7 +23,7 @@ def post_exercise_attempt():
 
 	# return flask.jsonify(exercise_attempt=attempt)
 	return flask.Response(
-		response=json_util.dumps({'exercise_attempt': attempt.to_mongo()}),
+		response=json_util.dumps({'exercise_attempt': attempt.to_mongo_detailed()}),
 		mimetype="application/json"
 		)
 
@@ -36,7 +36,7 @@ def get_exercise_attempt(attempt_id):
 	exercise_attempt = documents.exercise_attempt.ExerciseAttempt.objects.get_or_404(id=attempt_id)
 	# return flask.jsonify(exercise_attempt=exercise_attempt)
 	return flask.Response(
-		response=json_util.dumps({'exercise_attempt': attempt.to_mongo()}),
+		response=json_util.dumps({'exercise_attempt': attempt.to_mongo_detailed()}),
 		mimetype="application/json"
 		)
 
@@ -53,6 +53,6 @@ def post_exercise_attempt_question_answer(attempt_id):
 	attempt.save()
 
 	return flask.Response(
-		response=json_util.dumps({'exercise_attempt': attempt.to_mongo()}),
+		response=json_util.dumps({'exercise_attempt': attempt.to_mongo_detailed()}),
 		mimetype="application/json"
 		)

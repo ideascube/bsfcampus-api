@@ -86,8 +86,8 @@ class Lesson(ResourceHierarchy):
 	def resources(self):
 		return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
 
-	def to_mongo(self):
-		son = super(self.__class__, self).to_mongo()
+	def to_mongo_detailed(self):
+		son = self.to_mongo()
 		son['resources'] = map(lambda r: r.id, self.resources())
 		return son
 
@@ -110,8 +110,8 @@ class Skill(ResourceHierarchy):
 	def lessons(self):
 		return Lesson.objects.order_by('order', 'title').filter(skill=self)
 
-	def to_mongo(self):
-		son = super(self.__class__, self).to_mongo()
+	def to_mongo_detailed(self):
+		son = self.to_mongo()
 		son['imageUrl'] = flask.url_for('hierarchy.get_skill_icon', skill_id=self.id, _external=True)
 		son['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=self.track.id, _external=True)
 		son['bg_color'] = self.track.bg_color
@@ -138,9 +138,9 @@ class Track(ResourceHierarchy):
 	def skills(self):
 		return Skill.objects.order_by('order', 'title').filter(track=self)
 
-	def to_mongo(self):
-		son = super(self.__class__, self).to_mongo()
+	def to_mongo_detailed(self):
+		son = self.to_mongo()
+		son['skills'] = map(lambda s: s.id, self.skills())
 		son['image_tn_url'] = flask.url_for('hierarchy.get_track_image_tn', track_id=self.id, _external=True)
 		son['bg_image_url'] = flask.url_for('hierarchy.get_track_bg_image', track_id=self.id, _external=True)
-		son['skills'] = map(lambda s: s.id, self.skills())
 		return son

@@ -105,8 +105,8 @@ class ExerciseAttempt(Activity):
 		attempt_question_answer.is_answered_correctly = question_answer.is_correct(question, attempt_question_answer.parameters)
 		self.set_question_answer(question_id, attempt_question_answer)
 
-	def to_mongo(self):
-		son = super(self.__class__, self).to_mongo()
+	def to_mongo_detailed(self):
+		son = self.to_mongo()
 		# Answered questions: include full question with correct answer
 		# First unanswered question: include full question without correct answer
 		# Subsequent questions: question id only (default)

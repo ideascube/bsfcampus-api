@@ -17,7 +17,7 @@ def get_tracks():
 	tracks = documents.Track.objects.order_by('order', 'title').all()
 	tracks_array = []
 	for ob in tracks:
-		track = ob.to_mongo() 
+		track = ob.to_mongo_detailed() 
 
 		track['is_validated'] = utils.getTrackValidated(ob.id)
 		track['progress'] = utils.getTrackProgress(ob.id)
@@ -37,7 +37,7 @@ def get_track(track_id):
 	print ("GETTING track {track_id}".format(track_id=track_id))
 
 	track = documents.Track.get_unique_object_or_404(track_id)
-	track_dict = track.to_mongo()
+	track_dict = track.to_mongo_detailed()
 
 	track_dict['is_validated'] = utils.getTrackValidated(track.id)
 	track_dict['progress'] = utils.getTrackProgress(track.id)
@@ -84,7 +84,7 @@ def get_skills():
 	skills = documents.Skill.objects.order_by('track', 'order', 'title').all()
 	skills_array = []
 	for ob in skills:
-		skill = ob.to_mongo()
+		skill = ob.to_mongo_detailed()
 		
 		skill['is_validated'] = utils.getSkillValidated(ob.id)
 		skill['progress'] = utils.getSkillProgress(ob.id)
@@ -106,7 +106,7 @@ def get_track_skills(track_id):
 	skills = documents.Skill.objects.order_by('order', 'title').filter(track=track_id)
 	skills_array = []
 	for ob in skills:
-		skill = ob.to_mongo()
+		skill = ob.to_mongo_detailed()
 
 		skill['is_validated'] = utils.getSkillValidated(ob.id)
 		skill['progress'] = utils.getSkillProgress(ob.id)
@@ -127,7 +127,7 @@ def get_skill(skill_id):
 
 	skill = documents.Skill.get_unique_object_or_404(skill_id)
 	lessons = skill.lessons()
-	skill_dict = skill.to_mongo()
+	skill_dict = skill.to_mongo_detailed()
 
 	skill_dict['is_validated'] = utils.getSkillValidated(skill.id)
 	skill_dict['progress'] = utils.getSkillProgress(skill.id)
@@ -159,7 +159,7 @@ def get_lessons():
 	print ("GETTING list of all lessons")
 	
 	lessons = documents.Lesson.objects.order_by('skill', 'order', 'title').all()
-	lessons_array = [ob.to_mongo() for ob in lessons]
+	lessons_array = [ob.to_mongo_detailed() for ob in lessons]
 
 	return flask.Response(
 		response=json_util.dumps({'lessons': lessons_array}),
@@ -172,7 +172,7 @@ def get_skill_lessons(skill_id):
 	print ("GETTING lessons in skill {skill_id}".format(skill_id=skill_id))
 
 	lessons = documents.Lesson.objects.order_by('order', 'title').filter(skill=skill_id)
-	lessons_array = [ob.to_mongo() for ob in lessons]
+	lessons_array = [ob.to_mongo_detailed() for ob in lessons]
 
 	return flask.Response(
 		response=json_util.dumps({'lessons': lessons_array}),
@@ -185,7 +185,7 @@ def get_lesson(lesson_id):
 	print ("GETTING lesson {lesson_id}".format(lesson_id=lesson_id))
 
 	lesson = documents.Lesson.get_unique_object_or_404(lesson_id)
-	lesson_dict = lesson.to_mongo()
+	lesson_dict = lesson.to_mongo_detailed()
 
 	return flask.Response(
 		response=json_util.dumps({'lesson': lesson_dict}),
