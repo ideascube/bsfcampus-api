@@ -58,6 +58,9 @@ class ExerciseAttempt(Activity):
 	## Question answers
 	question_answers = db.ListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
 
+	## Maximum number of mistakes
+	max_mistakes = db.IntField()
+
 	### METHODS
 
 	## Hack to bypass __init__ which I could not figure out how to use just now.
@@ -67,6 +70,11 @@ class ExerciseAttempt(Activity):
 
 		questions = exercise.random_questions(params['NUMBER_OF_QUESTIONS'])
 		self.question_answers = map(lambda q: ExerciseAttemptQuestionAnswer().init_with_question(q), questions)
+
+		if params['MAX_NUMBER_MISTAKES'] > (len(questions) * params['MAX_SHARE_MISTAKES']):
+			self.max_mistakes = int(len(questions) * params['MAX_SHARE_MISTAKES'])
+		else:
+			self.max_mistakes = params['MAX_NUMBER_MISTAKES']
 
 		return self
 
@@ -99,8 +107,9 @@ class ExerciseAttempt(Activity):
 
 	def to_mongo(self):
 		son = super(self.__class__, self).to_mongo()
-		# Find the first unanswered question.
-		# For that question, include the full question (without the correct answer) in the returned object
+		# Answered questions: include full question with correct answer
+		# First unanswered question: include full question without correct answer
+		# Subsequent questions: question id only (default)
 		for (index, qa) in enumerate(self.question_answers):
 			if qa.given_answer is not None:
 				son['question_answers'][index]['question'] = self.exercise.question(qa.question_id).with_computed_correct_answer(qa.parameters)
