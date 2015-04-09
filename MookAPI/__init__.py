@@ -15,13 +15,6 @@ app.config["MONGODB_SETTINGS"] = {'DB': "mookbsf"}
 db = MongoEngine(app)
 
 
-### GLOBAL PARAMETERS
-## FIXME: These should come from the 'config' collection in the DB.
-params = {
-	'MAX_SHARE_MISTAKES': 1/3,
-}
-
-
 ### ALLOW CROSS DOMAIN REQUESTS
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'

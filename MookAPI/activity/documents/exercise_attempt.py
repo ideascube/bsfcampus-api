@@ -1,4 +1,4 @@
-from MookAPI import db, params
+from MookAPI import db
 from . import Activity
 from MookAPI.resources.documents.exercise import ExerciseResource
 from MookAPI.resources.documents.exercise_question import ExerciseQuestionAnswer
