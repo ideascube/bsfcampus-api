@@ -125,28 +125,28 @@ def test_create_exercise():
 	
 	question1 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestion()
 	q1prop1 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestionProposition()
-	q1prop1.text = "A"
+	q1prop1.text = u"A"
 	q1prop2 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestionProposition()
-	q1prop2.text = "B"
+	q1prop2.text = u"B"
 	q1prop3 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestionProposition()
-	q1prop3.text = "C"
+	q1prop3.text = u"C"
 	q1prop4 = unique_answer_mcq.UniqueAnswerMCQExerciseQuestionProposition()
-	q1prop4.text = "D"
-	question1.question_text = "La voyelle ?"
+	q1prop4.text = u"D"
+	question1.question_text = u"La voyelle ?"
 	question1.propositions = [q1prop1, q1prop2, q1prop3, q1prop4]
 	question1.correct_answer = q1prop1._id
 
 	
 	question2 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestion()
 	q2prop1 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestionProposition()
-	q2prop1.text = "E"
+	q2prop1.text = u"E"
 	q2prop2 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestionProposition()
-	q2prop2.text = "F"
+	q2prop2.text = u"F"
 	q2prop3 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestionProposition()
-	q2prop3.text = "G"
+	q2prop3.text = u"G"
 	q2prop4 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestionProposition()
-	q2prop4.text = "H"
-	question2.question_text = "Les consonnes ?"
+	q2prop4.text = u"H"
+	question2.question_text = u"Les consonnes ?"
 	question2.propositions = [q2prop1, q2prop2, q2prop3, q2prop4]
 	question2.correct_answer = [q2prop2._id, q2prop3._id, q2prop4._id]
 	
@@ -154,8 +154,8 @@ def test_create_exercise():
 	exercise_content.questions = [question1, question2]
 
 	exercise = documents.exercise.ExerciseResource()
-	exercise.title = "Alphabet"
-	exercise.description = "Pour apprendre les lettres"
+	exercise.title = u"Alphabet"
+	exercise.description = u"Pour apprendre les lettres"
 	exercise.lesson = hierarchy_documents.Lesson.objects.first()
 	exercise.resource_content = exercise_content
 
