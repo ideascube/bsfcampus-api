@@ -18,6 +18,10 @@ class ExerciseResourceContent(ResourceContent):
 class ExerciseResource(Resource):
 	resource_content = db.EmbeddedDocumentField(ExerciseResourceContent)
 
+	number_of_questions = db.IntField();
+
+	max_mistakes = db.IntField();
+
 	def questions(self):
 		return self.resource_content.questions
 

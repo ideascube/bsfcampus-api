@@ -18,8 +18,6 @@ db = MongoEngine(app)
 ### GLOBAL PARAMETERS
 ## FIXME: These should come from the 'config' collection in the DB.
 params = {
-	'NUMBER_OF_QUESTIONS': 10,
-	'MAX_NUMBER_MISTAKES': 3,
 	'MAX_SHARE_MISTAKES': 1/3,
 }
 
