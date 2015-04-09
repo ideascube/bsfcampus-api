@@ -49,26 +49,13 @@ def get_track(track_id):
 		mimetype="application/json"
 		)
 
-@bp.route("/tracks/<track_id>/image-tn")
-def get_track_image_tn(track_id):
-	"""GET background image for a specific track"""
-	print ("GETTING track {track_id}".format(track_id=track_id))
+@bp.route("/tracks/<track_id>/icon")
+def get_track_icon(track_id):
+	"""GET icon image for a specific track"""
+	print ("GETTING track icon for track {track_id}".format(track_id=track_id))
 
 	track = documents.Track.get_unique_object_or_404(track_id)
-	imageField = track.image_tn
-	image = imageField.read()
-
-	return flask.send_file(io.BytesIO(image),
-                     attachment_filename=imageField.filename,
-                     mimetype=imageField.contentType)
-
-@bp.route("/tracks/<track_id>/bg-image")
-def get_track_bg_image(track_id):
-	"""GET background image for a specific track"""
-	print ("GETTING track {track_id}".format(track_id=track_id))
-
-	track = documents.Track.get_unique_object_or_404(track_id)
-	imageField = track.bg_image
+	imageField = track.icon
 	image = imageField.read()
 
 	return flask.send_file(io.BytesIO(image),

@@ -24,9 +24,13 @@ class ExerciseQuestion(db.DynamicEmbeddedDocument):
 	## Correct answer (field type depends on question type)
 	correct_answer = db.DynamicField()
 
+	## Answer feedback (explanation of the right answer)
+	answer_feedback = db.StringField()
+
 	def without_correct_answer(self):
 		son = self.to_mongo()
 		son.pop('correct_answer', None)
+		son.pop('answer_feedback', None)
 		return son
 
 	def with_computed_correct_answer(self, parameters):
