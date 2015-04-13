@@ -4,7 +4,7 @@ import datetime
 import exceptions
 
 
-class ExerciseQuestion(db.DynamicEmbeddedDocument):
+class ExerciseQuestion(db.EmbeddedDocument):
 	"""
 	Generic collection, every question type will inherit from this.
 	Subclasses should override method "without_correct_answer" in order to define the version sent to clients.
@@ -16,20 +16,14 @@ class ExerciseQuestion(db.DynamicEmbeddedDocument):
 		'abstract': True
 	}
 
-	_id = db.ObjectIdField(default=ObjectId)
-
 	## Question text
 	question_text = db.StringField(required=True)
-
-	## Correct answer (field type depends on question type)
-	correct_answer = db.DynamicField()
 
 	## Answer feedback (explanation of the right answer)
 	answer_feedback = db.StringField()
 
 	def without_correct_answer(self):
 		son = self.to_mongo()
-		son.pop('correct_answer', None)
 		son.pop('answer_feedback', None)
 		return son
 

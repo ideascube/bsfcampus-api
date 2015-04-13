@@ -134,7 +134,7 @@ def test_create_exercise():
 	q1prop4.text = u"D"
 	question1.question_text = u"La voyelle ?"
 	question1.propositions = [q1prop1, q1prop2, q1prop3, q1prop4]
-	question1.correct_answer = q1prop1._id
+	q1prop1.is_correct_answer = True
 
 	
 	question2 = multiple_answer_mcq.MultipleAnswerMCQExerciseQuestion()
@@ -148,7 +148,9 @@ def test_create_exercise():
 	q2prop4.text = u"H"
 	question2.question_text = u"Les consonnes ?"
 	question2.propositions = [q2prop1, q2prop2, q2prop3, q2prop4]
-	question2.correct_answer = [q2prop2._id, q2prop3._id, q2prop4._id]
+	q2prop2.is_correct_answer = True
+	q2prop3.is_correct_answer = True
+	q2prop4.is_correct_answer = True
 	
 	exercise_content = documents.exercise.ExerciseResourceContent()
 	exercise_content.questions = [question1, question2]

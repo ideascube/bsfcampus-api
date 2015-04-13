@@ -2,7 +2,8 @@ from MookAPI import db
 import datetime
 import exceptions
 from . import *
-from exercise_question import *
+from exercise_question.unique_answer_mcq import UniqueAnswerMCQExerciseQuestion
+from exercise_question.multiple_answer_mcq import MultipleAnswerMCQExerciseQuestion
 from random import shuffle
 from bson import ObjectId
 import exceptions
@@ -11,8 +12,11 @@ import exceptions
 class ExerciseResourceContent(ResourceContent):
 	"""An exercise with a list of questions."""
 
-	## Embedded list of questions
-	questions = db.ListField(db.EmbeddedDocumentField(ExerciseQuestion))
+	## Embedded list of questions of type Unique Answer MCQ
+	unique_answer_mcq_questions = db.ListField(db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestion))
+
+	## Embedded list of questions of type Multiple Answer MCQ
+	multiple_answer_mcq_questions = db.ListField(db.EmbeddedDocumentField(MultipleAnswerMCQExerciseQuestion))
 
 
 class ExerciseResource(Resource):
@@ -23,11 +27,16 @@ class ExerciseResource(Resource):
 	max_mistakes = db.IntField();
 
 	def questions(self):
-		return self.resource_content.questions
+		questions = []
+		questions.extend(self.resource_content.unique_answer_mcq_questions)
+		questions.extend(self.resource_content.multiple_answer_mcq_questions)
+		return questions
 
 	def question(self, question_id):
+		print("ExerciseResource.question " + str(question_id))
 		oid = ObjectId(question_id)
 		for question in self.questions():
+			print("question._id " + str(question._id))
 			if question._id == oid:
 				return question
 		raise exceptions.KeyError("Question not found.")
