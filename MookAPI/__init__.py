@@ -65,29 +65,29 @@ def create_admin_interface():
 	admin = Admin(app)
 	## Exercise resources
 	import resources.documents.exercise
-	admin.add_view(ModelView(resources.documents.exercise.ExerciseResource))
+	admin.add_view(ModelView(resources.documents.exercise.ExerciseResource, name='Exercise', category='Resources'))
 	## Rich text resources
 	import resources.documents.rich_text
-	admin.add_view(ModelView(resources.documents.rich_text.RichTextResource))
+	admin.add_view(ModelView(resources.documents.rich_text.RichTextResource, name='Rich Text', category='Resources'))
 	## External video resources
 	import resources.documents.external_video
-	admin.add_view(ModelView(resources.documents.external_video.ExternalVideoResource))
+	admin.add_view(ModelView(resources.documents.external_video.ExternalVideoResource, name='External Video', category='Resources'))
 	## Audio resources
 	import resources.documents.audio
-	admin.add_view(ModelView(resources.documents.audio.AudioResource))
+	admin.add_view(ModelView(resources.documents.audio.AudioResource, name='Audio', category='Resources'))
 	## Video resources
 	import resources.documents.video
-	admin.add_view(ModelView(resources.documents.video.VideoResource))
+	admin.add_view(ModelView(resources.documents.video.VideoResource, name='Video', category='Resources'))
 	## Downloadable file resources
 	import resources.documents.downloadable_file
-	admin.add_view(ModelView(resources.documents.downloadable_file.DownloadableFileResource))
+	admin.add_view(ModelView(resources.documents.downloadable_file.DownloadableFileResource, name='Downloadable File', category='Resources'))
 	## Tracks
 	import hierarchy.documents as hierarchy_documents
-	admin.add_view(ModelView(hierarchy_documents.Track))
-	admin.add_view(ModelView(hierarchy_documents.Skill))
-	admin.add_view(ModelView(hierarchy_documents.Lesson))
-	## Config
-	import config.documents
-	admin.add_view(ModelView(config.documents.ConfigParameters))
+	admin.add_view(ModelView(hierarchy_documents.Track, name='Track', category='Hierarchy'))
+	admin.add_view(ModelView(hierarchy_documents.Skill, name='Skill', category='Hierarchy'))
+	admin.add_view(ModelView(hierarchy_documents.Lesson, name='Lesson', category='Hierarchy'))
+	# ## Config
+	# import config.documents
+	# admin.add_view(ModelView(config.documents.ConfigParameters))
 
 create_admin_interface()
