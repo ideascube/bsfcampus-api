@@ -18,6 +18,12 @@ class ExerciseResourceContent(ResourceContent):
 	## Embedded list of questions of type Multiple Answer MCQ
 	multiple_answer_mcq_questions = db.ListField(db.EmbeddedDocumentField(MultipleAnswerMCQExerciseQuestion))
 
+	def questions(self):
+		questions = []
+		questions.extend(self.unique_answer_mcq_questions)
+		questions.extend(self.multiple_answer_mcq_questions)
+		return questions
+
 
 class ExerciseResource(Resource):
 	resource_content = db.EmbeddedDocumentField(ExerciseResourceContent)
@@ -27,10 +33,7 @@ class ExerciseResource(Resource):
 	max_mistakes = db.IntField();
 
 	def questions(self):
-		questions = []
-		questions.extend(self.resource_content.unique_answer_mcq_questions)
-		questions.extend(self.resource_content.multiple_answer_mcq_questions)
-		return questions
+		return self.resource_content.questions()
 
 	def question(self, question_id):
 		print("ExerciseResource.question " + str(question_id))
