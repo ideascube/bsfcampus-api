@@ -1,3 +1,4 @@
+import flask
 from MookAPI import db
 from . import Activity
 from MookAPI.resources.documents.exercise import ExerciseResource
@@ -103,11 +104,17 @@ class ExerciseAttempt(Activity):
 		# Answered questions: include full question with correct answer
 		# First unanswered question: include full question without correct answer
 		# Subsequent questions: question id only (default)
+		doBreak = False
 		for (index, qa) in enumerate(self.question_answers):
+			question = self.exercise.question(qa.question_id)
 			if qa.given_answer is not None:
-				son['question_answers'][index]['question'] = self.exercise.question(qa.question_id).with_computed_correct_answer(qa.parameters)
+				son['question_answers'][index]['question'] = question.with_computed_correct_answer(qa.parameters)
 			else:
-				son['question_answers'][index]['question'] = self.exercise.question(qa.question_id).without_correct_answer()
+				son['question_answers'][index]['question'] = question.without_correct_answer()
+				doBreak = True
+			if question.question_image:
+				son['question_answers'][index]['question']['image_url'] = flask.url_for('resources.get_question_image', resource_id=self.exercise.id, question_id=question.id, _external=True)
+			if doBreak:
 				break
 		return son
 

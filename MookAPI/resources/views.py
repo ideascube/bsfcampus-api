@@ -120,6 +120,26 @@ def get_resource_content_image(resource_id, filename):
                      attachment_filename=imageField.filename,
                      mimetype=imageField.contentType)
 
+@bp.route("/<resource_id>/question/<question_id>/image")
+def get_question_image(resource_id, question_id):
+	"""GET one question's image"""
+
+	print('get_question_image ' + question_id)
+	resource = documents.Resource.get_unique_object_or_404(resource_id)
+	resource_content = resource.resource_content
+	for question in resource_content.questions():
+		print(question)
+		print(question.id)
+		if str(question.id) == question_id:
+			print('found the question')
+			imageField = question.question_image
+			break
+
+	return flask.send_file(io.BytesIO(imageField.read()),
+                     attachment_filename=imageField.filename,
+                     mimetype=imageField.contentType)
+	
+
 @bp.route("/tests/create_exercise")
 def test_create_exercise():
 	

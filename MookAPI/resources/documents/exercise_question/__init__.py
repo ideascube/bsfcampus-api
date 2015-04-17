@@ -16,8 +16,19 @@ class ExerciseQuestion(db.EmbeddedDocument):
 		'abstract': True
 	}
 
+	@property
+	def id(self):
+	    return self._id
+	
+
+	## Object Id
+	_id = db.ObjectIdField(default=ObjectId)
+
 	## Question text
 	question_text = db.StringField(required=True)
+
+	## Question image
+	question_image = db.ImageField()
 
 	## Answer feedback (explanation of the right answer)
 	answer_feedback = db.StringField()
