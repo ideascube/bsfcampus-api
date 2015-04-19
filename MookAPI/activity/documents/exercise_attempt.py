@@ -101,7 +101,8 @@ class ExerciseAttempt(Activity):
 	def to_mongo_detailed(self):
 		son = self.to_mongo()
 		son['max_mistakes'] = self.exercise.max_mistakes;
-		son['fail_linked_resource'] = self.exercise.fail_linked_resource.to_mongo();
+		if self.exercise.fail_linked_resource:
+			son['fail_linked_resource'] = self.exercise.fail_linked_resource.to_mongo()
 		# Answered questions: include full question with correct answer
 		# First unanswered question: include full question without correct answer
 		# Subsequent questions: question id only (default)
