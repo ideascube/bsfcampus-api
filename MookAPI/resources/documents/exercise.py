@@ -32,6 +32,8 @@ class ExerciseResource(Resource):
 
 	max_mistakes = db.IntField();
 
+	fail_linked_resource = db.ReferenceField(Resource)
+
 	def questions(self):
 		return self.resource_content.questions()
 
