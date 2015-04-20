@@ -58,4 +58,4 @@ class OrderingExerciseQuestionAnswer(ExerciseQuestionAnswer):
 	def is_correct(self, question, parameters):
 		ordered_items = question.getItemsById(self.given_orders)
 		correct_ordered_items = items
-		return set(ordered_items) == set(correct_ordered_items)
+		return ordered_items == correct_ordered_items
