@@ -69,9 +69,10 @@ def create_admin_interface():
 	## Rich text resources
 	import resources.documents.rich_text
 	admin.add_view(ModelView(resources.documents.rich_text.RichTextResource, name='Rich Text', category='Resources'))
-	## External video resources
-	import resources.documents.external_video
-	admin.add_view(ModelView(resources.documents.external_video.ExternalVideoResource, name='External Video', category='Resources'))
+	# No external video on server
+	# ## External video resources
+	# import resources.documents.external_video
+	# admin.add_view(ModelView(resources.documents.external_video.ExternalVideoResource, name='External Video', category='Resources'))
 	## Audio resources
 	import resources.documents.audio
 	admin.add_view(ModelView(resources.documents.audio.AudioResource, name='Audio', category='Resources'))
