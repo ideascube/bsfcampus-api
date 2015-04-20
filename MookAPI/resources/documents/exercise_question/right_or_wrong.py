@@ -3,8 +3,8 @@ from bson import ObjectId
 from . import ExerciseQuestion, ExerciseQuestionAnswer
 
 
-class UniqueAnswerMCQExerciseQuestionProposition(db.EmbeddedDocument):
-	"""Stores a proposition to a unique-answer MCQ."""
+class RightOrWrongExerciseQuestionProposition(db.EmbeddedDocument):
+	"""Stores a proposition to a right or wrong question."""
 
 	## Object Id
 	_id = db.ObjectIdField(default=ObjectId)
@@ -16,23 +16,23 @@ class UniqueAnswerMCQExerciseQuestionProposition(db.EmbeddedDocument):
 	is_correct_answer = db.BooleanField(default=False)
 
 
-class UniqueAnswerMCQExerciseQuestion(ExerciseQuestion):
-	"""Multiple choice question with one possible answer only."""
+class RightOrWrongExerciseQuestion(ExerciseQuestion):
+	"""Question with a right or wrong answer"""
 
 	## Object Id
 	_id = db.ObjectIdField(default=ObjectId)
 
 	## Propositions
-	propositions = db.ListField(db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestionProposition))
+	propositions = db.ListField(db.EmbeddedDocumentField(RightOrWrongExerciseQuestionProposition))
 
 	def without_correct_answer(self):
-		son = super(UniqueAnswerMCQExerciseQuestion, self).without_correct_answer()
+		son = super(RightOrWrongExerciseQuestion, self).without_correct_answer()
 		for proposition in son['propositions']:
 			proposition.pop('is_correct_answer', None)
 		return son
 
 	def answer_with_data(self, data):
-		return UniqueAnswerMCQExerciseQuestionAnswer().init_with_data(data)
+		return RightOrWrongExerciseQuestion().init_with_data(data)
 
 	def propositionById(self, propositionId):
 		result = None;
@@ -43,8 +43,8 @@ class UniqueAnswerMCQExerciseQuestion(ExerciseQuestion):
 
 
 
-class UniqueAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
-	"""Answer given to a unique-answer MCQ."""
+class RightOrWrongExerciseQuestionAnswer(ExerciseQuestionAnswer):
+	"""Answer given to a right or wrong question."""
 
 	## The chosen propositions, identified by its ObjectId
 	given_proposition = db.ObjectIdField()

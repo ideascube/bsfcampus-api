@@ -4,6 +4,7 @@ import exceptions
 from . import *
 from exercise_question.unique_answer_mcq import UniqueAnswerMCQExerciseQuestion
 from exercise_question.multiple_answer_mcq import MultipleAnswerMCQExerciseQuestion
+from exercise_question.right_or_wrong import RightOrWrongExerciseQuestion
 from random import shuffle
 from bson import ObjectId
 import exceptions
@@ -18,10 +19,14 @@ class ExerciseResourceContent(ResourceContent):
 	## Embedded list of questions of type Multiple Answer MCQ
 	multiple_answer_mcq_questions = db.ListField(db.EmbeddedDocumentField(MultipleAnswerMCQExerciseQuestion))
 
+	## Embedded list of questions of type Right or Wrong
+	right_or_wrong_questions = db.ListField(db.EmbeddedDocumentField(RightOrWrongExerciseQuestion))
+
 	def questions(self):
 		questions = []
 		questions.extend(self.unique_answer_mcq_questions)
 		questions.extend(self.multiple_answer_mcq_questions)
+		questions.extend(self.right_or_wrong_questions)
 		return questions
 
 

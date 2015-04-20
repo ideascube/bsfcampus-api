@@ -1,8 +1,6 @@
 from MookAPI import db
-import datetime
 from bson import ObjectId
 from . import ExerciseQuestion, ExerciseQuestionAnswer
-from random import shuffle
 
 
 class MultipleAnswerMCQExerciseQuestionProposition(db.EmbeddedDocument):
