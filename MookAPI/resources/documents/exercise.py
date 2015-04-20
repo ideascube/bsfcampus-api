@@ -6,6 +6,7 @@ from exercise_question.unique_answer_mcq import UniqueAnswerMCQExerciseQuestion
 from exercise_question.multiple_answer_mcq import MultipleAnswerMCQExerciseQuestion
 from exercise_question.right_or_wrong import RightOrWrongExerciseQuestion
 from exercise_question.dropdown import DropdownExerciseQuestion
+from exercise_question.ordering import OrderingExerciseQuestion
 from random import shuffle
 from bson import ObjectId
 import exceptions
@@ -26,12 +27,16 @@ class ExerciseResourceContent(ResourceContent):
 	## Embedded list of questions of type Dropdown
 	dropdown_questions = db.ListField(db.EmbeddedDocumentField(DropdownExerciseQuestion))
 
+	## Embedded list of questions of type Ordering
+	ordering_questions = db.ListField(db.EmbeddedDocumentField(OrderingExerciseQuestion))
+
 	def questions(self):
 		questions = []
 		questions.extend(self.unique_answer_mcq_questions)
 		questions.extend(self.multiple_answer_mcq_questions)
 		questions.extend(self.right_or_wrong_questions)
 		questions.extend(self.dropdown_questions)
+		questions.extend(self.ordering_questions)
 		return questions
 
 
