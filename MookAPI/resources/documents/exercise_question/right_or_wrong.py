@@ -32,7 +32,7 @@ class RightOrWrongExerciseQuestion(ExerciseQuestion):
 		return son
 
 	def answer_with_data(self, data):
-		return RightOrWrongExerciseQuestion().init_with_data(data)
+		return RightOrWrongExerciseQuestionAnswer().init_with_data(data)
 
 	def propositionById(self, propositionId):
 		result = None;

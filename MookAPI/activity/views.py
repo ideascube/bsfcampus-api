@@ -47,6 +47,8 @@ def post_exercise_attempt_question_answer(attempt_id):
 	print ("POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id))
 	
 	attempt = documents.exercise_attempt.ExerciseAttempt.objects.get_or_404(id=attempt_id)
+
+	print("attempt = {attempt}".format(attempt=attempt))
 	
 	question_id = flask.request.form['question_id']
 	attempt.save_answer(question_id, flask.request.form)
