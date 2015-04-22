@@ -65,7 +65,7 @@ class CategorizeExerciseQuestionAnswer(ExerciseQuestionAnswer):
 
 	def init_with_data(self, data):
 		self.given_categorized_items = []
-		for given_category in data['given_categorized_items[]']:
+		for given_category in data.getlist('given_categorized_items[]'):
 			category = []
 			for given_item in given_category:
 				category.append(ObjectId(given_item))

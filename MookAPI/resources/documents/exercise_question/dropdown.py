@@ -64,15 +64,14 @@ class DropdownExerciseQuestionAnswer(ExerciseQuestionAnswer):
 
 	def init_with_data(self, data):
 		self.given_propositions = []
-		for dropdown in data.getList('dropdowns[]'):
-			for proposition in dropdown.getlist('propositions[]'):
-				self.given_propositions.append(ObjectId(proposition))
+		for dropdown in data.getlist('dropdowns[]'):
+			self.given_propositions.append(ObjectId(dropdown))
 		return self
 
 	def is_correct(self, question, parameters):
 		propositions = question.getPropositionsById(self.given_propositions)
 		all_question_propositions = []
-		for dropdown in self.dropdowns:
+		for dropdown in question.dropdowns:
 			all_question_propositions.extend(dropdown.propositions)
 		correct_propositions = filter(lambda proposition: proposition.is_correct_answer, all_question_propositions)
 		return set(propositions) == set(correct_propositions)

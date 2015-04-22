@@ -51,7 +51,7 @@ class OrderingExerciseQuestionAnswer(ExerciseQuestionAnswer):
 	given_ordered_items = db.ListField(db.ObjectIdField())
 
 	def init_with_data(self, data):
-		self.given_orders = data['given_ordered_items[]']
+		self.given_orders = data.getlist('given_ordered_items[]')
 		print(self.given_ordered_items)
 		return self
 
