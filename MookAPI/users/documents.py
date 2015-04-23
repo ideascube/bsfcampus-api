@@ -15,6 +15,12 @@ class Role(db.Document, RoleMixin):
 
 class User(db.Document, UserMixin):
 
+	first_name = db.StringField()
+
+	last_name = db.StringField()
+
+	username = db.StringField(unique=True)
+
 	email = db.EmailField(unique=True)
 
 	password = db.StringField()
