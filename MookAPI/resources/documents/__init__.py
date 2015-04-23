@@ -1,7 +1,9 @@
+import flask
 from MookAPI import db
 import datetime
 import bson
 from slugify import slugify
+from MookAPI.local_server.documents import SyncableDocument
 
 
 class ResourceContent(db.DynamicEmbeddedDocument):
@@ -13,7 +15,7 @@ class ResourceContent(db.DynamicEmbeddedDocument):
 	}
 
 
-class Resource(db.Document):
+class Resource(SyncableDocument):
 	"""
 	Any elementary pedagogical resource.
 	Contains the metadata and an embedded ResourceContent document.
@@ -51,6 +53,9 @@ class Resource(db.Document):
 	## Date of creation
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
 
+	## Last modification
+	last_modification = db.DateTimeField(default=datetime.datetime.now)
+
 	### PROPERTIES - HIERARCHY
 
 	## Lesson
@@ -65,6 +70,12 @@ class Resource(db.Document):
 	## Content of the resource
 	resource_content = db.EmbeddedDocumentField(ResourceContent)
 
+	### VIRTUAL PROPERTIES
+
+	@property
+	def url(self):
+		return flask.url_for('resources.get_resource', resource_id=self.id, _external=True)
+	
 	### METHODS
 
 	def siblings(self):

@@ -4,9 +4,10 @@ import datetime
 import bson
 from slugify import slugify
 from MookAPI.resources import documents as resources_documents
+from MookAPI.local_server.documents import SyncableDocument
 
 
-class ResourceHierarchy(db.Document):
+class ResourceHierarchy(SyncableDocument):
 	meta = {
 		'allow_inheritance': True,
 		'abstract': True
@@ -75,21 +76,37 @@ class Lesson(ResourceHierarchy):
 	## Parent skill
 	skill = db.ReferenceField('Skill')
 
-	### METHODS
+	### VIRTUAL PROPERTIES
+	
+	@property
+	def url(self):
+		return flask.url_for('hierarchy.get_lesson', lesson_id=self.id, _external=True)
 
+	@property
+	def resources(self):
+		return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
+
+	### METHODS
+	
 	def siblings(self):
 		return Lesson.objects.order_by('order', 'title').filter(skill=self.skill)
 		
 	def siblings_strict(self):
 		return Lesson.objects.order_by('order', 'title').filter(skill=self.skill, id__ne=self.id)
 	
-	def resources(self):
-		return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
-
 	def to_mongo_detailed(self):
 		son = self.to_mongo()
-		son['resources'] = map(lambda r: r.id, self.resources())
+		son['resources'] = map(lambda r: r.id, self.resources)
 		return son
+
+	# @if_central
+	def items_to_sync(self, last_sync):
+		items = super(self.__class__, self).items_to_sync(last_sync)
+
+		for resource in self.resources:
+			items.extend(resource.items_to_sync(last_sync))
+
+		return items
 
 
 class Skill(ResourceHierarchy):
@@ -105,17 +122,33 @@ class Skill(ResourceHierarchy):
 	## icon image
 	icon = db.ImageField()
 
-	### METHODS
+	### VIRTUAL PROPERTIES
 	
+	@property
+	def url(self):
+		return flask.url_for('hierarchy.get_skill', skill_id=self.id, _external=True)
+
+	@property
 	def lessons(self):
 		return Lesson.objects.order_by('order', 'title').filter(skill=self)
 
+	### METHODS
+	
 	def to_mongo_detailed(self):
 		son = self.to_mongo()
+		son['lessons'] = map(lambda l: l.id, self.lessons)
 		son['image_url'] = flask.url_for('hierarchy.get_skill_icon', skill_id=self.id, _external=True)
 		son['bg_color'] = self.track.bg_color
-		son['lessons'] = map(lambda l: l.id, self.lessons())
 		return son
+
+	# @if_central
+	def items_to_sync(self, last_sync):
+		items = super(self.__class__, self).items_to_sync(last_sync)
+
+		for lesson in self.lessons:
+			items.extend(lesson.items_to_sync(last_sync))
+
+		return items
 
 
 class Track(ResourceHierarchy):
@@ -129,13 +162,29 @@ class Track(ResourceHierarchy):
 	## background color
 	bg_color = db.StringField()
 
-	### METHODS
-	
+	### VIRTUAL PROPERTIES
+
+	@property
+	def url(self):
+		return flask.url_for('hierarchy.get_track', track_id=self.id, _external=True)
+
+	@property
 	def skills(self):
 		return Skill.objects.order_by('order', 'title').filter(track=self)
 
+	### METHODS
+
 	def to_mongo_detailed(self):
 		son = self.to_mongo()
-		son['skills'] = map(lambda s: s.id, self.skills())
+		son['skills'] = map(lambda s: s.id, self.skills)
 		son['icon_url'] = flask.url_for('hierarchy.get_track_icon', track_id=self.id, _external=True)
 		return son
+
+	# @if_central
+	def items_to_sync(self, last_sync):
+		items = super(self.__class__, self).items_to_sync(last_sync)
+
+		for skill in self.skills:
+			items.extend(skill.items_to_sync(last_sync))
+
+		return items
