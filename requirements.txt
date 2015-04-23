@@ -1,0 +1,9 @@
+Flask
+Flask-Script
+Flask-Security
+Flask-OAuthLib
+Flask-MongoEngine
+Flask-Admin
+Flask-CORS
+python-slugify
+Pillow

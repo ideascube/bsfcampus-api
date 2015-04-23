@@ -1,9 +1,0 @@
-flask
-flask-script # Pour le manager de serveur, si on utilise le serveur intégré de Flask
-flask-security
-flask-mongoengine
-flask-admin
-flask-cors
-
-python-slugify
-Pillow
