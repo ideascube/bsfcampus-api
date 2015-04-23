@@ -1,6 +1,6 @@
 import flask
 import documents
-import MookAPI.hierarchy.documents as hierarchy_documents
+# import MookAPI.hierarchy.documents as hierarchy_documents
 import json
 import datetime
 from . import bp
@@ -8,10 +8,10 @@ from bson import json_util
 from flask.ext.security import login_required, roles_required, current_user
 
 
-@bp.route("/")
+@bp.route("/list")
 @login_required
 @roles_required('local_server')
-def sync_local_server():
+def get_local_server_sync_list():
 	local_server = documents.LocalServer.objects.get_or_404(user=current_user.id)
 	
 	items = []
@@ -25,7 +25,21 @@ def sync_local_server():
 	return flask.Response(
 		response=json_util.dumps({'items': items}),
 		mimetype="application/json"
-		)
+	)
+
+
+@bp.route("/reset")
+@login_required
+@roles_required('local_server')
+def reset_local_server():
+	local_server = documents.LocalServer.objects.get_or_404(user=current_user.id)
+	
+	for (index, item) in enumerate(local_server.syncable_items):
+		local_server.syncable_items[index].last_sync = None
+
+	local_server.save()
+
+	return flask.jsonify(local_server=local_server)
 
 
 @bp.route("/create_local_server")
