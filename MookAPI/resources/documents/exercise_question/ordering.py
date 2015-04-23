@@ -23,9 +23,6 @@ class OrderingExerciseQuestion(ExerciseQuestion):
 	## Propositions
 	items = db.ListField(db.EmbeddedDocumentField(OrderingExerciseQuestionItem))
 
-	## direction (horizontal or vertical)
-	is_vertical = db.BooleanField(default=False);
-
 	def without_correct_answer(self):
 		son = super(OrderingExerciseQuestion, self).without_correct_answer()
 		shuffle(son['items'])
@@ -51,11 +48,11 @@ class OrderingExerciseQuestionAnswer(ExerciseQuestionAnswer):
 	given_ordered_items = db.ListField(db.ObjectIdField())
 
 	def init_with_data(self, data):
-		self.given_orders = data.getlist('given_ordered_items[]')
+		self.given_ordered_items = data.getlist('given_ordered_items[]')
 		print(self.given_ordered_items)
 		return self
 
 	def is_correct(self, question, parameters):
-		ordered_items = question.getItemsById(self.given_orders)
-		correct_ordered_items = items
+		ordered_items = question.getItemsById(self.given_ordered_items)
+		correct_ordered_items = question.items
 		return ordered_items == correct_ordered_items
