@@ -4,6 +4,21 @@ import datetime
 import bson
 from MookAPI.users.documents import User
 
+class DeletedSyncableDocument(db.Document):
+
+	document = db.GenericReferenceField()
+
+	top_level_document = db.GenericReferenceField()
+
+	date = db.DateTimeField()
+
+	def save(self, *args, **kwargs):
+		self.top_level_document = self.document.top_level_syncable_document()
+		if self.date is None:
+			self.date = datetime.datetime.now()
+		return super(DeletedSyncableDocument, self).save(*args, **kwargs)
+
+
 ## All documents that need to be synced must inherit from this class.
 class SyncableDocument(db.Document):
 	"""
@@ -20,6 +35,9 @@ class SyncableDocument(db.Document):
 	## Last modification
 	last_modification = db.DateTimeField()
 
+	def top_level_syncable_document(self):
+		return self
+
 	@property
 	def url(self):
 		raise exceptions.NotImplementedError("This object class has no URL defined.")
@@ -27,6 +45,12 @@ class SyncableDocument(db.Document):
 	def save(self, *args, **kwargs):
 		self.last_modification = datetime.datetime.now()
 		return super(SyncableDocument, self).save(*args, **kwargs)
+
+	def delete(self, *args, **kwargs):
+		reference = DeletedSyncableDocument()
+		reference.document = self
+		reference.save()
+		return super(SyncableDocument, self).delete(*args, **kwargs)
 
 	def reference(self):
 		obj = {}
@@ -36,12 +60,29 @@ class SyncableDocument(db.Document):
 		return obj
 
 	# @if_central
-	def items_to_sync(self, last_sync):
+	def items_to_update(self, last_sync):
+		items = []
 
 		if last_sync is None or self.last_modification is None or last_sync < self.last_modification:
-			return [self.reference()]
+			items.append(self.reference())
 
-		return []
+		return items
+
+	def items_to_delete(self, last_sync):
+		items = []
+
+		for obj in DeletedSyncableDocument.objects.filter(top_level_document=self.top_level_syncable_document()):
+			if last_sync is None or obj.date is None or last_sync < obj.date:
+				items.append(obj.to_mongo()['document'])
+
+		return items
+
+	def items_to_sync(self, last_sync):
+		items = {}
+		items['update'] = self.items_to_update(last_sync)
+		items['delete'] = self.items_to_delete(last_sync)
+		# We should do some cleanup at this point, in particular remove deletable items from 'update' list.
+		return items
 
 
 class SyncableItem(db.EmbeddedDocument):

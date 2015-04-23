@@ -79,6 +79,10 @@ class Lesson(ResourceHierarchy):
 	### VIRTUAL PROPERTIES
 	
 	@property
+	def track(self):
+		return self.skill.track
+
+	@property
 	def url(self):
 		return flask.url_for('hierarchy.get_lesson', lesson_id=self.id, _external=True)
 
@@ -99,12 +103,15 @@ class Lesson(ResourceHierarchy):
 		son['resources'] = map(lambda r: r.id, self.resources)
 		return son
 
+	def top_level_syncable_document(self):
+		return self.track
+
 	# @if_central
-	def items_to_sync(self, last_sync):
-		items = super(self.__class__, self).items_to_sync(last_sync)
+	def items_to_update(self, last_sync):
+		items = super(self.__class__, self).items_to_update(last_sync)
 
 		for resource in self.resources:
-			items.extend(resource.items_to_sync(last_sync))
+			items.extend(resource.items_to_update(last_sync))
 
 		return items
 
@@ -141,12 +148,15 @@ class Skill(ResourceHierarchy):
 		son['bg_color'] = self.track.bg_color
 		return son
 
+	def top_level_syncable_document(self):
+		return self.track
+
 	# @if_central
-	def items_to_sync(self, last_sync):
-		items = super(self.__class__, self).items_to_sync(last_sync)
+	def items_to_update(self, last_sync):
+		items = super(self.__class__, self).items_to_update(last_sync)
 
 		for lesson in self.lessons:
-			items.extend(lesson.items_to_sync(last_sync))
+			items.extend(lesson.items_to_update(last_sync))
 
 		return items
 
@@ -181,10 +191,10 @@ class Track(ResourceHierarchy):
 		return son
 
 	# @if_central
-	def items_to_sync(self, last_sync):
-		items = super(self.__class__, self).items_to_sync(last_sync)
+	def items_to_update(self, last_sync):
+		items = super(self.__class__, self).items_to_update(last_sync)
 
 		for skill in self.skills:
-			items.extend(skill.items_to_sync(last_sync))
+			items.extend(skill.items_to_update(last_sync))
 
 		return items

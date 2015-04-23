@@ -75,6 +75,14 @@ class Resource(SyncableDocument):
 	@property
 	def url(self):
 		return flask.url_for('resources.get_resource', resource_id=self.id, _external=True)
+
+	@property
+	def skill(self):
+		return self.lesson.skill
+
+	@property
+	def track(self):
+		return self.lesson.skill.track
 	
 	### METHODS
 
@@ -128,3 +136,6 @@ class Resource(SyncableDocument):
 			return cls.objects.get_or_404(slug=token)
 		else:
 			return cls.objects.get_or_404(id=token)
+
+	def top_level_syncable_document(self):
+		return self.track
