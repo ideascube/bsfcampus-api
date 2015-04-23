@@ -2,7 +2,7 @@ from flask import Flask
 from flask.ext.mongoengine import MongoEngine
 from flask.ext.admin import Admin
 from flask.ext.admin.contrib.mongoengine import ModelView
-from flask.ext.security import Security, MongoEngineUserDatastore, UserMixin, RoleMixin, login_required
+from flask.ext.security import Security, MongoEngineUserDatastore
 from flask_cors import CORS
 import app_config
 
@@ -22,21 +22,10 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 ### SECURITY
 ## Documents
-class Role(db.Document, RoleMixin):
-	name = db.StringField(max_length=80, unique=True)
-	description = db.StringField()
-	def __unicode__(self):
-		return self.name
-
-class User(db.Document, UserMixin):
-	email = db.EmailField(unique=True)
-	password = db.StringField()
-	active = db.BooleanField(default=True)
-	roles = db.ListField(db.ReferenceField(Role), default=[])
-	def __unicode__(self):
-		return self.email
+import users, users.documents
+app.register_blueprint(users.bp, url_prefix="/users")
 ## Datastore
-user_datastore = MongoEngineUserDatastore(db, User, Role)
+user_datastore = MongoEngineUserDatastore(db, users.documents.User, users.documents.Role)
 ## Configuration
 app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
 app.config['SECURITY_PASSWORD_SALT'] = app_config.password_salt
@@ -129,7 +118,7 @@ def create_admin_interface():
 	# import config.documents
 	# admin.add_view(ModelView(config.documents.ConfigParameters))
 	## Authentication
-	admin.add_view(ModelView(User, name='User', category='Authentication'))
-	admin.add_view(ModelView(Role, name='Role', category='Authentication'))
+	admin.add_view(ModelView(users.documents.User, name='User', category='Authentication'))
+	admin.add_view(ModelView(users.documents.Role, name='Role', category='Authentication'))
 
 create_admin_interface()
