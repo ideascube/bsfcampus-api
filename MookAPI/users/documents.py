@@ -2,6 +2,7 @@ import flask
 from MookAPI import db
 from flask.ext.security import Security, MongoEngineUserDatastore, UserMixin, RoleMixin, login_required
 
+
 class Role(db.Document, RoleMixin):
 
 	name = db.StringField(max_length=80, unique=True)

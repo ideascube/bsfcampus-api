@@ -20,6 +20,7 @@ db = MongoEngine(app)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+
 ### SECURITY
 ## Documents
 import users, users.documents
@@ -39,18 +40,21 @@ security = Security(
 
 
 ### CENTRAL-SERVER-ONLY AND LOCAL-SERVER-ONLY DECORATORS
+def server_is_central():
+	return app_config.server_type == 'central'
+def server_is_local():
+	return app_config.server_type == 'local'
 ## Central-server-only
 def if_central(func):
-	if app_config.server_type == 'central':
+	if server_is_central():
 		return func
 	else:
 		def empty_function(*args, **kwargs):
 			pass
 		return empty_function
-
 ## Local-server-only
 def if_local(func):
-	if app_config.server_type == 'local':
+	if server_is_local():
 		return func
 	else:
 		def empty_function(*args, **kwargs):
