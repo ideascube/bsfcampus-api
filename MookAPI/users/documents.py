@@ -19,7 +19,7 @@ class User(db.Document, UserMixin):
 
 	last_name = db.StringField()
 
-	username = db.StringField(unique=True)
+	username = db.StringField() # To make this unique we first need to update the registration form to include the field.
 
 	email = db.EmailField(unique=True)
 
