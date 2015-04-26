@@ -3,7 +3,7 @@ from MookAPI import db
 import datetime
 import bson
 from slugify import slugify
-from MookAPI.local_server.documents import SyncableDocument
+from MookAPI.local_servers.documents import SyncableDocument
 
 
 class ResourceContent(db.DynamicEmbeddedDocument):

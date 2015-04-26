@@ -88,10 +88,10 @@ app.register_blueprint(config.bp, url_prefix="/config")
 ## It should only exist on the central server.
 ## The counterpart on the local servers will be some authentication file.
 @if_central
-def import_local_server():
-	import local_server
-	app.register_blueprint(local_server.bp, url_prefix="/sync")
-import_local_server()
+def import_local_servers():
+	import local_servers
+	app.register_blueprint(local_servers.bp, url_prefix="/local_servers")
+import_local_servers()
 
 
 ### ADMINISTRATION INTERFACE
@@ -130,7 +130,7 @@ def create_admin_interface():
 	## Authentication
 	admin.add_view(ModelView(users.documents.User, name='User', category='Authentication'))
 	admin.add_view(ModelView(users.documents.Role, name='Role', category='Authentication'))
-	import local_server.documents as local_server_documents
-	admin.add_view(ModelView(local_server_documents.LocalServer, name='Local server', category='Authentication'))
+	import local_servers.documents as local_servers_documents
+	admin.add_view(ModelView(local_servers_documents.LocalServer, name='Local server', category='Authentication'))
 
 create_admin_interface()
