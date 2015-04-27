@@ -5,6 +5,7 @@ from flask.ext.admin.contrib.mongoengine import ModelView
 from flask.ext.security import Security, MongoEngineUserDatastore
 from flask_cors import CORS
 import app_config
+import base64
 
 ### CREATE FLASK APP
 app = Flask(__name__)
@@ -37,6 +38,22 @@ security = Security(
 	datastore=user_datastore,
 	register_blueprint=True
 	)
+## Header authentication
+@security.login_manager.request_loader
+def load_user_from_request(request):
+	print("Request loader called")
+	auth_key = request.headers.get('Authorization')
+	if auth_key:
+		auth_key = auth_key.replace('Basic ', '', 1)
+		try:
+			auth_key = base64.b64decode(auth_key)
+		except TypeError:
+			pass
+		email, password = auth_key.split(":", 1)
+		user = users.documents.User.objects.get(email=email) #, password=password)
+		if user: 
+			return user
+	return None
 
 
 ### CENTRAL-SERVER-ONLY AND LOCAL-SERVER-ONLY DECORATORS
