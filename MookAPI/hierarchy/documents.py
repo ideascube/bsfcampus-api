@@ -106,6 +106,14 @@ class Lesson(ResourceHierarchy):
 	def top_level_syncable_document(self):
 		return self.track
 
+	def all_syncable_items(self):
+		items = super(self.__class__, self).all_syncable_items()
+
+		for resource in self.resources:
+			items.extend(resource.all_syncable_items())
+
+		return items
+
 	# @if_central
 	def items_to_update(self, last_sync):
 		items = super(self.__class__, self).items_to_update(last_sync)
@@ -151,6 +159,14 @@ class Skill(ResourceHierarchy):
 	def top_level_syncable_document(self):
 		return self.track
 
+	def all_syncable_items(self):
+		items = super(self.__class__, self).all_syncable_items()
+
+		for lesson in self.lessons:
+			items.extend(lesson.all_syncable_items())
+
+		return items
+
 	# @if_central
 	def items_to_update(self, last_sync):
 		items = super(self.__class__, self).items_to_update(last_sync)
@@ -189,6 +205,14 @@ class Track(ResourceHierarchy):
 		son['skills'] = map(lambda s: s.id, self.skills)
 		son['icon_url'] = flask.url_for('hierarchy.get_track_icon', track_id=self.id, _external=True)
 		return son
+
+	def all_syncable_items(self):
+		items = super(self.__class__, self).all_syncable_items()
+
+		for skill in self.skills:
+			items.extend(skill.all_syncable_items())
+
+		return items
 
 	# @if_central
 	def items_to_update(self, last_sync):

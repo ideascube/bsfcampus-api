@@ -59,7 +59,9 @@ class SyncableDocument(db.Document):
 		obj['url'] = self.url
 		return obj
 
-	# @if_central
+	def all_syncable_items(self):
+		return [self.reference()]
+
 	def items_to_update(self, last_sync):
 		items = []
 
