@@ -7,5 +7,7 @@ password_salt = 'Find a nice salt to put here'
 ## Is this a central or a local server? Choose 'central' or 'local'.
 server_type = 'central'
 
-## If this is a local server, give the address of the associated central server
+## If this is a local server, give the address and credentials to the associated central server
 central_server_api_host = 'http://HOSTNAME:PORT/'
+central_server_api_key = '' # username, email or api key
+central_server_api_secret = '' # password or secret

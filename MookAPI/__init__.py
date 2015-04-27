@@ -93,6 +93,12 @@ def import_local_servers():
 	app.register_blueprint(local_servers.bp, url_prefix="/local_servers")
 import_local_servers()
 
+@if_local
+def import_synchronizer():
+	import synchronizer
+	app.register_blueprint(synchronizer.bp, url_prefix="/synchronizer")
+import_synchronizer()
+
 
 ### ADMINISTRATION INTERFACE
 ## Eventually this back-office should not exist on the local servers (maybe even on the central server...)
