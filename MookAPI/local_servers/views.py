@@ -17,10 +17,14 @@ def get_local_server_sync_list():
 
 	local_server = documents.LocalServer.objects.get_or_404(user=current_user.id)
 	
-	items = []
+	items = {
+		'update': [],
+		'delete': [],
+	}
 
 	for (index, item) in enumerate(local_server.syncable_items):
-		items.append(item.sync_list())
+		items['update'].extend(item.sync_list()['update'])
+		items['delete'].extend(item.sync_list()['delete'])
 		local_server.syncable_items[index].last_sync = datetime.datetime.now
 
 	local_server.save()
