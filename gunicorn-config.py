@@ -14,7 +14,7 @@ def get_port():
 		return 5000
 
 ## Adress where the server can be accessed
-bind = ['127.0.0.1:' + get_port(), local_ip_address + ':' + get_port()]
+bind = ['127.0.0.1:' + str(get_port()), local_ip_address + ':' + str(get_port())]
 
 ## Restart the server when the code changes
 reload = True
