@@ -14,7 +14,7 @@ def pile_update_items(array):
 			action='update',
 			url=item['url'],
 			distant_id=item['_ref']['$id']['$oid'],
-			className=item['_cls'],
+			class_name=item['_cls'],
 			)
 		item_document.save()
 
@@ -23,7 +23,7 @@ def pile_delete_items(array):
 		item_document = documents.ItemToSync(
 			action='delete',
 			distant_id=item['_ref']['$id']['$oid'],
-			className=item['_cls']
+			class_name=item['_cls']
 			)
 		item_document.save()
 

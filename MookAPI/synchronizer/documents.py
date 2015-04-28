@@ -11,7 +11,7 @@ class ItemToSync(db.Document):
 	distant_id = db.ObjectIdField()
 
 	## Class of the item
-	className = db.StringField()
+	class_name = db.StringField()
 
 	## Action to perform (delete local or fetch new version of distant)
 	action = db.StringField(choices=('update', 'delete'))
