@@ -59,11 +59,11 @@ def load_user_from_request(request):
 ### CENTRAL-SERVER-ONLY AND LOCAL-SERVER-ONLY DECORATORS
 ## Server is central unless specified otherwise.
 def server_is_local():
-	if hasattr(app_config, 'server_type')
+	if hasattr(app_config, 'server_type'):
 		return app_config.server_type.lower() == 'local'
 	return False
 def server_is_central():
-	return !server_is_local()
+	return not server_is_local()
 ## Central-server-only
 def if_central(func):
 	if server_is_central():
