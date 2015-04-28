@@ -43,7 +43,12 @@ class SyncableDocument(db.Document):
 
 	@property
 	def url(self):
-		raise exceptions.NotImplementedError("This object class has no URL defined.")
+		raise exceptions.NotImplementedError("The single-object URL of this document class is not defined.")
+
+	@property
+	def json_key(self):
+		return self.__class__.__name__.lower()
+	
 
 	def save(self, *args, **kwargs):
 		self.last_modification = datetime.datetime.now()
@@ -88,6 +93,14 @@ class SyncableDocument(db.Document):
 		items['delete'] = self.items_to_delete(last_sync)
 		# We should do some cleanup at this point, in particular remove deletable items from 'update' list.
 		return items
+
+	def hydrate_with_json_properties(self, json):
+		for (key, value) in json.iteritems():
+			if hasattr(self, key):
+				self[key] = value
+
+	def hydrate_with_json(self, json):
+		self.hydrate_with_json_properties(self.json_key)
 
 
 class SyncableItem(db.EmbeddedDocument):
