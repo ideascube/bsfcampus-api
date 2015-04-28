@@ -9,10 +9,23 @@ import requests
 from requests.auth import AuthBase
 
 def pile_update_items(array):
-	print len(array), "items to update:"
+	for item in array:
+		item_document = documents.ItemToSync(
+			action='update',
+			url=item['url'],
+			distant_id=item['_ref']['$id']['$oid'],
+			className=item['_cls'],
+			)
+		item_document.save()
 
 def pile_delete_items(array):
-	print len(array), "items to delete:"
+	for item in array:
+		item_document = documents.ItemToSync(
+			action='delete',
+			distant_id=item['_ref']['$id']['$oid'],
+			className=item['_cls']
+			)
+		item_document.save()
 
 def pile_items(json):
 	pile_update_items(json['items']['update'])

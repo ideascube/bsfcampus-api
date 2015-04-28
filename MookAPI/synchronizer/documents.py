@@ -7,8 +7,11 @@ class ItemToSync(db.Document):
 
 	### PROPERTIES
 
-	## Reference to the DISTANT object
-	reference = db.GenericReferenceField()
+	## ObjectId of the item on the central server
+	distant_id = db.ObjectIdField()
+
+	## Class of the item
+	className = db.StringField()
 
 	## Action to perform (delete local or fetch new version of distant)
 	action = db.StringField(choices=('update', 'delete'))
