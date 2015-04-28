@@ -8,3 +8,4 @@ Flask-CORS
 python-slugify
 Pillow
 py-bcrypt
+requests
