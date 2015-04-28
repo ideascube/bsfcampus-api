@@ -35,6 +35,9 @@ class SyncableDocument(db.Document):
 	## Last modification
 	last_modification = db.DateTimeField()
 
+	## Id of the document on the central server
+	distant_id = db.ObjectIdField()
+
 	def top_level_syncable_document(self):
 		return self
 
