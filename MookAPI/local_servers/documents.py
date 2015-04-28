@@ -96,7 +96,7 @@ class SyncableDocument(db.Document):
 
 	def hydrate_with_json_properties(self, json):
 		for (key, value) in json.iteritems():
-			if hasattr(self, key):
+			if key in self._fields.keys():
 				self[key] = value
 
 	def hydrate_with_json(self, json):
