@@ -18,3 +18,5 @@ class ItemToSync(db.Document):
 
 	## URL to fetch update info (null if action == 'delete')
 	url = db.StringField()
+
+	errors = db.ListField(db.StringField())
