@@ -13,7 +13,20 @@ app.config["SECRET_KEY"] = "cj3ff02m617k3WxO703dYke088HcU94R"
 
 
 ### SETUP DATABASE
-app.config["MONGODB_SETTINGS"] = {'DB': "mookbsf"}
+mongodb_settings = {}
+if hasattr(app_config, 'mongodb_db'):
+	mongodb_settings['DB'] = app_config.mongodb_db
+else:
+	mongodb_settings['DB'] = 'mook'
+if hasattr(app_config, 'mongodb_host'):
+	mongodb_settings['HOST'] = app_config.mongodb_host
+if hasattr(app_config, 'mongodb_port'):
+	mongodb_settings['port'] = app_config.mongodb_port
+if hasattr(app_config, 'mongodb_username'):
+	mongodb_settings['username'] = app_config.mongodb_username
+if hasattr(app_config, 'mongodb_password'):
+	mongodb_settings['password'] = app_config.mongodb_password
+app.config["MONGODB_SETTINGS"] = mongodb_settings
 db = MongoEngine(app)
 
 

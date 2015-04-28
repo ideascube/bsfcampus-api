@@ -1,6 +1,13 @@
 ### Make a copy of this file called 'app_config.py'
 ### and change the values of the parameters to what you actually want.
 
+## MongoDB parameters
+mongodb_db = 'mookbsf'
+mongodb_host = '127.0.0.1'
+mongodb_port = 27017
+mongodb_username = None
+mongodb_password = None
+
 ## This salt is used to encrpyt data. Use http://randomkeygen.com/ to generate a random string.
 password_salt = 'Find a nice salt to put here'
 
