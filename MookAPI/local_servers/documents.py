@@ -100,7 +100,7 @@ class SyncableDocument(db.Document):
 				self[key] = value
 
 	def hydrate_with_json(self, json):
-		self.hydrate_with_json_properties(self.json_key)
+		self.hydrate_with_json_properties(json[self.json_key])
 
 
 class SyncableItem(db.EmbeddedDocument):
