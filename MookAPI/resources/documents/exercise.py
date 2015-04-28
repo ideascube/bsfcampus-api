@@ -28,9 +28,8 @@ class ExerciseResourceContent(ResourceContent):
     ## Embedded list of questions of type Ordering
     ordering_questions = db.ListField(db.EmbeddedDocumentField(OrderingExerciseQuestion))
 
-    # FIXME: Categorize questions are not implemented yet
-    # ## Embedded list of questions of type Categorize
-    # categorize_questions = db.ListField(db.EmbeddedDocumentField(CategorizeExerciseQuestion))
+    ## Embedded list of questions of type Categorize
+    categorize_questions = db.ListField(db.EmbeddedDocumentField(CategorizeExerciseQuestion))
 
     def questions(self):
         questions = []
@@ -39,8 +38,7 @@ class ExerciseResourceContent(ResourceContent):
         questions.extend(self.right_or_wrong_questions)
         questions.extend(self.dropdown_questions)
         questions.extend(self.ordering_questions)
-        # FIXME: Categorize questions are not implemented yet
-        # questions.extend(self.categorize_questions)
+        questions.extend(self.categorize_questions)
         return questions
 
 

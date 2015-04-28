@@ -43,20 +43,24 @@ class CategorizeExerciseQuestion(ExerciseQuestion):
         all_items = []
         for category in son['categories']:
             print(category)
-            all_items.extend(category['items'])
+            all_items.extend(category.pop('items'))
         shuffle(all_items)
         son['items'] = all_items
-        son.pop('categories')
         return son
 
     def answer_with_data(self, data):
         return CategorizeExerciseQuestionAnswer().init_with_data(data)
 
-    def getItemsById(self, categoryIndex, itemsId):
-        result = [];
-        category = self.categories[categoryIndex]
+    def get_category_by_id(self, category_id):
+        for category in self.categories:
+            if category._id == category_id:
+                return category
+
+    def get_items_in_category_by_id(self, category_id, items_id):
+        result = []
+        category = self.get_category_by_id(category_id)
         for item in category.items:
-            if item._id in itemsId:
+            if item._id in items_id:
                 result.append(item)
         return result
 
@@ -64,24 +68,32 @@ class CategorizeExerciseQuestion(ExerciseQuestion):
 class CategorizeExerciseQuestionAnswer(ExerciseQuestionAnswer):
     """categorized items given for this Categorize question."""
 
-    ## The categorized items, identified by their ObjectIds, in the requested categories
+    ## The categories sent by the client, identified by their ObjectIds.
+    given_categories = db.ListField(db.ObjectIdField())
+
+    ## The categorized items, identified by their ObjectIds, in the requested categories.
+    ## The first level order is the same as the given_categories
     given_categorized_items = db.ListField(db.ListField(db.ObjectIdField()))
 
     def init_with_data(self, data):
+        self.given_categories = []
         self.given_categorized_items = []
-        for given_category in data.getlist('given_categorized_items[]'):
+        for given_category in data['given_categorized_items']:
+            self.given_categories.append(ObjectId(given_category['id']))
             category = []
-            for given_item in given_category:
+            for given_item in given_category['items']:
                 category.append(ObjectId(given_item))
             self.given_categorized_items.append(category)
         return self
 
     def is_correct(self, question, parameters):
-        answer_categories = self.given_categorized_items
+        answer_categories_items = self.given_categorized_items
         result = True
-        for i in range(0, len(given_categorized_items)):
-            category_items = question.getItemsInCategoryById(i, given_categorized_items[i])
-            if set(category_items) != set(question.categories[i].items):
+        for i in range(0, len(answer_categories_items)):
+            category_items = question.get_items_in_category_by_id(self.given_categories[i],
+                                                                  self.given_categorized_items[i])
+            correct_category = question.get_category_by_id(self.given_categories[i])
+            if set(category_items) != set(correct_category.items):
                 result = False
                 break
         return result
