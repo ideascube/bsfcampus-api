@@ -61,8 +61,7 @@ def register_local_server():
 	Registers the current user as a local server.
 	"""
 
-	local_server = documents.LocalServer()
-	local_server.user = current_user
+	local_server = documents.LocalServer(user=current_user.id)
 
 	local_server.save()
 
