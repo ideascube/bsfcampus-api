@@ -28,8 +28,10 @@ def pile_delete_items(array):
 		item_document.save()
 
 def pile_items(json):
-	pile_update_items(json['items']['update'])
-	pile_delete_items(json['items']['delete'])
+	items = json['items']
+	updates = pile_update_items(items['update'])
+	deletes = pile_delete_items(items['delete'])
+	return len(items['update']), len(items['delete'])
 
 
 @bp.route("/fetch_list")
@@ -43,10 +45,14 @@ def get_fetch_list():
 
 	if r.status_code == 200:
 
-		pile_items(r.json())
+		new_updates, new_deletes = pile_items(r.json())
 
 		return flask.Response(
-			response=json_util.dumps({'error': 0}),
+			response=json_util.dumps({
+				'error': 0,
+				'new_updates': new_updates,
+				'new_deletes': new_deletes,
+				}),
 			mimetype='application/json'
 			)
 
