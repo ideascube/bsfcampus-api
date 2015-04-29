@@ -66,7 +66,7 @@ class DropdownExerciseQuestionAnswer(ExerciseQuestionAnswer):
 
     def init_with_data(self, data):
         self.given_propositions = []
-        for dropdown in data.getlist('dropdowns[]'):
+        for dropdown in data['dropdowns']:
             self.given_propositions.append(ObjectId(dropdown))
         return self
 

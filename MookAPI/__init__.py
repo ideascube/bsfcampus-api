@@ -17,7 +17,7 @@ mongodb_settings = {}
 if hasattr(app_config, 'mongodb_db'):
 	mongodb_settings['DB'] = app_config.mongodb_db
 else:
-	mongodb_settings['DB'] = 'mook'
+	mongodb_settings['DB'] = 'mookbsf'
 if hasattr(app_config, 'mongodb_host'):
 	mongodb_settings['HOST'] = app_config.mongodb_host
 if hasattr(app_config, 'mongodb_port'):
