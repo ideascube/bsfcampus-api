@@ -3,6 +3,7 @@ from MookAPI import db
 import datetime
 import bson
 from MookAPI.users.documents import User
+from mongoengine.common import _import_class
 
 class DeletedSyncableDocument(db.Document):
 
@@ -45,10 +46,9 @@ class SyncableDocument(db.Document):
 	def url(self):
 		raise exceptions.NotImplementedError("The single-object URL of this document class is not defined.")
 
-	@property
-	def json_key(self):
-		return self.__class__.__name__.lower()
-	
+	@classmethod
+	def json_key(cls):
+		return cls.__name__.lower()	
 
 	def save(self, *args, **kwargs):
 		self.last_modification = datetime.datetime.now()
@@ -94,13 +94,34 @@ class SyncableDocument(db.Document):
 		# We should do some cleanup at this point, in particular remove deletable items from 'update' list.
 		return items
 
-	def hydrate_with_json_properties(self, json):
-		for (key, value) in json.iteritems():
-			if key in self._fields.keys():
-				self[key] = value
+	@classmethod
+	def init_with_json_object(cls, json):
+		obj = cls()
+		FileField = _import_class('FileField')
+		ReferenceField = _import_class('ReferenceField')
+		for key, value in json.iteritems():
+			key = obj._reverse_db_field_map.get(key, key)
+			if key in obj._fields or key in ('id', 'pk', '_cls'):
+				if value is not None:
+					field = obj._fields.get(key)
+					if not field:
+						continue
+					elif isinstance(field, FileField):
+						continue # Download file instead
+					elif isinstance(field, ReferenceField):
+						value = field.to_python(value)
+						local_ref = field.document_type_obj.objects(distant_id=value.id).first()
+						setattr(obj, key, local_ref)
+						continue
+					else:
+						value = field.to_python(value)
+						setattr(obj, key, value)
+		obj.distant_id = json['_id']
+		return obj
 
-	def hydrate_with_json(self, json):
-		self.hydrate_with_json_properties(json[self.json_key])
+	@classmethod
+	def init_with_json_result(cls, json):
+		return cls.init_with_json_object(json[cls.json_key()])
 
 
 class SyncableItem(db.EmbeddedDocument):
