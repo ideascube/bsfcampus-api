@@ -7,6 +7,9 @@ class ItemToSync(db.Document):
 
 	### PROPERTIES
 
+	## A counter to depile items in the right order
+	queue_position = db.SequenceField()
+
 	## ObjectId of the item on the central server
 	distant_id = db.ObjectIdField()
 
