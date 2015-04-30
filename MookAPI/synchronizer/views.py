@@ -3,17 +3,26 @@ import documents
 import json
 import datetime
 from . import bp
-from bson import json_util
+import bson
 from MookAPI import app_config
 import requests
-from requests.auth import AuthBase
+import exceptions
+import sys
 
-import MookAPI.hierarchy.documents
-import MookAPI.resources.documents
-document_modules = [
-	MookAPI.hierarchy.documents,
-	MookAPI.resources.documents,
+##FIXME Do something better here.
+document_module_names = [
+	"MookAPI.hierarchy.documents",
+	"MookAPI.resources.documents",
+	"MookAPI.resources.documents.audio",
+	"MookAPI.resources.documents.downloadable_file",
+	"MookAPI.resources.documents.exercise",
+	"MookAPI.resources.documents.external_video",
+	"MookAPI.resources.documents.rich_text",
+	"MookAPI.resources.documents.video",
 	]
+def import_module(module_name):
+	return __import__(module_name, fromlist=[''])
+document_modules = map(import_module, document_module_names)
 
 def pile_update_items(array):
 	for item in array:
@@ -55,7 +64,7 @@ def get_fetch_list():
 		new_updates, new_deletes = pile_items(r.json())
 
 		return flask.Response(
-			response=json_util.dumps({
+			response=bson.json_util.dumps({
 				'error': 0,
 				'new_updates': new_updates,
 				'new_deletes': new_deletes,
@@ -69,24 +78,28 @@ def get_fetch_list():
 			'response_code': r.status_code,
 		}
 		return flask.Response(
-			response=json_util.dumps(json),
+			response=bson.json_util.dumps(json),
 			mimetype='application/json'
 			)
 
-def hydrate_object(obj, document_class, url):
+def create_object(document_class, url):
 
 	r = requests.get(url)
 	
 	if r.status_code == 200:
-		obj.hydrate_with_json(r.json())
-		return obj
+		try:
+			bson_object = bson.json_util.loads(r.text)
+			obj = document_class.init_with_json_result(bson_object)
+		except:
+			return None, str(sys.exc_info()[0])
 
-	return None
+		return obj, None
+
+	message = "Could not fetch info, got status code " + str(r.status_code)
+	return None, message
 
 
 def update_item(item):
-	print "Updating", item.class_name
-	
 	for module in document_modules:
 
 		if hasattr(module, item.class_name):
@@ -96,28 +109,24 @@ def update_item(item):
 			if len(local_objects) > 1:
 				return False, "There were at least two objects with that distant_id."
 
-			if len(local_objects) == 0:
-				local_object = document_class(distant_id=item.distant_id)
-			else:
-				local_object = local_objects.first()
+			##FIXME Right now, a new object is always created.
+			## We need to update the existing object if there is one.
+			new_object, message = create_object(document_class, item.url)
 
-			local_object = hydrate_object(local_object, document_class, item.url)
+			if new_object is None:
+				message = "Could not create new object: " + message
+				return False, message
 
-			if local_object is None:
-				return False, "Could not hydrate object"
-
-			local_object.save()
+			new_object.save()
 			return True, None
 
 	return False, "Document class name not recognized"
 
 def delete_item(item):
-	print "Deleting", item.class_name
-
 	for module in document_modules:
 		if hasattr(module, item.class_name):
 			document_class = getattr(module, item.class_name)
-			local_objects = document_class.objects()
+			local_objects = document_class.objects(distant_id=item.distant_id)
 
 			if len(local_objects) == 1:
 				local_object = local_objects.first()
@@ -131,11 +140,11 @@ def delete_item(item):
 
 @bp.route("/depile_item")
 def depile_sync_item():
-	item = documents.ItemToSync.objects.first()
+	item = documents.ItemToSync.objects.order_by('queue_position').first()
 
 	if item is None:
 		return flask.Response(
-			response=json_util.dumps({
+			response=bson.json_util.dumps({
 				'error': 1,
 				'changes_made': 0,
 				'error_details': 'No more item to depile'}),
@@ -147,14 +156,14 @@ def depile_sync_item():
 		if result[0]:
 			item.delete()
 			return flask.Response(
-				response=json_util.dumps({'error': 0, 'changes_made': 1, 'updates_made': 1}),
+				response=bson.json_util.dumps({'error': 0, 'changes_made': 1, 'updates_made': 1}),
 				mimetype='application/json'
 				)
 		else:
 			item.errors.append(str(result[1]))
 			item.save()
 			return flask.Response(
-				response=json_util.dumps({'error': 1, 'changes_made': 0, 'error_details': result[1]}),
+				response=bson.json_util.dumps({'error': 1, 'changes_made': 0, 'error_details': result[1]}),
 				mimetype='application/json'
 				)
 
@@ -163,13 +172,13 @@ def depile_sync_item():
 		if result[0]:
 			item.delete()
 			return flask.Response(
-				response=json_util.dumps({'error': 0, 'changes_made': 1, 'deletes_made': 1}),
+				response=bson.json_util.dumps({'error': 0, 'changes_made': 1, 'deletes_made': 1}),
 				mimetype='application/json'
 				)
 		else:
 			item.errors.append(str(result[1]))
 			item.save()
 			return flask.Response(
-				response=json_util.dumps({'error': 1, 'changes_made': 0, 'error_details': result[1]}),
+				response=bson.json_util.dumps({'error': 1, 'changes_made': 0, 'error_details': result[1]}),
 				mimetype='application/json'
 				)
