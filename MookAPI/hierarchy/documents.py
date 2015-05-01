@@ -152,7 +152,7 @@ class Skill(ResourceHierarchy):
 	def to_mongo_detailed(self):
 		son = self.to_mongo()
 		son['lessons'] = map(lambda l: l.id, self.lessons)
-		son['image_url'] = flask.url_for('hierarchy.get_skill_icon', skill_id=self.id, _external=True)
+		son['icon_url'] = flask.url_for('hierarchy.get_skill_icon', skill_id=self.id, _external=True)
 		son['bg_color'] = self.track.bg_color
 		return son
 
