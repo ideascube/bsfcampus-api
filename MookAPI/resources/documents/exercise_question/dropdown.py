@@ -2,9 +2,10 @@ from bson import ObjectId
 
 from MookAPI import db
 from . import ExerciseQuestion, ExerciseQuestionAnswer
+from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
 
 
-class DropdownExerciseQuestionProposition(db.EmbeddedDocument):
+class DropdownExerciseQuestionProposition(SyncableEmbeddedDocument):
     """Stores a proposition to a blank field."""
 
     ## Object Id
@@ -17,7 +18,7 @@ class DropdownExerciseQuestionProposition(db.EmbeddedDocument):
     is_correct_answer = db.BooleanField(default=False)
 
 
-class DropdownExerciseQuestionDropdown(db.EmbeddedDocument):
+class DropdownExerciseQuestionDropdown(SyncableEmbeddedDocument):
     """Stores a list of propositions to a blank field in a text."""
 
     ## Object Id

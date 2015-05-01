@@ -3,10 +3,10 @@ from MookAPI import db
 import datetime
 import bson
 from slugify import slugify
-from MookAPI.local_servers.documents import SyncableDocument
+from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
 
 
-class ResourceContent(db.DynamicEmbeddedDocument):
+class ResourceContent(SyncableEmbeddedDocument):
 	"""Generic collection, every resource type will inherit from this."""
 	
 	meta = {

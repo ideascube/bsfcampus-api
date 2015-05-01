@@ -4,8 +4,10 @@ from bson import ObjectId
 
 from MookAPI import db
 
+from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
 
-class ExerciseQuestion(db.EmbeddedDocument):
+
+class ExerciseQuestion(SyncableEmbeddedDocument):
     """
     Generic collection, every question type will inherit from this.
     Subclasses should override method "without_correct_answer" in order to define the version sent to clients.

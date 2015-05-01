@@ -2,9 +2,10 @@ from bson import ObjectId
 
 from MookAPI import db
 from . import ExerciseQuestion, ExerciseQuestionAnswer
+from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
 
 
-class MultipleAnswerMCQExerciseQuestionProposition(db.EmbeddedDocument):
+class MultipleAnswerMCQExerciseQuestionProposition(SyncableEmbeddedDocument):
     """Stores a proposition to a multiple-answer MCQ."""
 
     ## Object Id

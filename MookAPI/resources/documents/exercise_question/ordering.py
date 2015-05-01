@@ -4,9 +4,10 @@ from bson import ObjectId
 
 from MookAPI import db
 from . import ExerciseQuestion, ExerciseQuestionAnswer
+from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
 
 
-class OrderingExerciseQuestionItem(db.EmbeddedDocument):
+class OrderingExerciseQuestionItem(SyncableEmbeddedDocument):
     """Stores an item for the overall ordering question."""
 
     ## Object Id
