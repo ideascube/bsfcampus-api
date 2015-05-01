@@ -24,6 +24,34 @@ def import_module(module_name):
 	return __import__(module_name, fromlist=[''])
 document_modules = map(import_module, document_module_names)
 
+
+@bp.route("/reset")
+def reset_sync():
+	api_host = app_config.central_server_api_host
+	url = api_host + 'local_servers/reset'
+	email = app_config.central_server_api_key
+	password = app_config.central_server_api_secret
+	
+	r = requests.get(url, auth=(email, password))
+
+	if r.status_code == 200:
+
+		return flask.Response(
+			response=bson.json_util.dumps({
+				'error': 0
+				}),
+			mimetype='application/json'
+			)
+
+	else:
+		return flask.Response(
+			response=bson.json_util.dumps({
+				'error': 1,
+				'response_code': r.status_code,
+			}),
+			mimetype='application/json'
+			)
+
 def pile_update_items(array):
 	for item in array:
 		item_document = documents.ItemToSync(
@@ -73,12 +101,11 @@ def get_fetch_list():
 			)
 
 	else:
-		json = {
-			'error': 1,
-			'response_code': r.status_code,
-		}
 		return flask.Response(
-			response=bson.json_util.dumps(json),
+			response=bson.json_util.dumps({
+				'error': 1,
+				'response_code': r.status_code,
+			}),
 			mimetype='application/json'
 			)
 
