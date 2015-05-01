@@ -4,6 +4,8 @@ import datetime
 import bson
 from MookAPI.users.documents import User
 from mongoengine.common import _import_class
+import requests
+import os
 
 class DeletedSyncableDocument(db.Document):
 
@@ -99,23 +101,42 @@ class SyncableDocument(db.Document):
 		obj = cls()
 		FileField = _import_class('FileField')
 		ReferenceField = _import_class('ReferenceField')
+		EmbeddedDocumentField = _import_class('EmbeddedDocumentField')
 		for key, value in json.iteritems():
 			key = obj._reverse_db_field_map.get(key, key)
 			if key in obj._fields or key in ('id', 'pk', '_cls'):
-				if value is not None:
-					field = obj._fields.get(key)
-					if not field:
-						continue
-					elif isinstance(field, FileField):
-						continue # Download file instead
-					elif isinstance(field, ReferenceField):
-						value = field.to_python(value)
-						local_ref = field.document_type_obj.objects(distant_id=value.id).first()
-						setattr(obj, key, local_ref)
-						continue
-					else:
-						value = field.to_python(value)
-						setattr(obj, key, value)
+				if value is None:
+					continue
+				field = obj._fields.get(key)
+				if not field:
+					continue
+				elif isinstance(field, FileField):
+					url_key = key + '_url'
+					url = json[url_key]
+					with open('temp', 'wb') as handle:
+						r = requests.get(url, stream=True)
+						if not r.ok:
+							continue
+						for block in r.iter_content(1024):
+							if not block:
+								break
+							handle.write(block)
+					value = open('temp', 'rb')
+					try:
+						obj[key].put(value, content_type=r.headers['content-type'])
+						os.remove('temp')
+					except:
+						print sys.exc_info()
+				elif isinstance(field, ReferenceField):
+					value = field.to_python(value)
+					local_ref = field.document_type_obj.objects(distant_id=value.id).first()
+					setattr(obj, key, local_ref)
+					continue
+				elif isinstance(field, EmbeddedDocumentField):
+					continue
+				else:
+					value = field.to_python(value)
+					setattr(obj, key, value)
 		obj.distant_id = json['_id']
 		return obj
 
