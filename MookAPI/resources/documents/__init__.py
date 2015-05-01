@@ -76,6 +76,10 @@ class Resource(SyncableDocument):
 	def url(self):
 		return flask.url_for('resources.get_resource', resource_id=self.id, _external=True)
 
+	@classmethod
+	def json_key(cls):
+		return 'resource'
+
 	@property
 	def skill(self):
 		return self.lesson.skill
