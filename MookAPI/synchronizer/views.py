@@ -91,7 +91,7 @@ def create_object(document_class, url):
 			bson_object = bson.json_util.loads(r.text)
 			obj = document_class.init_with_json_result(bson_object)
 		except:
-			return None, str(sys.exc_info()[0])
+			return None, str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
 
 		return obj, None
 
