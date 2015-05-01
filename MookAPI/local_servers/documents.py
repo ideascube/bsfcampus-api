@@ -5,7 +5,7 @@ import bson
 from MookAPI.users.documents import User
 from mongoengine.common import _import_class
 import requests
-import os
+import os, sys
 
 class DeletedSyncableDocument(db.Document):
 
@@ -22,8 +22,78 @@ class DeletedSyncableDocument(db.Document):
 		return super(DeletedSyncableDocument, self).save(*args, **kwargs)
 
 
+class SyncableDocumentJSONParserMixin(object):
+	def convert_value_from_json(self, value, field):
+
+		ReferenceField = _import_class('ReferenceField')
+		EmbeddedDocumentField = _import_class('EmbeddedDocumentField')
+		ListField = _import_class('ListField')
+
+		if isinstance(field, ReferenceField):
+			value = field.to_python(value)
+			return field.document_type_obj.objects(distant_id=value.id).first()
+
+		elif isinstance(field, EmbeddedDocumentField):
+			return field.document_type_obj.init_with_json_object(value)
+
+		elif isinstance(field, ListField):
+			## field.field is the type of elements in the listfield
+			if field.field is None:
+				return field.to_python(value)
+
+			converted_value = []
+			for element in value:
+				converted_element = self.convert_value_from_json(element, field.field)
+				converted_value.append(converted_element)
+			
+			return converted_value
+
+		else:
+			return field.to_python(value)
+
+	def set_value_from_json(self, json, key):
+
+		## Get value from json
+		value = json[key]
+		if value is None:
+			return
+
+		## Check if key is valid and has associated Field object
+		key = self._reverse_db_field_map.get(key, key)
+		if key in self._fields or key in ('id', 'pk', '_cls'):
+			field = self._fields.get(key)
+			if not field:
+				return
+		else:
+			return
+
+		## Special case: FileField requires special method to set value
+		FileField = _import_class('FileField')
+		if isinstance(field, FileField):
+			url_key = key + '_url'
+			url = json[url_key]
+			with open('temp', 'wb') as handle:
+				r = requests.get(url, stream=True)
+				if not r.ok:
+					return # Raise an exception
+				for block in r.iter_content(1024):
+					if not block:
+						break
+					handle.write(block)
+			value = open('temp', 'rb')
+			try:
+				self[key].put(value, content_type=r.headers['content-type'])
+				os.remove('temp')
+			except:
+				print sys.exc_info()
+		## Defer all other field types to dedicated method.
+		else:
+			value = self.convert_value_from_json(value, field)
+			setattr(self, key, value)
+
+
 ## All documents that need to be synced must inherit from this class.
-class SyncableDocument(db.Document):
+class SyncableDocument(db.Document, SyncableDocumentJSONParserMixin):
 	"""
 	This document type must be the base class of any document that wants to be a syncable item.
 	Subclasses must implement the 'url' virtual property.
@@ -50,7 +120,7 @@ class SyncableDocument(db.Document):
 
 	@classmethod
 	def json_key(cls):
-		return cls.__name__.lower()	
+		return cls.__name__.lower()
 
 	def save(self, *args, **kwargs):
 		self.last_modification = datetime.datetime.now()
@@ -98,51 +168,36 @@ class SyncableDocument(db.Document):
 
 	@classmethod
 	def init_with_json_object(cls, json):
+		print "Creating document with json", json
 		obj = cls()
-		FileField = _import_class('FileField')
-		ReferenceField = _import_class('ReferenceField')
-		EmbeddedDocumentField = _import_class('EmbeddedDocumentField')
-		for key, value in json.iteritems():
-			key = obj._reverse_db_field_map.get(key, key)
-			if key in obj._fields or key in ('id', 'pk', '_cls'):
-				if value is None:
-					continue
-				field = obj._fields.get(key)
-				if not field:
-					continue
-				elif isinstance(field, FileField):
-					url_key = key + '_url'
-					url = json[url_key]
-					with open('temp', 'wb') as handle:
-						r = requests.get(url, stream=True)
-						if not r.ok:
-							continue
-						for block in r.iter_content(1024):
-							if not block:
-								break
-							handle.write(block)
-					value = open('temp', 'rb')
-					try:
-						obj[key].put(value, content_type=r.headers['content-type'])
-						os.remove('temp')
-					except:
-						print sys.exc_info()
-				elif isinstance(field, ReferenceField):
-					value = field.to_python(value)
-					local_ref = field.document_type_obj.objects(distant_id=value.id).first()
-					setattr(obj, key, local_ref)
-					continue
-				elif isinstance(field, EmbeddedDocumentField):
-					continue
-				else:
-					value = field.to_python(value)
-					setattr(obj, key, value)
+		
+		for key in json.iterkeys():
+			obj.set_value_from_json(json, key)
+
 		obj.distant_id = json['_id']
+				
 		return obj
 
 	@classmethod
 	def init_with_json_result(cls, json):
 		return cls.init_with_json_object(json[cls.json_key()])
+
+class SyncableEmbeddedDocument(db.EmbeddedDocument, SyncableDocumentJSONParserMixin):
+
+	meta = {
+		'allow_inheritance': True,
+		'abstract': True
+	}
+
+	@classmethod
+	def init_with_json_object(cls, json):
+		print "Creating embedded document with json", json
+		obj = cls()
+
+		for key in json.iterkeys():
+			obj.set_value_from_json(json, key)
+				
+		return obj
 
 
 class SyncableItem(db.EmbeddedDocument):
