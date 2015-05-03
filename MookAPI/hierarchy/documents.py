@@ -8,6 +8,12 @@ from MookAPI.resources import documents as resources_documents
 
 
 class ResourceHierarchy(mc.SyncableDocument):
+	"""
+	.. _ResourceHierarchy:
+	
+	An abstract class that can describe a Lesson_, a Skill_ or a Track_.
+	"""
+
 	meta = {
 		'allow_inheritance': True,
 		'abstract': True
@@ -111,21 +117,22 @@ class ResourceHierarchy(mc.SyncableDocument):
 
 class Lesson(ResourceHierarchy):
 	"""
-	Third level of resources hierarchy.
-	Their ascendants are skills (Skill class).
-	Resource objects reference a parent Lesson.
+	.. _Lesson:
+
+	Third level of resources hierarchy. Their ascendants are Skill_ objects.
+	Resource_ objects reference a parent Lesson_.
 	"""
 	
 	### PROPERTIES
 
 	skill = db.ReferenceField('Skill')
-	"""The parent skill."""
+	"""The parent Skill_."""
 
 	### VIRTUAL PROPERTIES
 	
 	@property
 	def track(self):
-		"""Shorthand virtual property to the parent track of the parent skill."""
+		"""Shorthand virtual property to the parent Track_ of the parent Skill_."""
 		return self.skill.track
 
 	@property
@@ -134,7 +141,7 @@ class Lesson(ResourceHierarchy):
 
 	@property
 	def resources(self):
-		"""A queryset of the resources that belong to the current lesson."""
+		"""A queryset of the Resource_ objects that belong to the current Lesson_."""
 		return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
 
 	@property
@@ -190,20 +197,22 @@ class Lesson(ResourceHierarchy):
 
 class Skill(ResourceHierarchy):
 	"""
-	Second level of resources hierarchy.
-	Their ascendants are tracks (Track class).
-	Their descendants are skills (Skill class).
+	.. _Skill:
+
+	Second level of Resource_ hierarchy.
+	Their ascendants are Track_ objects.
+	Their descendants are Lesson_ objects.
 	"""
 	
 	### PROPERTIES
 
 	## Parent track
 	track = db.ReferenceField('Track')
-	"""The parent track."""
+	"""The parent Track_."""
 
 	## icon image
 	icon = db.ImageField()
-	"""An icon to illustrate the skill."""
+	"""An icon to illustrate the Skill_."""
 
 	@property
 	def icon_url(self):
@@ -218,7 +227,7 @@ class Skill(ResourceHierarchy):
 
 	@property
 	def lessons(self):
-		"""A queryset of the lessons that belong to the current skill."""
+		"""A queryset of the Lesson_ objects that belong to the current Skill_."""
 		return Lesson.objects.order_by('order', 'title').filter(skill=self)
 
 	@property
@@ -272,11 +281,13 @@ class Skill(ResourceHierarchy):
 
 class Track(ResourceHierarchy):
 	"""
-	Top level of resources hierarchy. Their descendants are skills (Skill class).
+	.. _Track:
+	
+	Top level of Resource_ hierarchy. Their descendants are Skill_ objects.
 	"""
 
 	icon = db.ImageField()
-	"""An icon to illustrate the skill."""
+	"""An icon to illustrate the Track_."""
 
 	@property
 	def icon_url(self):
@@ -284,7 +295,7 @@ class Track(ResourceHierarchy):
 		return flask.url_for('hierarchy.get_track_icon', track_id=self.id, _external=True)
 
 	bg_color = db.StringField()
-	"""The background color of pages in this track."""
+	"""The background color of pages in this Track_."""
 
 	### VIRTUAL PROPERTIES
 
@@ -294,7 +305,7 @@ class Track(ResourceHierarchy):
 
 	@property
 	def skills(self):
-		"""A queryset of the skills that belong to the current track."""
+		"""A queryset of the Skill_ objects that belong to the current Track_."""
 		return Skill.objects.order_by('order', 'title').filter(track=self)
 
 	@property

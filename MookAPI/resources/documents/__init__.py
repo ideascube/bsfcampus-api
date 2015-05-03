@@ -7,7 +7,11 @@ import MookAPI.mongo_coder as mc
 
 
 class ResourceContent(mc.MongoCoderEmbeddedDocument):
-	"""An embedded document for the actual content of the resource."""
+	"""
+	.. _ResourceContent:
+	
+	An embedded document for the actual content of the Resource_.
+	"""
 	
 	meta = {
 		'allow_inheritance': True,
@@ -17,9 +21,11 @@ class ResourceContent(mc.MongoCoderEmbeddedDocument):
 
 class Resource(mc.SyncableDocument):
 	"""
+	.. _Resource:
+	
 	Any elementary pedagogical resource.
-	Contains the metadata and a 'ResourceContent' embedded document.
-	Resource objects are organized by lessons, therefore each Resource references a parent Lesson.
+	Contains the metadata and a ResourceContent_ embedded document.
+	Resource_ objects are organized by Lesson_ objects, *i.e.* each Resource_ references a parent Lesson_.
 	"""
 
 	meta = {
@@ -29,32 +35,32 @@ class Resource(mc.SyncableDocument):
 	### PROPERTIES
 
 	title = db.StringField(required=True)
-	"""The title of the resource."""
+	"""The title of the Resource_."""
 
 	slug = db.StringField(unique=True)
-	"""A human-readable unique identifier for the resource."""
+	"""A human-readable unique identifier for the Resource_."""
 
 	## Will be implemented later
 	# creator = db.ReferenceField('User')
 		# """The user who created the resource."""
 
 	description = db.StringField()
-	"""A text describing the resource."""
+	"""A text describing the Resource_."""
 
 	order = db.IntField()
-	"""The order of the resource in the lesson."""
+	"""The order of the Resource_ in the Lesson_."""
 
 	keywords = db.ListField(db.StringField())
-	"""A list of keywords to index the resource."""
+	"""A list of keywords to index the Resource_."""
 
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
-	"""The date the resource was created."""
+	"""The date the Resource_ was created."""
 
 	lesson = db.ReferenceField('Lesson')
-	"""The parent lesson."""
+	"""The parent Lesson_."""
 
 	resource_content = db.EmbeddedDocumentField(ResourceContent)
-	"""The actual content of the resource, stored in an embedded document."""
+	"""The actual content of the Resource_, stored in a ResourceContent_ embedded document."""
 
 	### VIRTUAL PROPERTIES
 
@@ -64,7 +70,7 @@ class Resource(mc.SyncableDocument):
 
 	@property
 	def is_validated(self):
-		"""Whether the current user (if any) has validated this resource."""
+		"""Whether the current user (if any) has validated this Resource_."""
 		return False
 	
 	@classmethod
@@ -73,38 +79,38 @@ class Resource(mc.SyncableDocument):
 
 	@property
 	def skill(self):
-		"""Shorthand virtual property to the parent skill of the parent lesson."""
+		"""Shorthand virtual property to the parent Skill_ of the parent Lesson_."""
 		return self.lesson.skill
 
 	@property
 	def track(self):
-		"""Shorthand virtual property to the parent track of the parent skill of the parent lesson."""
+		"""Shorthand virtual property to the parent Track_ of the parent Skill_ of the parent Lesson_."""
 		return self.lesson.skill.track
 	
 	### METHODS
 
 	def siblings(self):
-		"""A queryset of resources in the same lesson, including the current resource."""
+		"""A queryset of Resource_ objects in the same Lesson_, including the current Resource_."""
 		return Resource.objects.order_by('order', 'title').filter(lesson=self.lesson)
 		
 	def siblings_strict(self):
-		"""A queryset of resources in the same lesson, excluding the current resource."""
+		"""A queryset of Resource_ objects in the same Lesson_, excluding the current Resource_."""
 		return Resource.objects.order_by('order', 'title').filter(lesson=self.lesson, id__ne=self.id)
 		
 	def aunts(self):
-		"""A queryset of lessons in the same skill, including the current lesson."""
+		"""A queryset of Lesson_ objects in the same Skill_, including the current Lesson_."""
 		return self.lesson.siblings()
 
 	def aunts_strict(self):
-		"""A queryset of lessons in the same skill, excluding the current lesson."""
+		"""A queryset of Lesson_ objects in the same Skill_, excluding the current Lesson_."""
 		return self.lesson.siblings_strict()
 
 	def cousins(self):
-		"""A queryset of resources in the same skill, including the current resource."""
+		"""A queryset of Resource_ objects in the same Skill_, including the current Resource_."""
 		return Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=self.aunts())
 	
 	def cousins_strict(self):
-		"""A queryset of resources in the same skill, excluding the current resource."""
+		"""A queryset of Resource_ objects in the same Skill_, excluding the current Resource_."""
 		return Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=self.aunts_strict())
 	
 	def _set_slug(self):
@@ -152,7 +158,7 @@ class Resource(mc.SyncableDocument):
 
 	def breadcrumb(self):
 		"""
-		Returns an array of the breadcrumbs up until the current object: [Track, Skill, Lesson, Resource]
+		Returns an array of the breadcrumbs up until the current object: [Track_, Skill_, Lesson_, Resource_]
 		"""
 
 		return [
