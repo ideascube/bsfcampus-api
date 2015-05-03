@@ -244,7 +244,7 @@ class SyncableDocument(MongoCoderDocument):
 
 		for obj in DeletedSyncableDocument.objects.filter(top_level_document=self.top_level_syncable_document()):
 			if last_sync is None or obj.date is None or last_sync < obj.date:
-				document = obj.to_mongo().document
+				document = obj.encode_mongo()['document']
 				items.append(document)
 
 		return items
