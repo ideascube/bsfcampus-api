@@ -85,7 +85,7 @@ class ResourceHierarchy(mc.SyncableDocument):
 		else:
 			return cls.objects.get_or_404(id=token)
 
-	def __breadcrumb_item(self):
+	def _breadcrumb_item(self):
 		"""Returns some minimal information about the object for use in a breadcrumb."""
 		idkey = self.__class__.json_key() + '_id'
 		return {
