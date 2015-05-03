@@ -54,16 +54,16 @@ class ExerciseQuestion(mc.MongoCoderEmbeddedDocument):
     answer_feedback = db.StringField()
 
     def without_correct_answer(self):
-        son = self.to_mongo()
+        son = self.encode_mongo()
         son.pop('answer_feedback', None)
         return son
 
     def with_computed_correct_answer(self, parameters):
-        son = self.to_mongo()
+        son = self.encode_mongo()
         return son
 
     def answer_with_data(self, data):
-        return ExerciseQuestionAnswer().init_with_data(data)
+        return ExerciseQuestionAnswer.init_with_data(data)
 
 
 class ExerciseQuestionAnswer(mc.MongoCoderEmbeddedDocument):
@@ -84,13 +84,8 @@ class ExerciseQuestionAnswer(mc.MongoCoderEmbeddedDocument):
 
     ### METHODS
 
-    def init_with_data(self, data):
-        """
-        This is a hack to bypass __init__ (I don't know how to use it yet).
-        'data' is the form data sent by the client.
-        MUST return self.
-        """
-
+    @classmethod
+    def init_with_data(cls, data):
         raise exceptions.NotImplementedError("This question type has no initializer.")
 
     ## This method needs to be overridden for each question type.
@@ -106,6 +101,10 @@ class ExerciseQuestionAnswer(mc.MongoCoderEmbeddedDocument):
 __all__ = [
     'ExerciseQuestion',
     'ExerciseQuestionAnswer',
+    'categorize',
+    'dropdown',
     'multiple_answer_mcq',
-    'unique_answer_mcq'
+    'ordering',
+    'right_or_wrong',
+    'unique_answer_mcq',
 ]

@@ -32,7 +32,7 @@ class OrderingExerciseQuestion(ExerciseQuestion):
         return son
 
     def answer_with_data(self, data):
-        return OrderingExerciseQuestionAnswer().init_with_data(data)
+        return OrderingExerciseQuestionAnswer.init_with_data(data)
 
     def getItemsById(self, itemsId):
         result = []
@@ -54,10 +54,12 @@ class OrderingExerciseQuestionAnswer(ExerciseQuestionAnswer):
     ## The given propositions, identified by their ObjectIds
     given_ordered_items = db.ListField(db.ObjectIdField())
 
-    def init_with_data(self, data):
-        self.given_ordered_items = data['given_ordered_items']
-        print(self.given_ordered_items)
-        return self
+    @classmethod
+    def init_with_data(cls, data):
+        obj = cls()
+        obj.given_ordered_items = data['given_ordered_items']
+        print(obj.given_ordered_items)
+        return obj
 
     def is_correct(self, question, parameters):
         ordered_items = question.getItemsById(self.given_ordered_items)

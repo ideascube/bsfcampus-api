@@ -44,14 +44,13 @@ class CategorizeExerciseQuestion(ExerciseQuestion):
         son = super(CategorizeExerciseQuestion, self).without_correct_answer()
         all_items = []
         for category in son['categories']:
-            print(category)
             all_items.extend(category.pop('items'))
         shuffle(all_items)
         son['items'] = all_items
         return son
 
     def answer_with_data(self, data):
-        return CategorizeExerciseQuestionAnswer().init_with_data(data)
+        return CategorizeExerciseQuestionAnswer.init_with_data(data)
 
     def get_category_by_id(self, category_id):
         for category in self.categories:
@@ -77,16 +76,18 @@ class CategorizeExerciseQuestionAnswer(ExerciseQuestionAnswer):
     ## The first level order is the same as the given_categories
     given_categorized_items = db.ListField(db.ListField(db.ObjectIdField()))
 
-    def init_with_data(self, data):
-        self.given_categories = []
-        self.given_categorized_items = []
+    @classmethod
+    def init_with_data(cls, data):
+        obj = cls()
+        obj.given_categories = []
+        obj.given_categorized_items = []
         for given_category in data['given_categorized_items']:
-            self.given_categories.append(ObjectId(given_category['id']))
+            obj.given_categories.append(ObjectId(given_category['id']))
             category = []
             for given_item in given_category['items']:
                 category.append(ObjectId(given_item))
-            self.given_categorized_items.append(category)
-        return self
+            obj.given_categorized_items.append(category)
+        return obj
 
     def is_correct(self, question, parameters):
         answer_categories_items = self.given_categorized_items

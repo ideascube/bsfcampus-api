@@ -34,7 +34,7 @@ class MultipleAnswerMCQExerciseQuestion(ExerciseQuestion):
         return son
 
     def answer_with_data(self, data):
-        return MultipleAnswerMCQExerciseQuestionAnswer().init_with_data(data)
+        return MultipleAnswerMCQExerciseQuestionAnswer.init_with_data(data)
 
     def getPropositionsById(self, propositionsId):
         result = [];
@@ -51,11 +51,13 @@ class MultipleAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
     ## The list of chosen propositions, identified by their ObjectIds
     given_propositions = db.ListField(db.ObjectIdField())
 
-    def init_with_data(self, data):
-        self.given_propositions = []
+    @classmethod
+    def init_with_data(cls, data):
+        obj = cls()
+        obj.given_propositions = []
         for proposition in data['propositions']:
-            self.given_propositions.append(ObjectId(proposition))
-        return self
+            obj.given_propositions.append(ObjectId(proposition))
+        return obj
 
     def is_correct(self, question, parameters):
         propositions = question.getPropositionsById(self.given_propositions)

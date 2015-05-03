@@ -48,7 +48,7 @@ class DropdownExerciseQuestion(ExerciseQuestion):
         return son
 
     def answer_with_data(self, data):
-        return DropdownExerciseQuestionAnswer().init_with_data(data)
+        return DropdownExerciseQuestionAnswer.init_with_data(data)
 
     def getPropositionsById(self, propositionsId):
         result = [];
@@ -65,11 +65,13 @@ class DropdownExerciseQuestionAnswer(ExerciseQuestionAnswer):
     ## The list of chosen propositions, identified by their ObjectIds
     given_propositions = db.ListField(db.ObjectIdField())
 
-    def init_with_data(self, data):
-        self.given_propositions = []
+    @classmethod
+    def init_with_data(cls, data):
+        obj = cls()
+        obj.given_propositions = []
         for dropdown in data['dropdowns']:
-            self.given_propositions.append(ObjectId(dropdown))
-        return self
+            obj.given_propositions.append(ObjectId(dropdown))
+        return obj
 
     def is_correct(self, question, parameters):
         propositions = question.getPropositionsById(self.given_propositions)

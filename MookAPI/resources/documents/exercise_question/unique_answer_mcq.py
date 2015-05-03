@@ -34,7 +34,7 @@ class UniqueAnswerMCQExerciseQuestion(ExerciseQuestion):
         return son
 
     def answer_with_data(self, data):
-        return UniqueAnswerMCQExerciseQuestionAnswer().init_with_data(data)
+        return UniqueAnswerMCQExerciseQuestionAnswer.init_with_data(data)
 
     def propositionById(self, propositionId):
         result = None;
@@ -50,10 +50,11 @@ class UniqueAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
     ## The chosen propositions, identified by its ObjectId
     given_proposition = db.ObjectIdField()
 
-    def init_with_data(self, data):
-        self.given_proposition = data['proposition']
-        print(self.given_proposition)
-        return self
+    @classmethod
+    def init_with_data(cls, data):
+        obj = cls()
+        obj.given_proposition = data['proposition']
+        return obj
 
     def is_correct(self, question, parameters):
         proposition = question.propositionById(ObjectId(self.given_proposition))
