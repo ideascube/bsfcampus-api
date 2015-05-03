@@ -16,19 +16,19 @@ class ResourceHierarchy(mc.SyncableDocument):
 	### PROPERTIES
 
 	title = db.StringField(required=True)
-		"""The title of the hierarchy level."""
+	"""The title of the hierarchy level."""
 
 	slug = db.StringField(unique=True)
-		"""A human-readable unique identifier for the hierarchy level."""
+	"""A human-readable unique identifier for the hierarchy level."""
 
 	description = db.StringField()
-		"""A text describing the content of the resources in this hierarchy level."""
+	"""A text describing the content of the resources in this hierarchy level."""
 
 	order = db.IntField()
-		"""The order of the hierarchy amongst its siblings."""
+	"""The order of the hierarchy amongst its siblings."""
 
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
-		"""The date the hierarchy level was created."""
+	"""The date the hierarchy level was created."""
 
 	@property
 	def is_validated(self):
@@ -119,7 +119,7 @@ class Lesson(ResourceHierarchy):
 	### PROPERTIES
 
 	skill = db.ReferenceField('Skill')
-		"""The parent skill."""
+	"""The parent skill."""
 
 	### VIRTUAL PROPERTIES
 	
@@ -199,11 +199,11 @@ class Skill(ResourceHierarchy):
 
 	## Parent track
 	track = db.ReferenceField('Track')
-		"""The parent track."""
+	"""The parent track."""
 
 	## icon image
 	icon = db.ImageField()
-		"""An icon to illustrate the skill."""
+	"""An icon to illustrate the skill."""
 
 	@property
 	def icon_url(self):
@@ -276,7 +276,7 @@ class Track(ResourceHierarchy):
 	"""
 
 	icon = db.ImageField()
-		"""An icon to illustrate the skill."""
+	"""An icon to illustrate the skill."""
 
 	@property
 	def icon_url(self):
@@ -284,7 +284,7 @@ class Track(ResourceHierarchy):
 		return flask.url_for('hierarchy.get_track_icon', track_id=self.id, _external=True)
 
 	bg_color = db.StringField()
-		"""The background color of pages in this track."""
+	"""The background color of pages in this track."""
 
 	### VIRTUAL PROPERTIES
 

@@ -6,7 +6,7 @@ from . import *
 class DownloadableFileResourceContent(ResourceContent):
 	
 	content_file = db.FileField(required=True)
-		"""A file to download."""
+	"""A file to download."""
 
 	@property
 	def content_file_url(self):

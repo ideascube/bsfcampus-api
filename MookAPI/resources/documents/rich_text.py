@@ -6,7 +6,7 @@ from . import *
 class RichTextResourceContent(ResourceContent):
 
 	html = db.StringField(required=True)
-		"""An HTML string containing the rich text."""
+	"""An HTML string containing the rich text."""
 
 
 class RichTextResource(Resource):

@@ -9,7 +9,7 @@ class AudioResourceContent(DownloadableFileResourceContent):
 
 	## Illustrative image file for the audio file
 	image = db.ImageField()
-		"""An image to show with the audio player."""
+	"""An image to show with the audio player."""
 
 	@property
 	def image_url(self):

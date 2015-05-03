@@ -29,32 +29,32 @@ class Resource(mc.SyncableDocument):
 	### PROPERTIES
 
 	title = db.StringField(required=True)
-		"""The title of the resource."""
+	"""The title of the resource."""
 
 	slug = db.StringField(unique=True)
-		"""A human-readable unique identifier for the resource."""
+	"""A human-readable unique identifier for the resource."""
 
 	## Will be implemented later
 	# creator = db.ReferenceField('User')
 		# """The user who created the resource."""
 
 	description = db.StringField()
-		"""A text describing the resource."""
+	"""A text describing the resource."""
 
 	order = db.IntField()
-		"""The order of the resource in the lesson."""
+	"""The order of the resource in the lesson."""
 
 	keywords = db.ListField(db.StringField())
-		"""A list of keywords to index the resource."""
+	"""A list of keywords to index the resource."""
 
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
-		"""The date the resource was created."""
+	"""The date the resource was created."""
 
 	lesson = db.ReferenceField('Lesson')
-		"""The parent lesson."""
+	"""The parent lesson."""
 
 	resource_content = db.EmbeddedDocumentField(ResourceContent)
-		"""The actual content of the resource, stored in an embedded document."""
+	"""The actual content of the resource, stored in an embedded document."""
 
 	### VIRTUAL PROPERTIES
 
@@ -65,7 +65,7 @@ class Resource(mc.SyncableDocument):
 	@property
 	def is_validated(self):
 		"""Whether the current user (if any) has validated this resource."""
-	    return False
+		return False
 	
 	@classmethod
 	def json_key(cls):
