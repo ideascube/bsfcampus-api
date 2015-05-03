@@ -153,15 +153,12 @@ def get_question_image(resource_id, question_id):
 	"""GET one question's image"""
 
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
-	resource_content = resource.resource_content
-	for question in resource_content.questions():
-		if str(question.id) == question_id:
-			question_image = question.question_image
-			return flask.send_file(
-				io.BytesIO(question_image.read()),
-				attachment_filename=question_image.filename,
-				mimetype=question_image.contentType
-				)
-
-	flask.abort(404)
-	
+	try: 
+		question = resource.question(question_id=question_id)
+		return flask.send_file(
+			io.BytesIO(question_image.read()),
+			attachment_filename=question_image.filename,
+			mimetype=question_image.contentType
+			)
+	except:
+		abort(404)
