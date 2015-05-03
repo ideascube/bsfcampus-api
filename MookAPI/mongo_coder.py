@@ -10,13 +10,13 @@ class MongoCoderMixin(object):
 	"""
 	.. _MongoCoderMixin:
 
-	A mixin that provides methods to code MongoEngine ``Document`` and ``EmbeddedDocument`` objects to and from MongoDB objects.
+	A mixin that provides methods to encode and decode JSON representations of MongoEngine ``Document`` and ``EmbeddedDocument`` objects.
 	This mixin is called in MongoCoderDocument_ and MongoCoderEmbeddedDocument_.
 	"""
 
 	def encode_mongo(self, instance=None):
 		"""
-		.. _MongoCoderMixin_encode_mongo: encode_mongo
+		.. _encode_mongo:
 
 		Alternative to native MongoEngine method ``to_mongo``
 		Generates a JSON representation of the document.
@@ -155,7 +155,7 @@ class MongoCoderDocument(db.Document, MongoCoderMixin):
 	"""
 	.. _MongoCoderDocument:
 
-	A MongoEngine ``Document`` with additional methods from MongoCoderMixin_ to support coding to and from MongoDB objects.
+	A MongoEngine ``Document`` with the MongoCoderMixin_ in order to encode and decode JSON representations.
 	"""
 
 
@@ -167,7 +167,7 @@ class MongoCoderDocument(db.Document, MongoCoderMixin):
 	@property
 	def url(self):
 		"""
-		The URL where a JSON representation of the document based on MongoCoderMixin_'s MongoCoderMixin_encode_mongo_ method can be found.
+		The URL where a JSON representation of the document based on MongoCoderMixin_'s encode_mongo_ method can be found.
 
 		.. warning::
 
@@ -236,7 +236,7 @@ class MongoCoderEmbeddedDocument(db.EmbeddedDocument, MongoCoderMixin):
 	"""
 	.. _MongoCoderEmbeddedDocument:
 
-	A MongoEngine ``EmbeddedDocument`` with additional methods from MongoCoderMixin_ to support coding to and from MongoDB objects.
+	A MongoEngine ``EmbeddedDocument`` with the MongoCoderMixin_ in order to encode and decode JSON representations.
 	"""
 
 	meta = {
@@ -337,7 +337,7 @@ class SyncableDocument(MongoCoderDocument):
 
 	def items_to_update(self, last_sync):
 		"""
-		.. _SyncableDocument_items_to_update: items_to_update
+		.. _items_to_update:
 
 		Returns the list of references to atomic documents that have changed since the last synchronization.
 		Defaults to a one-element list containing a reference to self.
@@ -354,7 +354,7 @@ class SyncableDocument(MongoCoderDocument):
 
 	def items_to_delete(self, last_sync):
 		"""
-		.. _SyncableDocument_items_to_delete: items_to_delete
+		.. _items_to_delete:
 
 		Returns the list of references to atomic documents that have been deleted since the last synchronization.
 		This method will also automatically check for any deleted children documents (no need to override as long as ``top_level_document`` is overridden).
@@ -373,8 +373,8 @@ class SyncableDocument(MongoCoderDocument):
 		"""
 		Returns a dictionary ``dict`` with two keys: 
 
-		* ``dict['update']`` contains the results of the SyncableDocument_items_to_update_ method;
-		* ``dict['delete']`` contains the results of the SyncableDocument_items_to_delete_ method.
+		* ``dict['update']`` contains the results of the items_to_update_ method;
+		* ``dict['delete']`` contains the results of the items_to_delete_ method.
 
 		.. todo::
 
