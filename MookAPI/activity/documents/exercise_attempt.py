@@ -4,44 +4,41 @@ import flask
 from bson import ObjectId
 
 from MookAPI import db
+import MookAPI.mongo_coder as mc
 from . import Activity
 from MookAPI.resources.documents.exercise import ExerciseResource
 from MookAPI.resources.documents.exercise_question import ExerciseQuestionAnswer
 
 
-class ExerciseAttemptQuestionAnswer(db.EmbeddedDocument):
+class ExerciseAttemptQuestionAnswer(mc.MongoCoderEmbeddedDocument):
     """
 	Stores the data relative to one answer in an attempt to an exercise, including the answer given.
 	"""
 
     ### PROPERTIES
 
-    ## The ObjectId of the question.
-    ## The question is an embedded document so this is not a ReferenceField.
     question_id = db.ObjectIdField()
+    """A unique identifier for the question."""
 
-    ## Parameters
-    ## If the question has several possible modalities, they can be set here.
     parameters = db.DynamicField()
+    """A dynamic object to store any parameters needed to present the question."""
 
-    ## The answer given;
     given_answer = db.EmbeddedDocumentField(ExerciseQuestionAnswer)
+    """An embedded document to store the given answer to the question."""
 
-    ## Whether the answer is correct.
     is_answered_correctly = db.BooleanField()
+    """Whether the `given_answer` is correct."""
 
     ### METHODS
 
-    ## Hack to bypass __init__ which I could not figure out how to use just now.
-    def init_with_question(self, question):
-        """Initiate an object to store the answer given to a question."""
+    @classmethod
+    def init_with_question(cls, question):
+        """Instantiate an object to store the answer given to a question."""
 
-        self.question_id = question._id
+        obj = cls()
+        obj.question_id = question._id
 
-        ## Some question types may have parameters, they can be generated here:
-        # self.parameters = question.generate_parameters()
-
-        return self
+        return obj
 
     def is_answered(self):
         return self.given_answer is not None
@@ -62,15 +59,16 @@ class ExerciseAttempt(Activity):
 
     ### METHODS
 
-    ## Hack to bypass __init__ which I could not figure out how to use just now.
-    def init_with_exercise(self, exercise):
+    @classmethod
+    def init_with_exercise(cls, exercise):
         """Initiate an attempt for a given exercise."""
-        self.exercise = exercise
+        obj = cls()
+        obj.exercise = exercise
 
-        questions = exercise.random_questions(exercise.number_of_questions)
-        self.question_answers = map(lambda q: ExerciseAttemptQuestionAnswer().init_with_question(q), questions)
+        questions = exercise.random_questions()
+        obj.question_answers = map(lambda q: ExerciseAttemptQuestionAnswer.init_with_question(q), questions)
 
-        return self
+        return obj
 
     def question_answer(self, question_id):
         oid = ObjectId(question_id)
@@ -96,32 +94,28 @@ class ExerciseAttempt(Activity):
         attempt_question_answer = self.question_answer(question_id)
         question_answer = question.answer_with_data(data)
         attempt_question_answer.given_answer = question_answer
-        attempt_question_answer.is_answered_correctly = question_answer.is_correct(question,
-                                                                                   attempt_question_answer.parameters)
+        attempt_question_answer.is_answered_correctly = question_answer.is_correct(
+            question,
+            attempt_question_answer.parameters
+            )
         self.set_question_answer(question_id, attempt_question_answer)
 
-    def to_mongo_detailed(self):
-        son = self.to_mongo()
-        son['max_mistakes'] = self.exercise.max_mistakes;
-        if self.exercise.fail_linked_resource:
-            son['fail_linked_resource'] = self.exercise.fail_linked_resource.to_mongo()
-        # Answered questions: include full question with correct answer
-        # First unanswered question: include full question without correct answer
-        # Subsequent questions: question id only (default)
-        doBreak = False
+    def encode_mongo(self):
+        son = super(ExerciseAttempt, self).encode_mongo()
+
+        son['max_mistakes'] = self.exercise.resource_content.max_mistakes;
+        if self.exercise.resource_content.fail_linked_resource:
+            son['fail_linked_resource'] = self.exercise.resource_content.fail_linked_resource.to_mongo()
+        
+        ## Answered questions: include full question with correct answer
+        ## First unanswered question: include full question without correct answer
+        ## Subsequent questions: question id only (default)
         for (index, qa) in enumerate(self.question_answers):
             question = self.exercise.question(qa.question_id)
             if qa.given_answer is not None:
                 son['question_answers'][index]['question'] = question.with_computed_correct_answer(qa.parameters)
             else:
                 son['question_answers'][index]['question'] = question.without_correct_answer()
-                doBreak = True
-            if question.question_image:
-                son['question_answers'][index]['question']['image_url'] = flask.url_for('resources.get_question_image',
-                                                                                        resource_id=self.exercise.id,
-                                                                                        question_id=question.id,
-                                                                                        _external=True)
-            if doBreak:
                 break
         return son
 
