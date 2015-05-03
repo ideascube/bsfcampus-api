@@ -83,8 +83,11 @@ def get_resource(resource_id):
 	resource_dict['breadcrumb'] = utils.generateBreadcrumb(resource)
 	resource_dict['bg_color'] = resource.track.bg_color
 
+	son = {}
+	son[documents.Resource.json_key()] = resource_dict
+
 	return flask.Response(
-		response=json_util.dumps({'resource': resource_dict}),
+		response=json_util.dumps(son),
 		mimetype="application/json"
 		)
 
@@ -99,15 +102,19 @@ def get_resource_hierarchy(resource_id):
 	lesson = resource.lesson
 	skill = lesson.skill
 	track = skill.track
-	
-	return flask.jsonify(
-		resource=resource,
-		lesson=lesson,
-		skill=skill,
-		track=track,
-		siblings=resource.siblings(),
-		aunts=resource.aunts(),
-		cousins=resource.cousins()
+
+	son = {}
+	son[documents.Resource.json_key()] = resource.encode_mongo()
+	son['lesson'] = lesson.encode_mongo()
+	son['skill'] = skill.encode_mongo()
+	son['track'] = track.encode_mongo()
+	son['siblings'] = map(lambda r: r.encode_mongo(), resource.siblings())
+	son['aunts'] = map(lambda r: r.encode_mongo(), resource.aunts())
+	son['cousins'] = map(lambda r: r.encode_mongo(), resource.cousins())
+
+	return flask.Response(
+		response=json_util.dumps(son),
+		mimetype="application/json"
 		)
 
 @bp.route("/<resource_id>/content-file/<filename>")
