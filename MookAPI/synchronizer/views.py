@@ -109,7 +109,7 @@ def get_fetch_list():
 			mimetype='application/json'
 			)
 
-def create_object(document_class, url):
+def update_object(document_class, url, existing_object):
 
 	r = requests.get(url)
 	
@@ -117,6 +117,8 @@ def create_object(document_class, url):
 		try:
 			bson_object = bson.json_util.loads(r.text)
 			obj = document_class.decode_json_result(bson_object)
+			if existing_object:
+				obj.id = existing_object.id
 		except:
 			return None, str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
 
@@ -136,15 +138,17 @@ def update_item(item):
 			if len(local_objects) > 1:
 				return False, "There were at least two objects with that distant_id."
 
+			local_object = local_objects.first() # None if object is new.
+
 			##FIXME Right now, a new object is always created.
 			## We need to update the existing object if there is one.
-			new_object, message = create_object(document_class, item.url)
+			updated_object, message = update_object(document_class, item.url, local_object)
 
-			if new_object is None:
+			if updated_object is None:
 				message = "Could not create new object: " + message
 				return False, message
 
-			new_object.save()
+			updated_object.save()
 			return True, None
 
 	return False, "Document class name not recognized"
@@ -155,11 +159,10 @@ def delete_item(item):
 			document_class = getattr(module, item.class_name)
 			local_objects = document_class.objects(distant_id=item.distant_id)
 
-			if len(local_objects) == 1:
-				local_object = local_objects.first()
+			local_object = local_objects.first()
+			if local_object:
 				local_object.delete()
 				return True, None
-
 			else:
 				return False, "There was not exactly one item to delete"
 
