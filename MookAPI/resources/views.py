@@ -80,9 +80,7 @@ def get_resource(resource_id):
 	
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
 	resource_dict = resource.encode_mongo()
-	resource_dict['breadcrumb'] = utils.generateBreadcrumb(resource)
-	resource_dict['bg_color'] = resource.track.bg_color
-
+	
 	son = {}
 	son[documents.Resource.json_key()] = resource_dict
 

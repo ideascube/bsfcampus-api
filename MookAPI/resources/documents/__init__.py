@@ -73,6 +73,10 @@ class Resource(mc.SyncableDocument):
 	def url(self):
 		return flask.url_for('resources.get_resource', resource_id=self.id, _external=True)
 
+	@property
+	def is_validated(self):
+	    return False
+	
 	@classmethod
 	def json_key(cls):
 		return 'resource'
@@ -125,6 +129,32 @@ class Resource(mc.SyncableDocument):
 
 	def clean(self):
 		self.set_slug()
+
+	def encode_mongo(self):
+		son = super(Resource, self).encode_mongo()
+
+		son['breadcrumb'] = self.breadcrumb()
+		son['is_validated'] = self.is_validated
+		son['bg_color'] = self.track.bg_color
+
+		return son
+
+	def breadcrumb_item(self):
+		idkey = self.__class__.json_key() + '_id'
+		return {
+			'title': self.title,
+			'url': self.url,
+			'id': self.id,
+			idkey: self.id ## Deprecated. Use 'id' instead.
+		}
+
+	def breadcrumb(self):
+		return [
+			self.track.breadcrumb_item(),
+			self.skill.breadcrumb_item(),
+			self.lesson.breadcrumb_item(),
+			self.breadcrumb_item()
+		]
 		
 	def __unicode__(self):
 		return self.title

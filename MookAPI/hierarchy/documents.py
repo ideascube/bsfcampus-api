@@ -29,6 +29,19 @@ class ResourceHierarchy(mc.SyncableDocument):
 
 	## Date of creation
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
+
+	@property
+	def is_validated(self):
+		"""Whether the current_user validated the hierarchy level based on their activity."""
+		## Override this method in each subclass
+		return False
+
+	@property
+	def progress(self):
+		"""How many sub-units in this level have been validated (current) and how many are there in total (max)."""
+		## Override this method in each subclass
+		return {'current': 0, 'max': 0}
+	
 	
 	### METHODS
 
@@ -65,6 +78,27 @@ class ResourceHierarchy(mc.SyncableDocument):
 		else:
 			return cls.objects.get_or_404(id=token)
 
+	def breadcrumb_item(self):
+		idkey = self.__class__.json_key() + '_id'
+		return {
+			'title': self.title,
+			'url': self.url,
+			'id': self.id,
+			idkey: self.id ## Deprecated. Use 'id' instead.
+		}
+
+	def breadcrumb(self):
+		return []
+
+	def encode_mongo(self):
+		son = super(ResourceHierarchy, self).encode_mongo()
+
+		son['is_validated'] = self.is_validated
+		son['progress'] = self.progress
+		son['breadcrumb'] = self.breadcrumb()
+
+		return son
+
 
 class Lesson(ResourceHierarchy):
 	"""
@@ -90,7 +124,22 @@ class Lesson(ResourceHierarchy):
 	def resources(self):
 		return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
 
+	@property
+	def progress(self):
+		current = 0
+		for resource in self.resources:
+			if resource.is_validated:
+				current += 1
+		return {'current': current, 'max': len(self.resources)}
+
 	### METHODS
+
+	def breadcrumb(self):
+		return [
+			self.track.breadcrumb_item(),
+			self.skill.breadcrumb_item(),
+			self.breadcrumb_item()
+			]
 	
 	def siblings(self):
 		return Lesson.objects.order_by('order', 'title').filter(skill=self.skill)
@@ -99,7 +148,7 @@ class Lesson(ResourceHierarchy):
 		return Lesson.objects.order_by('order', 'title').filter(skill=self.skill, id__ne=self.id)
 	
 	def encode_mongo(self):
-		son = super(self.__class__, self).encode_mongo()
+		son = super(Lesson, self).encode_mongo()
 
 		son['resources'] = map(lambda r: r.id, self.resources)
 
@@ -109,7 +158,7 @@ class Lesson(ResourceHierarchy):
 		return self.track
 
 	def all_syncable_items(self):
-		items = super(self.__class__, self).all_syncable_items()
+		items = super(Lesson, self).all_syncable_items()
 
 		for resource in self.resources:
 			items.extend(resource.all_syncable_items())
@@ -118,7 +167,7 @@ class Lesson(ResourceHierarchy):
 
 	# @if_central
 	def items_to_update(self, last_sync):
-		items = super(self.__class__, self).items_to_update(last_sync)
+		items = super(Lesson, self).items_to_update(last_sync)
 
 		for resource in self.resources:
 			items.extend(resource.items_to_update(last_sync))
@@ -153,10 +202,28 @@ class Skill(ResourceHierarchy):
 	def lessons(self):
 		return Lesson.objects.order_by('order', 'title').filter(skill=self)
 
+	@property
+	def progress(self):
+		current = 0
+		nb_resources = 0
+		for lesson in self.lessons:
+			for resource in lesson.resources:
+				nb_resources += 1
+				if resource.is_validated:
+					current += 1
+		return {'current': current, 'max': nb_resources}
+	
+
 	### METHODS
+
+	def breadcrumb(self):
+		return [
+			self.track.breadcrumb_item(),
+			self.breadcrumb_item()
+			]
 	
 	def encode_mongo(self):
-		son = super(self.__class__, self).encode_mongo()
+		son = super(Skill, self).encode_mongo()
 
 		son['lessons'] = map(lambda l: l.id, self.lessons)
 		son['bg_color'] = self.track.bg_color
@@ -167,7 +234,7 @@ class Skill(ResourceHierarchy):
 		return self.track
 
 	def all_syncable_items(self):
-		items = super(self.__class__, self).all_syncable_items()
+		items = super(Skill, self).all_syncable_items()
 
 		for lesson in self.lessons:
 			items.extend(lesson.all_syncable_items())
@@ -176,7 +243,7 @@ class Skill(ResourceHierarchy):
 
 	# @if_central
 	def items_to_update(self, last_sync):
-		items = super(self.__class__, self).items_to_update(last_sync)
+		items = super(Skill, self).items_to_update(last_sync)
 
 		for lesson in self.lessons:
 			items.extend(lesson.items_to_update(last_sync))
@@ -209,17 +276,29 @@ class Track(ResourceHierarchy):
 	def skills(self):
 		return Skill.objects.order_by('order', 'title').filter(track=self)
 
+	@property
+	def progress(self):
+		current = 0
+		for skill in self.skills:
+			if skill.is_validated:
+				current += 1
+		return {'current': current, 'max': len(self.skills)}
+	
+
 	### METHODS
 
+	def breadcrumb(self):
+		return [self.breadcrumb_item()]
+
 	def encode_mongo(self):
-		son = super(self.__class__, self).encode_mongo()
+		son = super(Track, self).encode_mongo()
 
 		son['skills'] = map(lambda s: s.id, self.skills)
 
 		return son
 
 	def all_syncable_items(self):
-		items = super(self.__class__, self).all_syncable_items()
+		items = super(Track, self).all_syncable_items()
 
 		for skill in self.skills:
 			items.extend(skill.all_syncable_items())
@@ -228,7 +307,7 @@ class Track(ResourceHierarchy):
 
 	# @if_central
 	def items_to_update(self, last_sync):
-		items = super(self.__class__, self).items_to_update(last_sync)
+		items = super(Track, self).items_to_update(last_sync)
 
 		for skill in self.skills:
 			items.extend(skill.items_to_update(last_sync))

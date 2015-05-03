@@ -19,9 +19,9 @@ def get_tracks():
 	for ob in tracks:
 		track = ob.encode_mongo()
 
-		track['is_validated'] = utils.getTrackValidated(ob.id)
-		track['progress'] = utils.getTrackProgress(ob.id)
-		track['breadcrumb'] = utils.generateBreadcrumb(ob)
+		# track['is_validated'] = utils.getTrackValidated(ob.id)
+		# track['progress'] = utils.getTrackProgress(ob.id)
+		# track['breadcrumb'] = utils.generateBreadcrumb(ob)
 
 		tracks_array.append(track)
 
@@ -41,10 +41,10 @@ def get_track(track_id):
 	track = documents.Track.get_unique_object_or_404(track_id)
 	track_dict = track.encode_mongo()
 
-	track_dict['is_validated'] = utils.getTrackValidated(track.id)
-	track_dict['progress'] = utils.getTrackProgress(track.id)
+	# track_dict['is_validated'] = utils.getTrackValidated(track.id)
+	# track_dict['progress'] = utils.getTrackProgress(track.id)
 
-	track_dict['breadcrumb'] = utils.generateBreadcrumb(track)
+	# track_dict['breadcrumb'] = utils.generateBreadcrumb(track)
 
 	son = {}
 	son[documents.Track.json_key()] = track_dict
@@ -79,10 +79,10 @@ def get_skills():
 	for ob in skills:
 		skill = ob.encode_mongo()
 		
-		skill['is_validated'] = utils.getSkillValidated(ob.id)
-		skill['progress'] = utils.getSkillProgress(ob.id)
+		# skill['is_validated'] = utils.getSkillValidated(ob.id)
+		# skill['progress'] = utils.getSkillProgress(ob.id)
 
-		skill['breadcrumb'] = utils.generateBreadcrumb(ob)
+		# skill['breadcrumb'] = utils.generateBreadcrumb(ob)
 
 		skills_array.append(skill)
 
@@ -104,10 +104,10 @@ def get_track_skills(track_id):
 	for ob in skills:
 		skill = ob.encode_mongo()
 
-		skill['is_validated'] = utils.getSkillValidated(ob.id)
-		skill['progress'] = utils.getSkillProgress(ob.id)
+		# skill['is_validated'] = utils.getSkillValidated(ob.id)
+		# skill['progress'] = utils.getSkillProgress(ob.id)
 
-		skill['breadcrumb'] = utils.generateBreadcrumb(ob)
+		# skill['breadcrumb'] = utils.generateBreadcrumb(ob)
 
 		skills_array.append(skill)
 
@@ -128,10 +128,10 @@ def get_skill(skill_id):
 	lessons = skill.lessons()
 	skill_dict = skill.encode_mongo()
 
-	skill_dict['is_validated'] = utils.getSkillValidated(skill.id)
-	skill_dict['progress'] = utils.getSkillProgress(skill.id)
+	# skill_dict['is_validated'] = utils.getSkillValidated(skill.id)
+	# skill_dict['progress'] = utils.getSkillProgress(skill.id)
 
-	skill_dict['breadcrumb'] = utils.generateBreadcrumb(skill)
+	# skill_dict['breadcrumb'] = utils.generateBreadcrumb(skill)
 
 	son = {}
 	son[documents.Skill.json_key()] = skill_dict
