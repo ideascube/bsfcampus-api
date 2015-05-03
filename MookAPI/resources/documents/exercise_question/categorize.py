@@ -4,10 +4,11 @@ from bson import ObjectId
 
 from MookAPI import db
 from . import ExerciseQuestion, ExerciseQuestionAnswer
-from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
+
+import MookAPI.mongo_coder as mc
 
 
-class CategorizeExerciseQuestionItem(SyncableEmbeddedDocument):
+class CategorizeExerciseQuestionItem(mc.MongoCoderEmbeddedDocument):
     """Stores an item that belongs to one category."""
 
     ## Object Id
@@ -17,7 +18,7 @@ class CategorizeExerciseQuestionItem(SyncableEmbeddedDocument):
     text = db.StringField()
 
 
-class CategorizeExerciseQuestionCategory(SyncableEmbeddedDocument):
+class CategorizeExerciseQuestionCategory(mc.MongoCoderEmbeddedDocument):
     """Stores a category for the categorize question."""
 
     ## Object Id

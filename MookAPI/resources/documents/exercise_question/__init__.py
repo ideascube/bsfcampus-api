@@ -1,13 +1,14 @@
+import flask
+
 import exceptions
 
 from bson import ObjectId
 
 from MookAPI import db
 
-from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
+import MookAPI.mongo_coder as mc
 
-
-class ExerciseQuestion(SyncableEmbeddedDocument):
+class ExerciseQuestion(mc.MongoCoderEmbeddedDocument):
     """
     Generic collection, every question type will inherit from this.
     Subclasses should override method "without_correct_answer" in order to define the version sent to clients.
@@ -33,6 +34,22 @@ class ExerciseQuestion(SyncableEmbeddedDocument):
     ## Question image
     question_image = db.ImageField()
 
+    @property
+    def question_image_url(self):
+        if not self.question_image:
+            return None
+
+        if not hasattr(self, '_instance'):
+            return None
+
+        return flask.url_for(
+            'resources.get_question_image',
+            resource_id=self._instance.id,
+            question_id=self._id,
+            _external=True
+            )
+    
+
     ## Answer feedback (explanation of the right answer)
     answer_feedback = db.StringField()
 
@@ -49,7 +66,7 @@ class ExerciseQuestion(SyncableEmbeddedDocument):
         return ExerciseQuestionAnswer().init_with_data(data)
 
 
-class ExerciseQuestionAnswer(db.DynamicEmbeddedDocument):
+class ExerciseQuestionAnswer(mc.MongoCoderEmbeddedDocument):
     """
     Generic collection to save answers given to a question.
     Subclasses should define their own properties to store the given answer.

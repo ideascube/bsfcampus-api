@@ -2,10 +2,10 @@ from bson import ObjectId
 
 from MookAPI import db
 from . import ExerciseQuestion, ExerciseQuestionAnswer
-from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
+import MookAPI.mongo_coder as mc
 
 
-class DropdownExerciseQuestionProposition(SyncableEmbeddedDocument):
+class DropdownExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
     """Stores a proposition to a blank field."""
 
     ## Object Id
@@ -18,7 +18,7 @@ class DropdownExerciseQuestionProposition(SyncableEmbeddedDocument):
     is_correct_answer = db.BooleanField(default=False)
 
 
-class DropdownExerciseQuestionDropdown(SyncableEmbeddedDocument):
+class DropdownExerciseQuestionDropdown(mc.MongoCoderEmbeddedDocument):
     """Stores a list of propositions to a blank field in a text."""
 
     ## Object Id

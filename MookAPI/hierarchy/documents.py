@@ -3,11 +3,11 @@ from MookAPI import db
 import datetime
 import bson
 from slugify import slugify
+import MookAPI.mongo_coder as mc
 from MookAPI.resources import documents as resources_documents
-from MookAPI.local_servers.documents import SyncableDocument
 
 
-class ResourceHierarchy(SyncableDocument):
+class ResourceHierarchy(mc.SyncableDocument):
 	meta = {
 		'allow_inheritance': True,
 		'abstract': True
@@ -98,9 +98,11 @@ class Lesson(ResourceHierarchy):
 	def siblings_strict(self):
 		return Lesson.objects.order_by('order', 'title').filter(skill=self.skill, id__ne=self.id)
 	
-	def to_mongo_detailed(self):
-		son = self.to_mongo()
+	def encode_mongo(self):
+		son = super(self.__class__, self).encode_mongo()
+
 		son['resources'] = map(lambda r: r.id, self.resources)
+
 		return son
 
 	def top_level_syncable_document(self):
@@ -137,6 +139,10 @@ class Skill(ResourceHierarchy):
 	## icon image
 	icon = db.ImageField()
 
+	@property
+	def icon_url(self):
+		return flask.url_for('hierarchy.get_skill_icon', skill_id=self.id, _external=True)
+
 	### VIRTUAL PROPERTIES
 	
 	@property
@@ -149,11 +155,12 @@ class Skill(ResourceHierarchy):
 
 	### METHODS
 	
-	def to_mongo_detailed(self):
-		son = self.to_mongo()
+	def encode_mongo(self):
+		son = super(self.__class__, self).encode_mongo()
+
 		son['lessons'] = map(lambda l: l.id, self.lessons)
-		son['icon_url'] = flask.url_for('hierarchy.get_skill_icon', skill_id=self.id, _external=True)
 		son['bg_color'] = self.track.bg_color
+
 		return son
 
 	def top_level_syncable_document(self):
@@ -185,6 +192,10 @@ class Track(ResourceHierarchy):
 	## track icon
 	icon = db.ImageField();
 
+	@property
+	def icon_url(self):
+		return flask.url_for('hierarchy.get_track_icon', track_id=self.id, _external=True)
+
 	## background color
 	bg_color = db.StringField()
 
@@ -200,10 +211,11 @@ class Track(ResourceHierarchy):
 
 	### METHODS
 
-	def to_mongo_detailed(self):
-		son = self.to_mongo()
+	def encode_mongo(self):
+		son = super(self.__class__, self).encode_mongo()
+
 		son['skills'] = map(lambda s: s.id, self.skills)
-		son['icon_url'] = flask.url_for('hierarchy.get_track_icon', track_id=self.id, _external=True)
+
 		return son
 
 	def all_syncable_items(self):

@@ -4,10 +4,10 @@ from bson import ObjectId
 
 from MookAPI import db
 from . import ExerciseQuestion, ExerciseQuestionAnswer
-from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
+import MookAPI.mongo_coder as mc
 
 
-class OrderingExerciseQuestionItem(SyncableEmbeddedDocument):
+class OrderingExerciseQuestionItem(mc.MongoCoderEmbeddedDocument):
     """Stores an item for the overall ordering question."""
 
     ## Object Id

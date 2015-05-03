@@ -3,10 +3,10 @@ from MookAPI import db
 import datetime
 import bson
 from slugify import slugify
-from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
+import MookAPI.mongo_coder as mc
 
 
-class ResourceContent(SyncableEmbeddedDocument):
+class ResourceContent(mc.MongoCoderEmbeddedDocument):
 	"""Generic collection, every resource type will inherit from this."""
 	
 	meta = {
@@ -15,7 +15,7 @@ class ResourceContent(SyncableEmbeddedDocument):
 	}
 
 
-class Resource(SyncableDocument):
+class Resource(mc.SyncableDocument):
 	"""
 	Any elementary pedagogical resource.
 	Contains the metadata and an embedded ResourceContent document.
@@ -52,9 +52,6 @@ class Resource(SyncableDocument):
 
 	## Date of creation
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
-
-	## Last modification
-	last_modification = db.DateTimeField(default=datetime.datetime.now)
 
 	### PROPERTIES - HIERARCHY
 

@@ -2,10 +2,10 @@ from bson import ObjectId
 
 from MookAPI import db
 from . import ExerciseQuestion, ExerciseQuestionAnswer
-from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
+import MookAPI.mongo_coder as mc
 
 
-class UniqueAnswerMCQExerciseQuestionProposition(SyncableEmbeddedDocument):
+class UniqueAnswerMCQExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
     """Stores a proposition to a unique-answer MCQ."""
 
     ## Object Id

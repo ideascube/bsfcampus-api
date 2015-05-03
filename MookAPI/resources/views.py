@@ -15,7 +15,19 @@ def get_resources():
 	print ("GETTING list of all resources")
 	
 	resources = documents.Resource.objects.order_by('lesson', 'order', 'title').all()
-	return flask.jsonify(resources=resources)
+
+	resources_array = []
+	for ob in resources:
+		resource = ob.encode_mongo()
+		resources_array.append(resource)
+
+	son = {}
+	son[documents.Resource.json_key_collection()] = resources_array
+
+	return flask.Response(
+		response=json_util.dumps(son),
+		mimetype="application/json"
+		)
 
 @bp.route("/lesson/<lesson_id>")
 def get_lesson_resources(lesson_id):
@@ -24,7 +36,19 @@ def get_lesson_resources(lesson_id):
 	print ("GETTING list of all resources in lesson {lesson_id}".format(lesson_id=lesson_id))
 	
 	resources = documents.Resource.objects.order_by('order', 'title').filter(lesson=lesson_id)
-	return flask.jsonify(resources=resources)
+
+	resources_array = []
+	for ob in resources:
+		resource = ob.encode_mongo()
+		resources_array.append(resource)
+
+	son = {}
+	son[documents.Resource.json_key_collection()] = resources_array
+
+	return flask.Response(
+		response=json_util.dumps(son),
+		mimetype="application/json"
+		)
 
 @bp.route("/skill/<skill_id>")
 def get_skill_resources(skill_id):
@@ -34,7 +58,19 @@ def get_skill_resources(skill_id):
 	
 	lessons = hierarchy_documents.Lesson.objects.order_by('order', 'title').filter(skill=skill_id)
 	resources = documents.Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=lessons)
-	return flask.jsonify(resources=resources)
+	
+	resources_array = []
+	for ob in resources:
+		resource = ob.encode_mongo()
+		resources_array.append(resource)
+
+	son = {}
+	son[documents.Resource.json_key_collection()] = resources_array
+
+	return flask.Response(
+		response=json_util.dumps(son),
+		mimetype="application/json"
+		)
 
 @bp.route("/<resource_id>")
 def get_resource(resource_id):
@@ -43,24 +79,9 @@ def get_resource(resource_id):
 	print ("GETTING resource with id {resource_id}".format(resource_id=resource_id))
 	
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
-	resource_dict = resource.to_mongo()
+	resource_dict = resource.encode_mongo()
 	resource_dict['breadcrumb'] = utils.generateBreadcrumb(resource)
-	resource_dict['bg_color'] = resource.lesson.skill.track.bg_color
-
-	if isinstance(resource, documents.audio.AudioResource):
-		filename = resource.resource_content.audio_file.filename
-		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, filename=filename, _external=True)
-		resource_dict['resource_content']['content_file_name'] = filename
-		if resource.resource_content.image:
-			resource_dict['resource_content']['content_image_url'] = flask.url_for('resources.get_resource_content_image', resource_id=resource_id, filename=resource.resource_content.image.filename, _external=True)
-	elif isinstance(resource, documents.video.VideoResource):
-		filename = resource.resource_content.video_file.filename
-		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, filename=filename, _external=True)
-		resource_dict['resource_content']['content_file_name'] = filename
-	elif isinstance(resource, documents.downloadable_file.DownloadableFileResource):
-		filename = resource.resource_content.downloadable_file.filename
-		resource_dict['resource_content']['content_file_url'] = flask.url_for('resources.get_resource_content_file', resource_id=resource_id, filename=filename, _external=True)
-		resource_dict['resource_content']['content_file_name'] = filename
+	resource_dict['bg_color'] = resource.track.bg_color
 
 	return flask.Response(
 		response=json_util.dumps({'resource': resource_dict}),
@@ -87,7 +108,7 @@ def get_resource_hierarchy(resource_id):
 		siblings=resource.siblings(),
 		aunts=resource.aunts(),
 		cousins=resource.cousins()
-	)
+		)
 
 @bp.route("/<resource_id>/content-file/<filename>")
 def get_resource_content_file(resource_id, filename):
@@ -95,17 +116,20 @@ def get_resource_content_file(resource_id, filename):
 
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
 	resource_content = resource.resource_content
+	
 	if isinstance(resource_content, documents.audio.AudioResourceContent):
-		fileField = resource_content.audio_file
+		content_file = resource_content.audio_file
 	elif isinstance(resource_content, documents.video.VideoResourceContent):
-		fileField = resource_content.video_file
+		content_file = resource_content.video_file
 	elif isinstance(resource_content, documents.downloadable_file.DownloadableFileResourceContent):
-		fileField = resource_content.downloadable_file
-		# fileField.contentType = "application/octet-stream" // we let the browser choose how it handles the file based on its type
+		content_file = resource_content.downloadable_file
+		# content_file.contentType = "application/octet-stream" // we let the browser choose how it handles the file based on its type
 
-	return flask.send_file(io.BytesIO(fileField.read()),
-                     attachment_filename=filename,
-                     mimetype=fileField.contentType)
+	return flask.send_file(
+		io.BytesIO(content_file.read()),
+        attachment_filename=filename,
+        mimetype=content_file.contentType
+        )
 
 @bp.route("/<resource_id>/content-image/<filename>")
 def get_resource_content_image(resource_id, filename):
@@ -113,28 +137,30 @@ def get_resource_content_image(resource_id, filename):
 
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
 	resource_content = resource.resource_content
-	if isinstance(resource_content, documents.audio.AudioResourceContent):
-		imageField = resource_content.image
 
-	return flask.send_file(io.BytesIO(imageField.read()),
-                     attachment_filename=imageField.filename,
-                     mimetype=imageField.contentType)
+	if isinstance(resource_content, documents.audio.AudioResourceContent):
+		content_image = resource_content.image
+
+	return flask.send_file(io.BytesIO(
+		content_image.read()),
+        attachment_filename=content_image.filename,
+        mimetype=content_image.contentType
+        )
 
 @bp.route("/<resource_id>/question/<question_id>/image")
 def get_question_image(resource_id, question_id):
 	"""GET one question's image"""
 
-	print('get_question_image ' + question_id)
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
 	resource_content = resource.resource_content
 	for question in resource_content.questions():
-		print(question)
-		print(question.id)
 		if str(question.id) == question_id:
-			print('found the question')
-			imageField = question.question_image
-			break
+			question_image = question.question_image
+			return flask.send_file(
+				io.BytesIO(question_image.read()),
+		        attachment_filename=question_image.filename,
+		        mimetype=question_image.contentType
+		        )
 
-	return flask.send_file(io.BytesIO(imageField.read()),
-                     attachment_filename=imageField.filename,
-                     mimetype=imageField.contentType)
+	flask.abort(404)
+	

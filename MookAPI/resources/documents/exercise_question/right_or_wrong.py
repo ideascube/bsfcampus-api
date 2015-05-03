@@ -2,10 +2,10 @@ from bson import ObjectId
 
 from MookAPI import db
 from . import ExerciseQuestion, ExerciseQuestionAnswer
-from MookAPI.local_servers.documents import SyncableDocument, SyncableEmbeddedDocument
+import MookAPI.mongo_coder as mc
 
 
-class RightOrWrongExerciseQuestionProposition(SyncableEmbeddedDocument):
+class RightOrWrongExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
     """Stores a proposition to a right or wrong question."""
 
     ## Object Id
