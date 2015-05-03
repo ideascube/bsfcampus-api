@@ -7,8 +7,27 @@ import requests
 import os, sys
 
 class MongoCoderMixin(object):
+	"""
+	.. _MongoCoderMixin:
+
+	A mixin that provides methods to code MongoEngine ``Document`` and ``EmbeddedDocument`` objects to and from MongoDB objects.
+	This mixin is called in MongoCoderDocument_ and MongoCoderEmbeddedDocument_.
+	"""
 
 	def encode_mongo(self, instance=None):
+		"""
+		.. _MongoCoderMixin_encode_mongo: encode_mongo
+
+		Alternative to native MongoEngine method ``to_mongo``
+		Generates a JSON representation of the document.
+		When they are available, any ``FileField`` named ``key`` will be represented with three keys in the JSON representation:
+		
+		* ``key`` is the ObjectId of the file;
+		* ``key_url`` is the URL at which the file can be downloaded (requires accordingly-named virtual property to be implemented in subclass);
+		* ``key_filename`` is the name of the file.
+
+		Embedded documents (and lists thereof) that inherit from MongoCoderEmbeddedDocument_ will recursively be serialized using ``encode_mongo``
+		"""
 
 		if instance is None and isinstance(self, db.Document):
 			instance = self
@@ -60,19 +79,22 @@ class MongoCoderMixin(object):
 		return son
 
 	@staticmethod
-	def convert_value_from_json(value, field):
+	def _convert_value_from_json(value, field):
 
 		ReferenceField = _import_class('ReferenceField')
 		EmbeddedDocumentField = _import_class('EmbeddedDocumentField')
 		ListField = _import_class('ListField')
 
+		## ReferenceField: convert reference to use the local ``id`` instead of the distant one.
 		if isinstance(field, ReferenceField):
 			value = field.to_python(value)
 			return field.document_type_obj.objects(distant_id=value.id).first()
 
+		## EmbeddedDocumentField: instantiate MongoCoderEmbeddedDocument from JSON
 		elif isinstance(field, EmbeddedDocumentField):
-			return field.document_type_obj.decode_mongo(value)
+			return field.document_type_obj._decode_mongo(value)
 
+		## ListField: recursively convert all elements in the list
 		elif isinstance(field, ListField):
 			## field.field is the type of elements in the listfield
 			if field.field is None:
@@ -80,7 +102,7 @@ class MongoCoderMixin(object):
 
 			converted_value = []
 			for element in value:
-				converted_element = MongoCoderMixin.convert_value_from_json(element, field.field)
+				converted_element = MongoCoderMixin._convert_value_from_json(element, field.field)
 				converted_value.append(converted_element)
 			
 			return converted_value
@@ -88,7 +110,7 @@ class MongoCoderMixin(object):
 		else:
 			return field.to_python(value)
 
-	def set_value_from_json(self, json, key):
+	def _set_value_from_json(self, json, key):
 
 		## Get value from json
 		value = json[key]
@@ -125,11 +147,17 @@ class MongoCoderMixin(object):
 			os.remove(filename)
 		## Any other type: convert value before setting using setattr
 		else:
-			value = self.convert_value_from_json(value, field)
+			value = self._convert_value_from_json(value, field)
 			setattr(self, key, value)
 
 
 class MongoCoderDocument(db.Document, MongoCoderMixin):
+	"""
+	.. _MongoCoderDocument:
+
+	A MongoEngine ``Document`` with additional methods from MongoCoderMixin_ to support coding to and from MongoDB objects.
+	"""
+
 
 	meta = {
 		'allow_inheritance': True,
@@ -138,37 +166,78 @@ class MongoCoderDocument(db.Document, MongoCoderMixin):
 
 	@property
 	def url(self):
+		"""
+		The URL where a JSON representation of the document based on MongoCoderMixin_'s MongoCoderMixin_encode_mongo_ method can be found.
+
+		.. warning::
+
+			Subclasses of MongoCoderDocument should implement this method.
+		"""
+
 		raise exceptions.NotImplementedError("The single-object URL of this document class is not defined.")
 
 	@classmethod
 	def json_key(cls):
+		"""
+		When a view returns the JSON representation of a ``MongoCoderDocument``, the JSON object is wrapped in a single-key dictionary, as per REST conventions.
+		This class method returns the name of this key.
+		Defaults to the lowercase name of the class.
+		"""
 		return cls.__name__.lower()
 
 	@classmethod
 	def json_key_collection(cls):
+		"""
+		When a view returns the JSON representation of a list of ``MongoCoderDocument`` objects, the JSON object is wrapped in a single-key dictionary, as per REST conventions.
+		This class method returns the name of this key.
+		Defaults to the lowercase name of the class with a appended 's'.
+		"""
 		return cls.json_key() + 's'
 
 	def reference(self):
+		"""
+		Returns a JSON object to reference the current document. The JSON document may contain three keys:
+
+		* ``_cls``: the name of the ``Document`` class;
+		* ``_ref``: a DBRef to the document;
+		* ``url``: the URL given by the ``url`` virtual property, if implemented.
+		"""
 		son = {}
 		son['_cls'] = type(self).__name__
 		son['_ref'] = self.to_dbref()
-		son['url'] = self.url
+		try:
+			son['url'] = self.url
+		except:
+			pass
 		return son
 
 	@classmethod
 	def decode_mongo(cls, json):
+		"""
+		Returns a ``MongoCoderDocument`` instance using an unwrapped JSON representation.
+		"""
+
 		obj = cls()
 		
 		for key in json.iterkeys():
-			obj.set_value_from_json(json, key)
+			obj._set_value_from_json(json, key)
 				
 		return obj
 
 	@classmethod
 	def decode_json_result(cls, json):
+		"""
+		Returns a ``MongoCoderDocument`` instance using a JSON representation wrapped in a single-key dictionary as per REST conventions.
+		"""
+
 		return cls.decode_mongo(json[cls.json_key()])
 
 class MongoCoderEmbeddedDocument(db.EmbeddedDocument, MongoCoderMixin):
+	"""
+	.. _MongoCoderEmbeddedDocument:
+
+	A MongoEngine ``EmbeddedDocument`` with additional methods from MongoCoderMixin_ to support coding to and from MongoDB objects.
+	"""
 
 	meta = {
 		'allow_inheritance': True,
@@ -176,21 +245,30 @@ class MongoCoderEmbeddedDocument(db.EmbeddedDocument, MongoCoderMixin):
 	}
 
 	@classmethod
-	def decode_mongo(cls, json):
+	def _decode_mongo(cls, json):
 		obj = cls()
 		
 		for key in json.iterkeys():
-			obj.set_value_from_json(json, key)
+			obj._set_value_from_json(json, key)
 				
 		return obj
 
 class DeletedSyncableDocument(MongoCoderDocument):
+	"""
+	.. _DeletedSyncableDocument:
+
+	A collection that references all SyncableDocument_ objects that have been deleted, so that they can be deleted on local servers at the next synchronization.
+	The ``delete`` method of SyncableDocument_ creates a ``DeletedSyncableDocument`` object.
+	"""
 
 	document = db.GenericReferenceField()
+	"""A DBRef to the document that was deleted."""
 
 	top_level_document = db.GenericReferenceField()
+	"""A DBRef to the top-level document of the deleted document, if this is a child document."""
 
 	date = db.DateTimeField()
+	"""The date at which the document was deleted."""
 
 	def save(self, *args, **kwargs):
 		self.top_level_document = self.document.top_level_syncable_document()
@@ -202,8 +280,9 @@ class DeletedSyncableDocument(MongoCoderDocument):
 ## All documents that need to be synced must inherit from this class.
 class SyncableDocument(MongoCoderDocument):
 	"""
-	This document type must be the base class of any document that wants to be a syncable item.
-	They should override, if needed, the 'items_to_sync' method.
+	.. _SyncableDocument:
+	
+	An abstract class for any document that needs to be synced between the central server and a local server.
 	"""
 
 	meta = {
@@ -213,11 +292,25 @@ class SyncableDocument(MongoCoderDocument):
 
 	## Last modification
 	last_modification = db.DateTimeField()
+	"""
+	The date of the last modification on the document.
+	Used to determine whether the document has changed since the last synchronization of a local server.
+	"""
 
 	## Id of the document on the central server
 	distant_id = db.ObjectIdField()
+	"""The id of the document on the central server."""
 
 	def top_level_syncable_document(self):
+		"""
+		If a ``SyncableDocument`` has child documents, this function returns the top-level parent document.
+		Defaults to ``self``.
+
+		.. note::
+		
+			Override this method if the document is a child of a ``SyncableDocument``.
+		"""
+
 		return self
 
 	def save(self, *args, **kwargs):
@@ -231,15 +324,42 @@ class SyncableDocument(MongoCoderDocument):
 		return super(SyncableDocument, self).delete(*args, **kwargs)
 
 	def all_syncable_items(self):
+		"""
+		Returns the list of references to atomic documents that should be looked at when syncing this document.
+		Defaults to a one-element list containing a reference to self.
+
+		.. note::
+		
+			Override this method if this document has children documents.
+		"""
+
 		return [self.reference()]
 
 	def items_to_update(self, last_sync):
+		"""
+		.. _SyncableDocument_items_to_update: items_to_update
+
+		Returns the list of references to atomic documents that have changed since the last synchronization.
+		Defaults to a one-element list containing a reference to self.
+
+		.. note::
+		
+			Override this method if this document has children documents.
+		"""
+
 		if last_sync is None or self.last_modification is None or last_sync < self.last_modification:
 			return [self.reference()]
 
 		return []
 
 	def items_to_delete(self, last_sync):
+		"""
+		.. _SyncableDocument_items_to_delete: items_to_delete
+
+		Returns the list of references to atomic documents that have been deleted since the last synchronization.
+		This method will also automatically check for any deleted children documents (no need to override as long as ``top_level_document`` is overridden).
+		"""
+
 		items = []
 
 		for obj in DeletedSyncableDocument.objects.filter(top_level_document=self.top_level_syncable_document()):
@@ -250,6 +370,17 @@ class SyncableDocument(MongoCoderDocument):
 		return items
 
 	def items_to_sync(self, last_sync):
+		"""
+		Returns a dictionary ``dict`` with two keys: 
+
+		* ``dict['update']`` contains the results of the SyncableDocument_items_to_update_ method;
+		* ``dict['delete']`` contains the results of the SyncableDocument_items_to_delete_ method.
+
+		.. todo::
+
+			Remove items that are in the ``delete`` list from the ``update`` list.
+		"""
+
 		items = {}
 		items['update'] = self.items_to_update(last_sync)
 		items['delete'] = self.items_to_delete(last_sync)
@@ -260,7 +391,6 @@ class SyncableDocument(MongoCoderDocument):
 	def decode_mongo(cls, mongo):
 		obj = super(SyncableDocument, cls).decode_mongo(mongo)
 
-		print "Decoding mongo", mongo
 		obj.distant_id = mongo['_id']
 				
 		return obj

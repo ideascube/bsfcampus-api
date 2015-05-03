@@ -11,6 +11,7 @@ Contents:
 .. toctree::
 	:maxdepth: 2
 
+	mongo-coding-sync
 	resources-hierarchy
 
 Indices and tables
