@@ -120,21 +120,17 @@ def get_resource_content_file(resource_id, filename):
 	"""GET one resource's content file"""
 
 	resource = documents.Resource.get_unique_object_or_404(resource_id)
-	resource_content = resource.resource_content
 	
-	if isinstance(resource_content, documents.audio.AudioResourceContent):
-		content_file = resource_content.audio_file
-	elif isinstance(resource_content, documents.video.VideoResourceContent):
-		content_file = resource_content.video_file
-	elif isinstance(resource_content, documents.downloadable_file.DownloadableFileResourceContent):
-		content_file = resource_content.downloadable_file
-		# content_file.contentType = "application/octet-stream" // we let the browser choose how it handles the file based on its type
+	if isinstance(resource, documents.downloadable_file.DownloadableFileResource):
+		content_file = resource.resource_content.content_file
 
-	return flask.send_file(
-		io.BytesIO(content_file.read()),
-        attachment_filename=filename,
-        mimetype=content_file.contentType
-        )
+		return flask.send_file(
+			io.BytesIO(content_file.read()),
+			attachment_filename=filename,
+			mimetype=content_file.contentType
+			)
+
+	abort(404)	
 
 @bp.route("/<resource_id>/content-image/<filename>")
 def get_resource_content_image(resource_id, filename):
@@ -148,9 +144,9 @@ def get_resource_content_image(resource_id, filename):
 
 	return flask.send_file(io.BytesIO(
 		content_image.read()),
-        attachment_filename=content_image.filename,
-        mimetype=content_image.contentType
-        )
+		attachment_filename=content_image.filename,
+		mimetype=content_image.contentType
+		)
 
 @bp.route("/<resource_id>/question/<question_id>/image")
 def get_question_image(resource_id, question_id):
@@ -163,9 +159,9 @@ def get_question_image(resource_id, question_id):
 			question_image = question.question_image
 			return flask.send_file(
 				io.BytesIO(question_image.read()),
-		        attachment_filename=question_image.filename,
-		        mimetype=question_image.contentType
-		        )
+				attachment_filename=question_image.filename,
+				mimetype=question_image.contentType
+				)
 
 	flask.abort(404)
 	

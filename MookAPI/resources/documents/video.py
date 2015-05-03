@@ -1,29 +1,15 @@
 from MookAPI import db
 import datetime
-from . import *
+from .downloadable_file import *
 
 
-class VideoResourceContent(ResourceContent):
+class VideoResourceContent(DownloadableFileResourceContent):
 	"""Reference a video file stored on the server."""
 
-	## Video file
-	video_file = db.FileField(required=True)
+	##FIXME: Specify accepted extensions/mimetype on the content_file
 
-	@property
-	def video_file_url(self):
-		if not self.video_file:
-			return None
-
-		if not hasattr(self, '_instance'):
-			return None
-
-		return flask.url_for(
-			'resources.get_resource_content_file',
-			resource_id=self._instance.id,
-			filename=self.video_file.filename,
-			_external=True
-			)
+	pass
 
 
-class VideoResource(Resource):
+class VideoResource(DownloadableFileResource):
 	resource_content = db.EmbeddedDocumentField(VideoResourceContent)
