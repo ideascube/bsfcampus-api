@@ -71,7 +71,7 @@ class MongoCoderMixin(object):
 			return field.document_type_obj.objects(distant_id=value.id).first()
 
 		elif isinstance(field, EmbeddedDocumentField):
-			return field.document_type_obj.init_with_json_object(value)
+			return field.document_type_obj.decode_mongo(value)
 
 		elif isinstance(field, ListField):
 			## field.field is the type of elements in the listfield
@@ -121,7 +121,7 @@ class MongoCoderMixin(object):
 					handle.write(block)
 			value = open(filename, 'rb')
 			
-			self[key].put(value, content_type=r.headers['content-type'])
+			self[key].put(value, content_type=r.headers['content-type'], filename=filename)
 			os.remove(filename)
 		## Any other type: convert value before setting using setattr
 		else:
@@ -150,24 +150,23 @@ class MongoCoderDocument(db.Document, MongoCoderMixin):
 
 	def reference(self):
 		son = {}
-		setattr(son, '_cls', type(self).__name__)
-		setattr(son, '_ref', self.to_dbref())
-		setattr(son, 'url', self.url)
+		son['_cls'] = type(self).__name__
+		son['_ref'] = self.to_dbref()
+		son['url'] = self.url
 		return son
 
 	@classmethod
-	def decode_mongo(cls, mongo):
+	def decode_mongo(cls, json):
 		obj = cls()
 		
-		for key in mongo.iterkeys():
+		for key in json.iterkeys():
 			obj.set_value_from_json(json, key)
 				
 		return obj
 
 	@classmethod
 	def decode_json_result(cls, json):
-		mongo = getattr(json, cls.json_key())
-		return cls.decode_mongo(mongo)
+		return cls.decode_mongo(json[cls.json_key()])
 
 class MongoCoderEmbeddedDocument(db.EmbeddedDocument, MongoCoderMixin):
 
@@ -177,10 +176,10 @@ class MongoCoderEmbeddedDocument(db.EmbeddedDocument, MongoCoderMixin):
 	}
 
 	@classmethod
-	def decode_mongo(cls, mongo):
+	def decode_mongo(cls, json):
 		obj = cls()
 		
-		for key in mongo.iterkeys():
+		for key in json.iterkeys():
 			obj.set_value_from_json(json, key)
 				
 		return obj
@@ -245,7 +244,7 @@ class SyncableDocument(MongoCoderDocument):
 
 		for obj in DeletedSyncableDocument.objects.filter(top_level_document=self.top_level_syncable_document()):
 			if last_sync is None or obj.date is None or last_sync < obj.date:
-				document = getattr(obj.to_mongo(), 'document')
+				document = obj.to_mongo().document
 				items.append(document)
 
 		return items
@@ -259,8 +258,9 @@ class SyncableDocument(MongoCoderDocument):
 
 	@classmethod
 	def decode_mongo(cls, mongo):
-		obj = super(SyncableDocument, self).decode_mongo(mongo)
+		obj = super(SyncableDocument, cls).decode_mongo(mongo)
 
-		obj.distant_id = mongo._id
+		print "Decoding mongo", mongo
+		obj.distant_id = mongo['_id']
 				
 		return obj
