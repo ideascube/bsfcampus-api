@@ -139,7 +139,7 @@ class Resource(mc.SyncableDocument):
 
 		return son
 
-	def breadcrumb_item(self):
+	def _breadcrumb_item(self):
 		idkey = self.__class__.json_key() + '_id'
 		return {
 			'title': self.title,
@@ -150,10 +150,10 @@ class Resource(mc.SyncableDocument):
 
 	def breadcrumb(self):
 		return [
-			self.track.breadcrumb_item(),
-			self.skill.breadcrumb_item(),
-			self.lesson.breadcrumb_item(),
-			self.breadcrumb_item()
+			self.track._breadcrumb_item(),
+			self.skill._breadcrumb_item(),
+			self.lesson._breadcrumb_item(),
+			self._breadcrumb_item()
 		]
 		
 	def __unicode__(self):

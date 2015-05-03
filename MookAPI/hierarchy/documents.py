@@ -15,20 +15,20 @@ class ResourceHierarchy(mc.SyncableDocument):
 
 	### PROPERTIES
 
-	## Title
 	title = db.StringField(required=True)
+		"""The title of the hierarchy level."""
 
-	## Slug (unique identifier for permalinks)
 	slug = db.StringField(unique=True)
+		"""A human-readable unique identifier for the hierarchy level."""
 
-	## Short description of the track
 	description = db.StringField()
+		"""A description of the hierarchy level."""
 
-	## Order of display (within sibligs)
 	order = db.IntField()
+		"""The order of the hierarchy amongst its siblings."""
 
-	## Date of creation
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
+		"""The date the hierarchy level was created."""
 
 	@property
 	def is_validated(self):
@@ -38,14 +38,19 @@ class ResourceHierarchy(mc.SyncableDocument):
 
 	@property
 	def progress(self):
-		"""How many sub-units in this level have been validated (current) and how many are there in total (max)."""
+		"""
+		How many sub-units in this level have been validated (current) and how many are there in total (max).
+		Returns a dictionary with format: {'current': Int, 'max': Int}
+		"""
 		## Override this method in each subclass
 		return {'current': 0, 'max': 0}
 	
 	
 	### METHODS
 
-	def set_slug(self):
+	def _set_slug(self):
+		"""Sets a slug for the hierarchy level based on the title."""
+
 		slug = slugify(self.title) if self.slug is None else slugify(self.slug)
 		def alternate_slug(text, k=1):
 			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
@@ -64,13 +69,15 @@ class ResourceHierarchy(mc.SyncableDocument):
 		self.slug = alternate_slug(slug, k) if k <= kmax else None
 
 	def clean(self):
-		self.set_slug()
+		self._set_slug()
 
 	def __unicode__(self):
 		return self.title
 
 	@classmethod
 	def get_unique_object_or_404(cls, token):
+		"""Get the only hierarchy level matching argument 'token', where 'token' can be the id or the slug."""
+
 		try:
 			bson.ObjectId(token)
 		except bson.errors.InvalidId:
@@ -78,7 +85,8 @@ class ResourceHierarchy(mc.SyncableDocument):
 		else:
 			return cls.objects.get_or_404(id=token)
 
-	def breadcrumb_item(self):
+	def __breadcrumb_item(self):
+		"""Returns some minimal information about the object for use in a breadcrumb."""
 		idkey = self.__class__.json_key() + '_id'
 		return {
 			'title': self.title,
@@ -88,6 +96,7 @@ class ResourceHierarchy(mc.SyncableDocument):
 		}
 
 	def breadcrumb(self):
+		"""Returns an array of the breadcrumbs up until the current object."""
 		return []
 
 	def encode_mongo(self):
@@ -107,13 +116,14 @@ class Lesson(ResourceHierarchy):
 	
 	### PROPERTIES
 
-	## Parent skill
 	skill = db.ReferenceField('Skill')
+		"""The parent skill."""
 
 	### VIRTUAL PROPERTIES
 	
 	@property
 	def track(self):
+		"""The parent track of the parent skill."""
 		return self.skill.track
 
 	@property
@@ -122,6 +132,7 @@ class Lesson(ResourceHierarchy):
 
 	@property
 	def resources(self):
+		"""A queryset of the resources that belong to the current lesson."""
 		return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
 
 	@property
@@ -136,9 +147,9 @@ class Lesson(ResourceHierarchy):
 
 	def breadcrumb(self):
 		return [
-			self.track.breadcrumb_item(),
-			self.skill.breadcrumb_item(),
-			self.breadcrumb_item()
+			self.track._breadcrumb_item(),
+			self.skill._breadcrumb_item(),
+			self._breadcrumb_item()
 			]
 	
 	def siblings(self):
@@ -184,12 +195,15 @@ class Skill(ResourceHierarchy):
 
 	## Parent track
 	track = db.ReferenceField('Track')
+		"""The parent track."""
 
 	## icon image
 	icon = db.ImageField()
+		"""An icon to illustrate the skill."""
 
 	@property
 	def icon_url(self):
+		"""The URL where the skill icon can be downloaded."""
 		return flask.url_for('hierarchy.get_skill_icon', skill_id=self.id, _external=True)
 
 	### VIRTUAL PROPERTIES
@@ -200,6 +214,7 @@ class Skill(ResourceHierarchy):
 
 	@property
 	def lessons(self):
+		"""A queryset of the lessons that belong to the current skill."""
 		return Lesson.objects.order_by('order', 'title').filter(skill=self)
 
 	@property
@@ -218,8 +233,8 @@ class Skill(ResourceHierarchy):
 
 	def breadcrumb(self):
 		return [
-			self.track.breadcrumb_item(),
-			self.breadcrumb_item()
+			self.track._breadcrumb_item(),
+			self._breadcrumb_item()
 			]
 	
 	def encode_mongo(self):
@@ -256,15 +271,16 @@ class Track(ResourceHierarchy):
 	Top level of resources hierarchy 
 	"""
 
-	## track icon
-	icon = db.ImageField();
+	icon = db.ImageField()
+		"""An icon to illustrate the skill."""
 
 	@property
 	def icon_url(self):
+		"""The URL where the track icon can be downloaded."""
 		return flask.url_for('hierarchy.get_track_icon', track_id=self.id, _external=True)
 
-	## background color
 	bg_color = db.StringField()
+		"""The background color of pages in this track."""
 
 	### VIRTUAL PROPERTIES
 
@@ -274,6 +290,7 @@ class Track(ResourceHierarchy):
 
 	@property
 	def skills(self):
+		"""A queryset of the skills that belong to the current track."""
 		return Skill.objects.order_by('order', 'title').filter(track=self)
 
 	@property
@@ -288,7 +305,7 @@ class Track(ResourceHierarchy):
 	### METHODS
 
 	def breadcrumb(self):
-		return [self.breadcrumb_item()]
+		return [self._breadcrumb_item()]
 
 	def encode_mongo(self):
 		son = super(Track, self).encode_mongo()
