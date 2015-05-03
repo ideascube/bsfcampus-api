@@ -22,7 +22,7 @@ class ResourceHierarchy(mc.SyncableDocument):
 		"""A human-readable unique identifier for the hierarchy level."""
 
 	description = db.StringField()
-		"""A description of the hierarchy level."""
+		"""A text describing the content of the resources in this hierarchy level."""
 
 	order = db.IntField()
 		"""The order of the hierarchy amongst its siblings."""
@@ -111,7 +111,9 @@ class ResourceHierarchy(mc.SyncableDocument):
 
 class Lesson(ResourceHierarchy):
 	"""
-	Third level of resources hierarchy 
+	Third level of resources hierarchy.
+	Their ascendants are skills (Skill class).
+	Resource objects reference a parent Lesson.
 	"""
 	
 	### PROPERTIES
@@ -123,7 +125,7 @@ class Lesson(ResourceHierarchy):
 	
 	@property
 	def track(self):
-		"""The parent track of the parent skill."""
+		"""Shorthand virtual property to the parent track of the parent skill."""
 		return self.skill.track
 
 	@property
@@ -188,7 +190,9 @@ class Lesson(ResourceHierarchy):
 
 class Skill(ResourceHierarchy):
 	"""
-	Second level of resources hierarchy 
+	Second level of resources hierarchy.
+	Their ascendants are tracks (Track class).
+	Their descendants are skills (Skill class).
 	"""
 	
 	### PROPERTIES
@@ -268,7 +272,7 @@ class Skill(ResourceHierarchy):
 
 class Track(ResourceHierarchy):
 	"""
-	Top level of resources hierarchy 
+	Top level of resources hierarchy. Their descendants are skills (Skill class).
 	"""
 
 	icon = db.ImageField()

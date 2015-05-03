@@ -4,13 +4,13 @@ from . import *
 
 
 class DownloadableFileResourceContent(ResourceContent):
-	"""Reference a file stored on the server to be downloaded."""
-
-	## file
+	
 	content_file = db.FileField(required=True)
+		"""A file to download."""
 
 	@property
 	def content_file_url(self):
+		"""The URL at which the file can be downloaded."""
 		if not self.content_file:
 			return None
 
@@ -26,4 +26,6 @@ class DownloadableFileResourceContent(ResourceContent):
 
 
 class DownloadableFileResource(Resource):
+	"""Stores a file in the database."""
+
 	resource_content = db.EmbeddedDocumentField(DownloadableFileResourceContent)

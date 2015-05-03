@@ -7,7 +7,7 @@ import MookAPI.mongo_coder as mc
 
 
 class ResourceContent(mc.MongoCoderEmbeddedDocument):
-	"""Generic collection, every resource type will inherit from this."""
+	"""An embedded document for the actual content of the resource."""
 	
 	meta = {
 		'allow_inheritance': True,
@@ -18,54 +18,43 @@ class ResourceContent(mc.MongoCoderEmbeddedDocument):
 class Resource(mc.SyncableDocument):
 	"""
 	Any elementary pedagogical resource.
-	Contains the metadata and an embedded ResourceContent document.
+	Contains the metadata and a 'ResourceContent' embedded document.
+	Resource objects are organized by lessons, therefore each Resource references a parent Lesson.
 	"""
 
 	meta = {
 		'allow_inheritance': True,
 	}
 	
-	### PROPERTIES - METADATA
+	### PROPERTIES
 
-	## Title of the resource
 	title = db.StringField(required=True)
+		"""The title of the resource."""
 
-	## Slug
 	slug = db.StringField(unique=True)
+		"""A human-readable unique identifier for the resource."""
 
-	## Creator should reference a user
 	## Will be implemented later
 	# creator = db.ReferenceField('User')
+		# """The user who created the resource."""
 
-	## Short description of the resource
 	description = db.StringField()
+		"""A text describing the resource."""
 
-	## Order of display (within sibligs)
 	order = db.IntField()
+		"""The order of the resource in the lesson."""
 
-	## List of keywords
 	keywords = db.ListField(db.StringField())
+		"""A list of keywords to index the resource."""
 
-	## Tags need to belong to a separate collection for indexation
-	## Will be implemented later
-	# tags = db.ListField(db.ReferenceField('ResourceTag'))
-
-	## Date of creation
 	date = db.DateTimeField(default=datetime.datetime.now, required=True)
+		"""The date the resource was created."""
 
-	### PROPERTIES - HIERARCHY
-
-	## Lesson
 	lesson = db.ReferenceField('Lesson')
+		"""The parent lesson."""
 
-	## wether the hierarchy object has been validated (through test or completion of children resources)
-	# we must remove all validation from the project, as it is not meant to be implemented yet
-	# is_validated = db.BooleanField()
-	
-	### PROPERTIES - CONTENT
-
-	## Content of the resource
 	resource_content = db.EmbeddedDocumentField(ResourceContent)
+		"""The actual content of the resource, stored in an embedded document."""
 
 	### VIRTUAL PROPERTIES
 
@@ -75,6 +64,7 @@ class Resource(mc.SyncableDocument):
 
 	@property
 	def is_validated(self):
+		"""Whether the current user (if any) has validated this resource."""
 	    return False
 	
 	@classmethod
@@ -83,33 +73,43 @@ class Resource(mc.SyncableDocument):
 
 	@property
 	def skill(self):
+		"""Shorthand virtual property to the parent skill of the parent lesson."""
 		return self.lesson.skill
 
 	@property
 	def track(self):
+		"""Shorthand virtual property to the parent track of the parent skill of the parent lesson."""
 		return self.lesson.skill.track
 	
 	### METHODS
 
 	def siblings(self):
+		"""A queryset of resources in the same lesson, including the current resource."""
 		return Resource.objects.order_by('order', 'title').filter(lesson=self.lesson)
 		
 	def siblings_strict(self):
+		"""A queryset of resources in the same lesson, excluding the current resource."""
 		return Resource.objects.order_by('order', 'title').filter(lesson=self.lesson, id__ne=self.id)
 		
 	def aunts(self):
+		"""A queryset of lessons in the same skill, including the current lesson."""
 		return self.lesson.siblings()
 
 	def aunts_strict(self):
+		"""A queryset of lessons in the same skill, excluding the current lesson."""
 		return self.lesson.siblings_strict()
 
 	def cousins(self):
+		"""A queryset of resources in the same skill, including the current resource."""
 		return Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=self.aunts())
 	
 	def cousins_strict(self):
+		"""A queryset of resources in the same skill, excluding the current resource."""
 		return Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=self.aunts_strict())
 	
-	def set_slug(self):
+	def _set_slug(self):
+		"""Sets a slug for the hierarchy level based on the title."""
+
 		slug = slugify(self.title) if self.slug is None else slugify(self.slug)
 		def alternate_slug(text, k=1):
 			return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
@@ -128,7 +128,7 @@ class Resource(mc.SyncableDocument):
 		self.slug = alternate_slug(slug, k) if k <= kmax else None
 
 	def clean(self):
-		self.set_slug()
+		self._set_slug()
 
 	def encode_mongo(self):
 		son = super(Resource, self).encode_mongo()
@@ -140,6 +140,8 @@ class Resource(mc.SyncableDocument):
 		return son
 
 	def _breadcrumb_item(self):
+		"""Returns some minimal information about the object for use in a breadcrumb."""
+
 		idkey = self.__class__.json_key() + '_id'
 		return {
 			'title': self.title,
@@ -149,6 +151,10 @@ class Resource(mc.SyncableDocument):
 		}
 
 	def breadcrumb(self):
+		"""
+		Returns an array of the breadcrumbs up until the current object: [Track, Skill, Lesson, Resource]
+		"""
+
 		return [
 			self.track._breadcrumb_item(),
 			self.skill._breadcrumb_item(),

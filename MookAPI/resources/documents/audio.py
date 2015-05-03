@@ -4,15 +4,17 @@ from .downloadable_file import *
 
 
 class AudioResourceContent(DownloadableFileResourceContent):
-	"""Reference an audio file stored on the server."""
-
-	##FIXME: Specify accepted extensions/mimetype on the content_file
+	
+	##FIXME: Override content_file to specify accepted extensions/mimetypes.
 
 	## Illustrative image file for the audio file
 	image = db.ImageField()
+		"""An image to show with the audio player."""
 
 	@property
 	def image_url(self):
+		"""The URL at which the illustration image can be downloaded."""
+
 		if not self.image:
 			return None
 
@@ -28,4 +30,6 @@ class AudioResourceContent(DownloadableFileResourceContent):
 
 
 class AudioResource(DownloadableFileResource):
+	"""Stores an audio file in the database."""
+	
 	resource_content = db.EmbeddedDocumentField(AudioResourceContent)
