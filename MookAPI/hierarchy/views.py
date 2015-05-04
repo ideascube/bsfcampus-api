@@ -77,5 +77,5 @@ class LessonView(restful.Resource):
 		return documents.Lesson.get_unique_object_or_404(lesson_id)
 
 api.add_resource(LessonsView, '/hierarchy/lessons', endpoint='lessons')
-api.add_resource(SkillLessonsView, '/hierarchy/lessons/track/<track_id>', endpoint='track_lessons')
+api.add_resource(SkillLessonsView, '/hierarchy/lessons/skill/<skill_id>', endpoint='skill_lessons')
 api.add_resource(LessonView, '/hierarchy/lessons/<lesson_id>', endpoint='lesson')

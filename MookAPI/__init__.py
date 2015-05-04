@@ -80,7 +80,6 @@ security = Security(
 ## Header authentication
 @security.login_manager.request_loader
 def load_user_from_request(request):
-	print("Request loader called")
 	auth_key = request.headers.get('Authorization')
 	if auth_key:
 		auth_key = auth_key.replace('Basic ', '', 1)
