@@ -220,7 +220,7 @@ class Skill(ResourceHierarchy):
     @property
     def icon_url(self):
         """The URL where the skill icon can be downloaded."""
-        return flask.url_for('hierarchy.get_skill_icon', skill_id=self.id, _external=True)
+        return api.url_for(views.SkillIconView, skill_id=self.id, _external=True)
 
     ### VIRTUAL PROPERTIES
     
@@ -295,7 +295,7 @@ class Track(ResourceHierarchy):
     @property
     def icon_url(self):
         """The URL where the track icon can be downloaded."""
-        return flask.url_for('hierarchy.get_track_icon', track_id=self.id, _external=True)
+        return api.url_for(views.TrackIconView, track_id=self.id, _external=True)
 
     bg_color = db.StringField()
     """The background color of pages in this Track_."""
