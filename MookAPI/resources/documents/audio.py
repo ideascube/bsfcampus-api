@@ -1,5 +1,4 @@
 from MookAPI import db, api
-from . import *
 from .downloadable_file import *
 from .. import views
 

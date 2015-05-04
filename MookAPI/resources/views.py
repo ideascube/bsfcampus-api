@@ -10,7 +10,7 @@ import MookAPI.hierarchy.documents
 
 class ResourcesView(restful.Resource):
 
-    def _get_all():
+    def _get_all(self):
         return documents.Resource.objects.order_by('lesson', 'order', 'title').all()
     
     def _get_by_lesson(self, lesson_id):
@@ -105,8 +105,6 @@ class ResourceContentImageView(restful.Resource):
         """Download the image associated with the Resource_ with id ``resource_id``."""
 
         resource = documents.Resource.get_unique_object_or_404(resource_id)
-
-        print "Got resource", resource
 
         if isinstance(resource, documents.audio.AudioResource):
             content_image = resource.resource_content.image

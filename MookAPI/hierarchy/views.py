@@ -47,7 +47,7 @@ api.add_resource(TrackIconView, '/hierarchy/tracks/<track_id>/icon', endpoint='t
 
 class SkillsView(restful.Resource):
 
-    def _get_all():
+    def _get_all(self):
         return documents.Skill.objects.order_by('track', 'order', 'title').all()
 
     def _get_by_track(self, track_id):
@@ -101,7 +101,7 @@ api.add_resource(SkillIconView, '/hierarchy/skills/<skill_id>/icon', endpoint='s
 
 class LessonsView(restful.Resource):
     
-    def _get_all():
+    def _get_all(self):
         return documents.Lesson.objects.order_by('skill', 'order', 'title').all()
 
     def _get_by_skill(self, skill_id):

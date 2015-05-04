@@ -1,3 +1,7 @@
+import exceptions
+import bson
+import random
+
 from . import *
 from exercise_question.unique_answer_mcq import UniqueAnswerMCQExerciseQuestion
 from exercise_question.multiple_answer_mcq import MultipleAnswerMCQExerciseQuestion
@@ -5,9 +9,6 @@ from exercise_question.right_or_wrong import RightOrWrongExerciseQuestion
 from exercise_question.dropdown import DropdownExerciseQuestion
 from exercise_question.ordering import OrderingExerciseQuestion
 from exercise_question.categorize import CategorizeExerciseQuestion
-from random import shuffle
-from bson import ObjectId
-import exceptions
 
 
 class ExerciseResourceContent(ResourceContent):
@@ -47,7 +48,7 @@ class ExerciseResourceContent(ResourceContent):
     def question(self, question_id):
         """A getter for a question with a known `_id`."""
 
-        oid = ObjectId(question_id)
+        oid = bson.ObjectId(question_id)
         for question in self.questions:
             if question._id == oid:
                 return question
@@ -65,7 +66,7 @@ class ExerciseResourceContent(ResourceContent):
             number = self.number_of_questions
 
         all_questions = self.questions
-        shuffle(all_questions)
+        random.shuffle(all_questions)
         return all_questions[:number]
 
     number_of_questions = db.IntField()
