@@ -1,9 +1,12 @@
-import flask
-from MookAPI import db
 import datetime
 import bson
-from slugify import slugify
+import slugify
+
+import flask
+
 import MookAPI.mongo_coder as mc
+from MookAPI import db, api
+from .. import views
 
 
 class ResourceContent(mc.MongoCoderEmbeddedDocument):
@@ -66,7 +69,7 @@ class Resource(mc.SyncableDocument):
 
     @property
     def url(self):
-        return flask.url_for('resources.get_resource', resource_id=self.id, _external=True)
+        return api.url_for(views.ResourceView, resource_id=self.id, _external=True)
 
     @property
     def is_validated(self):
@@ -116,7 +119,7 @@ class Resource(mc.SyncableDocument):
     def _set_slug(self):
         """Sets a slug for the hierarchy level based on the title."""
 
-        slug = slugify(self.title) if self.slug is None else slugify(self.slug)
+        slug = slugify.slugify(self.title) if self.slug is None else slugify.slugify(self.slug)
         def alternate_slug(text, k=1):
             return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
         k = 0

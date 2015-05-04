@@ -6,13 +6,13 @@ Local servers
 =============
 
 .. autoclass:: MookAPI.local_servers.documents.SyncableItem
-	:members:
+    :members:
 
 .. autoclass:: MookAPI.local_servers.documents.LocalServer
-	:members:
+    :members:
 
 Synchronization
 ===============
 
 .. autoclass:: MookAPI.synchronizer.documents.ItemToSync
-	:members:
+    :members:

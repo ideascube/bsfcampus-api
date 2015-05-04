@@ -1,12 +1,12 @@
+import exceptions
+import bson
+
 import flask
 
-import exceptions
-
-from bson import ObjectId
-
-from MookAPI import db
-
 import MookAPI.mongo_coder as mc
+from MookAPI import db, api
+from ... import views
+
 
 class ExerciseQuestion(mc.MongoCoderEmbeddedDocument):
     """
@@ -26,7 +26,7 @@ class ExerciseQuestion(mc.MongoCoderEmbeddedDocument):
         return self._id
 
     ## Object Id
-    _id = db.ObjectIdField(default=ObjectId)
+    _id = db.ObjectIdField(default=bson.ObjectId)
 
     ## Question text
     question_heading = db.StringField()
@@ -42,10 +42,11 @@ class ExerciseQuestion(mc.MongoCoderEmbeddedDocument):
         if not hasattr(self, '_instance'):
             return None
 
-        return flask.url_for(
-            'resources.get_question_image',
+        return api.url_for(
+            views.ExerciseResourceQuestionImageView,
             resource_id=self._instance.id,
             question_id=self._id,
+            filename=self.question_image.filename,
             _external=True
             )
     

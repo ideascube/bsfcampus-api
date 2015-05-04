@@ -9,26 +9,26 @@ Resources
 ---------
 
 .. autoclass:: MookAPI.resources.documents.Resource
-	:members:
+    :members:
 
 .. autoclass:: MookAPI.resources.documents.ResourceContent
-	:members:
+    :members:
 
 
 Hierarchy
 ---------
 
 .. autoclass:: MookAPI.hierarchy.documents.ResourceHierarchy
-	:members:
+    :members:
 
 .. autoclass:: MookAPI.hierarchy.documents.Lesson
-	:members:
+    :members:
 
 .. autoclass:: MookAPI.hierarchy.documents.Skill
-	:members:
+    :members:
 
 .. autoclass:: MookAPI.hierarchy.documents.Track
-	:members:
+    :members:
 
 
 
@@ -38,8 +38,24 @@ Views
 Resources
 ---------
 
-.. automodule:: MookAPI.resources.views
-	:members:
+.. autoclass:: MookAPI.resources.views.ResourcesView
+    :members:
+
+.. autoclass:: MookAPI.resources.views.ResourceView
+    :members:
+
+.. autoclass:: MookAPI.resources.views.ResourceHierarchyView
+    :members:
+
+.. autoclass:: MookAPI.resources.views.ResourceContentFileView
+    :members:
+
+.. autoclass:: MookAPI.resources.views.ResourceContentImageView
+    :members:
+
+.. autoclass:: MookAPI.resources.views.ExerciseResourceQuestionImageView
+    :members:
+
 
 Hierarchy
 ---------
@@ -47,38 +63,32 @@ Hierarchy
 Tracks
 ``````
 
-.. autoclass:: MookAPI.hierarchy.views.TrackView
-	:members:
-
 .. autoclass:: MookAPI.hierarchy.views.TracksView
-	:members:
+    :members:
+
+.. autoclass:: MookAPI.hierarchy.views.TrackView
+    :members:
 
 .. autoclass:: MookAPI.hierarchy.views.TrackIconView
-	:members:
+    :members:
 
 Skills
 ``````
 
-.. autoclass:: MookAPI.hierarchy.views.SkillView
-	:members:
-
 .. autoclass:: MookAPI.hierarchy.views.SkillsView
-	:members:
+    :members:
 
-.. autoclass:: MookAPI.hierarchy.views.TrackSkillsView
-	:members:
+.. autoclass:: MookAPI.hierarchy.views.SkillView
+    :members:
 
 .. autoclass:: MookAPI.hierarchy.views.SkillIconView
-	:members:
+    :members:
 
 Lessons
-``````
-
-.. autoclass:: MookAPI.hierarchy.views.LessonView
-	:members:
+```````
 
 .. autoclass:: MookAPI.hierarchy.views.LessonsView
-	:members:
+    :members:
 
-.. autoclass:: MookAPI.hierarchy.views.SkillLessonsView
-	:members:
+.. autoclass:: MookAPI.hierarchy.views.LessonView
+    :members:

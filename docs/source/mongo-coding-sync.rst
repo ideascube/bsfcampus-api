@@ -6,19 +6,19 @@ Mongo coding
 ============
 
 .. autoclass:: MookAPI.mongo_coder.MongoCoderMixin
-	:members:
+    :members:
 
 .. autoclass:: MookAPI.mongo_coder.MongoCoderDocument
-	:members:
+    :members:
 
 .. autoclass:: MookAPI.mongo_coder.MongoCoderEmbeddedDocument
-	:members:
+    :members:
 
 Synchronization
 ===============
 
 .. autoclass:: MookAPI.mongo_coder.DeletedSyncableDocument
-	:members:
+    :members:
 
 .. autoclass:: MookAPI.mongo_coder.SyncableDocument
-	:members:
+    :members:

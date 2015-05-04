@@ -9,11 +9,11 @@ Welcome to MOOK's documentation!
 Contents:
 
 .. toctree::
-	:maxdepth: 2
+    :maxdepth: 2
 
-	mongo-coding-sync
-	resources-hierarchy
-	local-servers-sync
+    mongo-coding-sync
+    resources-hierarchy
+    local-servers-sync
 
 Indices and tables
 ==================

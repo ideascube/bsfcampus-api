@@ -1,6 +1,6 @@
-from MookAPI import db
-import datetime
+from MookAPI import db, api
 from . import *
+from .. import views
 
 
 class DownloadableFileResourceContent(ResourceContent):
@@ -17,8 +17,8 @@ class DownloadableFileResourceContent(ResourceContent):
         if not hasattr(self, '_instance'):
             return None
 
-        return flask.url_for(
-            'resources.get_resource_content_file',
+        return api.url_for(
+            views.ResourceContentFileView,
             resource_id=self._instance.id,
             filename=self.content_file.filename,
             _external=True

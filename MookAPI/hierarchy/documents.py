@@ -1,11 +1,14 @@
-import flask
-from MookAPI import db, api
-import views
 import datetime
 import bson
-from slugify import slugify
+import slugify
+
+import flask
+
 import MookAPI.mongo_coder as mc
-from MookAPI.resources import documents as resources_documents
+from MookAPI import db, api
+import MookAPI.resources.documents
+import views
+
 
 class ResourceHierarchy(mc.SyncableDocument):
     """
@@ -57,7 +60,7 @@ class ResourceHierarchy(mc.SyncableDocument):
     def _set_slug(self):
         """Sets a slug for the hierarchy level based on the title."""
 
-        slug = slugify(self.title) if self.slug is None else slugify(self.slug)
+        slug = slugify.slugify(self.title) if self.slug is None else slugify.slugify(self.slug)
         def alternate_slug(text, k=1):
             return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
         k = 0
@@ -142,7 +145,7 @@ class Lesson(ResourceHierarchy):
     @property
     def resources(self):
         """A queryset of the Resource_ objects that belong to the current Lesson_."""
-        return resources_documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
+        return MookAPI.resources.documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
 
     @property
     def progress(self):

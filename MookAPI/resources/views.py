@@ -1,172 +1,142 @@
 import io
 
 import flask
-from bson import json_util
+from flask.ext import restful
 
+from MookAPI import api
 import documents
-from MookAPI.hierarchy import documents as hierarchy_documents
-from . import bp
+import MookAPI.hierarchy.documents
 
 
-@bp.route("/")
-def get_resources():
-    """GET list of all resources"""
+class ResourcesView(restful.Resource):
 
-    print ("GETTING list of all resources")
+    def _get_all():
+        return documents.Resource.objects.order_by('lesson', 'order', 'title').all()
+    
+    def _get_by_lesson(lesson_id):
+        return documents.Resource.objects.order_by('order', 'title').filter(lesson=lesson_id)
+    
+    def _get_by_skill(skill_id):
+        lessons = MookAPI.hierarchy.documents.Lesson.objects.filter(skill=skill_id)
+        return documents.Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=lessons)
 
-    resources = documents.Resource.objects.order_by('lesson', 'order', 'title').all()
+    def get(self, lesson_id=None, skill_id=None):
+        """
+        Returns a list of Resource_ objects, ordered by ``order`` and ``title``, enveloped in a single-key JSON dictionary.
+        The results are filtered by Lesson_ if ``lesson_id`` is specified or by Skill_ if ``skill_id`` is specified.
+        """
 
-    resources_array = []
-    for ob in resources:
-        resource = ob.encode_mongo()
-        resources_array.append(resource)
+        if lesson_id:
+            return self._get_by_lesson(lesson_id)
+        elif skill_id:
+            return self._get_by_skill(skill_id)
+        else:
+            return self._get_all()
 
-    son = {}
-    son[documents.Resource.json_key_collection()] = resources_array
-
-    return flask.Response(
-        response=json_util.dumps(son),
-        mimetype="application/json"
-    )
-
-
-@bp.route("/lesson/<lesson_id>")
-def get_lesson_resources(lesson_id):
-    """GET list of all resources in given lesson"""
-
-    print ("GETTING list of all resources in lesson {lesson_id}".format(lesson_id=lesson_id))
-
-    resources = documents.Resource.objects.order_by('order', 'title').filter(lesson=lesson_id)
-
-    resources_array = []
-    for ob in resources:
-        resource = ob.encode_mongo()
-        resources_array.append(resource)
-
-    son = {}
-    son[documents.Resource.json_key_collection()] = resources_array
-
-    return flask.Response(
-        response=json_util.dumps(son),
-        mimetype="application/json"
-    )
+api.add_resource(
+    ResourcesView,
+    '/resources', '/resources/lesson/<lesson_id>', '/resources/skill/<skill_id>', 
+    endpoint='resources'
+)
 
 
-@bp.route("/skill/<skill_id>")
-def get_skill_resources(skill_id):
-    """GET list of all resources in given skill"""
+class ResourceView(restful.Resource):
 
-    print ("GETTING list of all resources in skill {skill_id}".format(skill_id=skill_id))
+    def get(self, resource_id):
+        """Get the Resource_ with id ``resource_id`` enveloped in a single-key JSON dictionary."""
 
-    lessons = hierarchy_documents.Lesson.objects.order_by('order', 'title').filter(skill=skill_id)
-    resources = documents.Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=lessons)
+        return documents.Resource.get_unique_object_or_404(resource_id)
 
-    resources_array = []
-    for ob in resources:
-        resource = ob.encode_mongo()
-        resources_array.append(resource)
-
-    son = {}
-    son[documents.Resource.json_key_collection()] = resources_array
-
-    return flask.Response(
-        response=json_util.dumps(son),
-        mimetype="application/json"
-    )
+api.add_resource(ResourceView, '/resources/<resource_id>', endpoint='resource')
 
 
-@bp.route("/<resource_id>")
-def get_resource(resource_id):
-    """GET one resource"""
+class ResourceHierarchyView(restful.Resource):
 
-    print ("GETTING resource with id {resource_id}".format(resource_id=resource_id))
+    def get(self, resource_id):
+        """
+        Get the Resource_ with id ``resource_id`` and all its family tree:
+        Lesson_, Skill_, Track_, sibling Resource_ objects, aunt Lesson_ objects and cousin Resource_ objects.
+        """
 
-    resource = documents.Resource.get_unique_object_or_404(resource_id)
-    resource_dict = resource.encode_mongo()
+        resource = documents.Resource.get_unique_object_or_404(resource_id)
 
-    son = {}
-    son[documents.Resource.json_key()] = resource_dict
+        lesson = resource.lesson
+        skill = lesson.skill
+        track = skill.track
 
-    return flask.Response(
-        response=json_util.dumps(son),
-        mimetype="application/json"
-    )
+        son = {}
+        son[documents.Resource.json_key()] = resource.encode_mongo()
+        son['lesson'] = lesson.encode_mongo()
+        son['skill'] = skill.encode_mongo()
+        son['track'] = track.encode_mongo()
+        son['siblings'] = map(lambda r: r.encode_mongo(), resource.siblings())
+        son['aunts'] = map(lambda r: r.encode_mongo(), resource.aunts())
+        son['cousins'] = map(lambda r: r.encode_mongo(), resource.cousins())
 
+        return son
 
-@bp.route("/<resource_id>/hierarchy")
-def get_resource_hierarchy(resource_id):
-    """GET one resource's hierarchy"""
-
-    print ("GETTING resource with id {resource_id}".format(resource_id=resource_id))
-
-    resource = documents.Resource.get_unique_object_or_404(resource_id)
-
-    lesson = resource.lesson
-    skill = lesson.skill
-    track = skill.track
-
-    son = {}
-    son[documents.Resource.json_key()] = resource.encode_mongo()
-    son['lesson'] = lesson.encode_mongo()
-    son['skill'] = skill.encode_mongo()
-    son['track'] = track.encode_mongo()
-    son['siblings'] = map(lambda r: r.encode_mongo(), resource.siblings())
-    son['aunts'] = map(lambda r: r.encode_mongo(), resource.aunts())
-    son['cousins'] = map(lambda r: r.encode_mongo(), resource.cousins())
-
-    return flask.Response(
-        response=json_util.dumps(son),
-        mimetype="application/json"
-    )
+api.add_resource(ResourceHierarchyView, '/resources/<resource_id>/hierarchy', endpoint='resource_hierarchy')
 
 
-@bp.route("/<resource_id>/content-file/<filename>")
-def get_resource_content_file(resource_id, filename):
-    """GET one resource's content file"""
+class ResourceContentFileView(restful.Resource):
 
-    resource = documents.Resource.get_unique_object_or_404(resource_id)
+    def get(self, resource_id, filename):
+        """Download the file associated with the Resource_ with id ``resource_id``."""
 
-    if isinstance(resource, documents.downloadable_file.DownloadableFileResource):
-        content_file = resource.resource_content.content_file
+        resource = documents.Resource.get_unique_object_or_404(resource_id)
 
-        return flask.send_file(
-            io.BytesIO(content_file.read()),
-            attachment_filename=filename,
-            mimetype=content_file.contentType
-        )
+        if isinstance(resource, documents.downloadable_file.DownloadableFileResource):
+            content_file = resource.resource_content.content_file
 
-    abort(404)
+            return flask.send_file(
+                io.BytesIO(content_file.read()),
+                attachment_filename=filename,
+                mimetype=content_file.contentType
+            )
 
+        flask.abort(404)
 
-@bp.route("/<resource_id>/content-image/<filename>")
-def get_resource_content_image(resource_id, filename):
-    """GET one resource's content image"""
-
-    resource = documents.Resource.get_unique_object_or_404(resource_id)
-    resource_content = resource.resource_content
-
-    if isinstance(resource_content, documents.audio.AudioResourceContent):
-        content_image = resource_content.image
-
-    return flask.send_file(io.BytesIO(
-        content_image.read()),
-        attachment_filename=content_image.filename,
-        mimetype=content_image.contentType
-    )
+api.add_resource(ResourceContentFileView, '/resources/<resource_id>/content-file/<filename>', endpoint='resource_content_file')
 
 
-@bp.route("/<resource_id>/question/<question_id>/image")
-def get_question_image(resource_id, question_id):
-    """GET one question's image"""
+class ResourceContentImageView(restful.Resource):
 
-    resource = documents.Resource.get_unique_object_or_404(resource_id)
-    try:
-        question = resource.question(question_id=question_id)
-        question_image = question.question_image
-        return flask.send_file(
-            io.BytesIO(question_image.read()),
-            attachment_filename=question_image.filename,
-            mimetype=question_image.contentType
-        )
-    except:
-        abort(404)
+    def get(self, resource_id, filename):
+        """Download the image associated with the Resource_ with id ``resource_id``."""
+
+        resource = documents.Resource.get_unique_object_or_404(resource_id)
+
+        print "Got resource", resource
+
+        if isinstance(resource, documents.audio.AudioResource):
+            content_image = resource.resource_content.image
+
+            return flask.send_file(
+                io.BytesIO(content_image.read()),
+                attachment_filename=content_image.filename,
+                mimetype=content_image.contentType
+            )
+
+        flask.abort(404)
+
+api.add_resource(ResourceContentImageView, '/resources/<resource_id>/content-image/<filename>', endpoint='resource_content_image')
+
+
+class ExerciseResourceQuestionImageView(restful.Resource):
+
+    def get(self, resource_id, question_id, filename):
+        """Download the image associated with the question with ``question_id`` in Exercise Resource_ with id ``resource_id``."""
+
+        resource = documents.Resource.get_unique_object_or_404(resource_id)
+        try:
+            question = resource.question(question_id=question_id)
+            question_image = question.question_image
+            return flask.send_file(
+                io.BytesIO(question_image.read()),
+                attachment_filename=question_image.filename,
+                mimetype=question_image.contentType
+            )
+        except:
+            flask.abort(404)
+
+api.add_resource(ExerciseResourceQuestionImageView, '/resources/<resource_id>/question/<question_id>/image/<filename>', endpoint='exercise_question_image')
