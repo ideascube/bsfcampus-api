@@ -83,18 +83,36 @@ class ExerciseResource(Resource):
 
 	resource_content = db.EmbeddedDocumentField(ExerciseResourceContent)
 
+	def _add_instance(self, obj):
+		"""This is a hack to provide the ``_instance`` property to the shorthand question-getters."""
+
+		def _add_instance_single_object(obj):
+			obj._instance = self
+			return obj
+		
+		if isinstance(obj, list):
+			return map(_add_instance_single_object, obj)
+		else:
+			return _add_instance_single_object(obj)	
+
 	@property
 	def questions(self):
 		"""A shorthand getter for the list of questions in the resource content."""
-		return self.resource_content.questions()
+
+		questions = self.resource_content.questions
+		return self._add_instance(questions)
 
 	def question(self, question_id):
 		"""A shorthand getter for a question with a known `_id`."""
-		return self.resource_content.question(question_id)
+
+		question = self.resource_content.question(question_id)
+		return self._add_instance(question)
 
 	def random_questions(self, number=None):
 		"""
 		A shorthand getter for a list of random questions.
 		See the documentation of `ExerciseResourceContent.random_questions`.
 		"""
-		return self.resource_content.random_questions(number)
+
+		questions = self.resource_content.random_questions(number)
+		return self._add_instance(questions)
