@@ -51,7 +51,6 @@ class MongoCoderMixin(object):
 					url_key = key + '_url'
 					filename_key = key + '_filename'
 					if hasattr(self, url_key):
-						getattr(self, url_key)
 						son[url_key] = getattr(self, url_key)
 					son[filename_key] = value.filename
 				
