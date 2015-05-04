@@ -12,8 +12,8 @@ from MookAPI.resources.documents.exercise_question import ExerciseQuestionAnswer
 
 class ExerciseAttemptQuestionAnswer(mc.MongoCoderEmbeddedDocument):
     """
-	Stores the data relative to one answer in an attempt to an exercise, including the answer given.
-	"""
+    Stores the data relative to one answer in an attempt to an exercise, including the answer given.
+    """
 
     ### PROPERTIES
 
@@ -46,8 +46,8 @@ class ExerciseAttemptQuestionAnswer(mc.MongoCoderEmbeddedDocument):
 
 class ExerciseAttempt(Activity):
     """
-	Records any attempt at an exercise.
-	"""
+    Records any attempt at an exercise.
+    """
 
     ### PROPERTIES
 
@@ -87,8 +87,8 @@ class ExerciseAttempt(Activity):
 
     def save_answer(self, question_id, data):
         """
-		Saves an answer (ExerciseQuestionAnswer) to a question (referenced by its ObjectId).
-		"""
+        Saves an answer (ExerciseQuestionAnswer) to a question (referenced by its ObjectId).
+        """
 
         question = self.exercise.question(question_id)
         attempt_question_answer = self.question_answer(question_id)

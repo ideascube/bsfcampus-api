@@ -11,204 +11,204 @@ import sys
 
 ##FIXME Do something better here.
 document_module_names = [
-	"MookAPI.hierarchy.documents",
-	"MookAPI.resources.documents",
-	"MookAPI.resources.documents.audio",
-	"MookAPI.resources.documents.downloadable_file",
-	"MookAPI.resources.documents.exercise",
-	"MookAPI.resources.documents.external_video",
-	"MookAPI.resources.documents.rich_text",
-	"MookAPI.resources.documents.video",
-	]
+    "MookAPI.hierarchy.documents",
+    "MookAPI.resources.documents",
+    "MookAPI.resources.documents.audio",
+    "MookAPI.resources.documents.downloadable_file",
+    "MookAPI.resources.documents.exercise",
+    "MookAPI.resources.documents.external_video",
+    "MookAPI.resources.documents.rich_text",
+    "MookAPI.resources.documents.video",
+    ]
 def import_module(module_name):
-	return __import__(module_name, fromlist=[''])
+    return __import__(module_name, fromlist=[''])
 document_modules = map(import_module, document_module_names)
 
 
 @bp.route("/reset")
 def reset_sync():
-	api_host = app_config.central_server_api_host
-	url = api_host + 'local_servers/reset'
-	email = app_config.central_server_api_key
-	password = app_config.central_server_api_secret
-	
-	r = requests.get(url, auth=(email, password))
+    api_host = app_config.central_server_api_host
+    url = api_host + 'local_servers/reset'
+    email = app_config.central_server_api_key
+    password = app_config.central_server_api_secret
+    
+    r = requests.get(url, auth=(email, password))
 
-	if r.status_code == 200:
+    if r.status_code == 200:
 
-		return flask.Response(
-			response=bson.json_util.dumps({
-				'error': 0
-				}),
-			mimetype='application/json'
-			)
+        return flask.Response(
+            response=bson.json_util.dumps({
+                'error': 0
+                }),
+            mimetype='application/json'
+            )
 
-	else:
-		return flask.Response(
-			response=bson.json_util.dumps({
-				'error': 1,
-				'response_code': r.status_code,
-			}),
-			mimetype='application/json'
-			)
+    else:
+        return flask.Response(
+            response=bson.json_util.dumps({
+                'error': 1,
+                'response_code': r.status_code,
+            }),
+            mimetype='application/json'
+            )
 
 def pile_update_items(array):
-	for item in array:
-		item_document = documents.ItemToSync(
-			action='update',
-			url=item['url'],
-			distant_id=item['_ref']['$id']['$oid'],
-			class_name=item['_cls'],
-			)
-		item_document.save()
+    for item in array:
+        item_document = documents.ItemToSync(
+            action='update',
+            url=item['url'],
+            distant_id=item['_ref']['$id']['$oid'],
+            class_name=item['_cls'],
+            )
+        item_document.save()
 
 def pile_delete_items(array):
-	for item in array:
-		item_document = documents.ItemToSync(
-			action='delete',
-			distant_id=item['_ref']['$id']['$oid'],
-			class_name=item['_cls']
-			)
-		item_document.save()
+    for item in array:
+        item_document = documents.ItemToSync(
+            action='delete',
+            distant_id=item['_ref']['$id']['$oid'],
+            class_name=item['_cls']
+            )
+        item_document.save()
 
 def pile_items(json):
-	items = json['items']
-	updates = pile_update_items(items['update'])
-	deletes = pile_delete_items(items['delete'])
-	return len(items['update']), len(items['delete'])
+    items = json['items']
+    updates = pile_update_items(items['update'])
+    deletes = pile_delete_items(items['delete'])
+    return len(items['update']), len(items['delete'])
 
 
 @bp.route("/fetch_list")
 def get_fetch_list():
-	api_host = app_config.central_server_api_host
-	url = api_host + 'local_servers/sync'
-	email = app_config.central_server_api_key
-	password = app_config.central_server_api_secret
-	
-	r = requests.get(url, auth=(email, password))
+    api_host = app_config.central_server_api_host
+    url = api_host + 'local_servers/sync'
+    email = app_config.central_server_api_key
+    password = app_config.central_server_api_secret
+    
+    r = requests.get(url, auth=(email, password))
 
-	if r.status_code == 200:
+    if r.status_code == 200:
 
-		new_updates, new_deletes = pile_items(r.json())
+        new_updates, new_deletes = pile_items(r.json())
 
-		return flask.Response(
-			response=bson.json_util.dumps({
-				'error': 0,
-				'new_updates': new_updates,
-				'new_deletes': new_deletes,
-				}),
-			mimetype='application/json'
-			)
+        return flask.Response(
+            response=bson.json_util.dumps({
+                'error': 0,
+                'new_updates': new_updates,
+                'new_deletes': new_deletes,
+                }),
+            mimetype='application/json'
+            )
 
-	else:
-		return flask.Response(
-			response=bson.json_util.dumps({
-				'error': 1,
-				'response_code': r.status_code,
-			}),
-			mimetype='application/json'
-			)
+    else:
+        return flask.Response(
+            response=bson.json_util.dumps({
+                'error': 1,
+                'response_code': r.status_code,
+            }),
+            mimetype='application/json'
+            )
 
 def update_object(document_class, url, existing_object):
 
-	r = requests.get(url)
-	
-	if r.status_code == 200:
-		try:
-			bson_object = bson.json_util.loads(r.text)
-			obj = document_class.decode_json_result(bson_object)
-			if existing_object:
-				obj.id = existing_object.id
-		except:
-			return None, str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
+    r = requests.get(url)
+    
+    if r.status_code == 200:
+        try:
+            bson_object = bson.json_util.loads(r.text)
+            obj = document_class.decode_json_result(bson_object)
+            if existing_object:
+                obj.id = existing_object.id
+        except:
+            return None, str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1])
 
-		return obj, None
+        return obj, None
 
-	message = "Could not fetch info, got status code " + str(r.status_code)
-	return None, message
+    message = "Could not fetch info, got status code " + str(r.status_code)
+    return None, message
 
 
 def update_item(item):
-	for module in document_modules:
+    for module in document_modules:
 
-		if hasattr(module, item.class_name):
-			document_class = getattr(module, item.class_name)
-			local_objects = document_class.objects(distant_id=item.distant_id)
+        if hasattr(module, item.class_name):
+            document_class = getattr(module, item.class_name)
+            local_objects = document_class.objects(distant_id=item.distant_id)
 
-			if len(local_objects) > 1:
-				return False, "There were at least two objects with that distant_id."
+            if len(local_objects) > 1:
+                return False, "There were at least two objects with that distant_id."
 
-			local_object = local_objects.first() # None if object is new.
+            local_object = local_objects.first() # None if object is new.
 
-			##FIXME Right now, a new object is always created.
-			## We need to update the existing object if there is one.
-			updated_object, message = update_object(document_class, item.url, local_object)
+            ##FIXME Right now, a new object is always created.
+            ## We need to update the existing object if there is one.
+            updated_object, message = update_object(document_class, item.url, local_object)
 
-			if updated_object is None:
-				message = "Could not create new object: " + message
-				return False, message
+            if updated_object is None:
+                message = "Could not create new object: " + message
+                return False, message
 
-			updated_object.save()
-			return True, None
+            updated_object.save()
+            return True, None
 
-	return False, "Document class name not recognized"
+    return False, "Document class name not recognized"
 
 def delete_item(item):
-	for module in document_modules:
-		if hasattr(module, item.class_name):
-			document_class = getattr(module, item.class_name)
-			local_objects = document_class.objects(distant_id=item.distant_id)
+    for module in document_modules:
+        if hasattr(module, item.class_name):
+            document_class = getattr(module, item.class_name)
+            local_objects = document_class.objects(distant_id=item.distant_id)
 
-			local_object = local_objects.first()
-			if local_object:
-				local_object.delete()
-				return True, None
-			else:
-				return False, "There was not exactly one item to delete"
+            local_object = local_objects.first()
+            if local_object:
+                local_object.delete()
+                return True, None
+            else:
+                return False, "There was not exactly one item to delete"
 
-	return False, "Document class name not recognized"
+    return False, "Document class name not recognized"
 
 @bp.route("/depile_item")
 def depile_sync_item():
-	item = documents.ItemToSync.objects.order_by('queue_position').first()
+    item = documents.ItemToSync.objects.order_by('queue_position').first()
 
-	if item is None:
-		return flask.Response(
-			response=bson.json_util.dumps({
-				'error': 1,
-				'changes_made': 0,
-				'error_details': 'No more item to depile'}),
-			mimetype='application/json'
-			)
+    if item is None:
+        return flask.Response(
+            response=bson.json_util.dumps({
+                'error': 1,
+                'changes_made': 0,
+                'error_details': 'No more item to depile'}),
+            mimetype='application/json'
+            )
 
-	if item.action == 'update':
-		result = update_item(item)
-		if result[0]:
-			item.delete()
-			return flask.Response(
-				response=bson.json_util.dumps({'error': 0, 'changes_made': 1, 'updates_made': 1}),
-				mimetype='application/json'
-				)
-		else:
-			item.errors.append(str(result[1]))
-			item.save()
-			return flask.Response(
-				response=bson.json_util.dumps({'error': 1, 'changes_made': 0, 'error_details': result[1]}),
-				mimetype='application/json'
-				)
+    if item.action == 'update':
+        result = update_item(item)
+        if result[0]:
+            item.delete()
+            return flask.Response(
+                response=bson.json_util.dumps({'error': 0, 'changes_made': 1, 'updates_made': 1}),
+                mimetype='application/json'
+                )
+        else:
+            item.errors.append(str(result[1]))
+            item.save()
+            return flask.Response(
+                response=bson.json_util.dumps({'error': 1, 'changes_made': 0, 'error_details': result[1]}),
+                mimetype='application/json'
+                )
 
-	elif item.action == 'delete':
-		result = delete_item(item)
-		if result[0]:
-			item.delete()
-			return flask.Response(
-				response=bson.json_util.dumps({'error': 0, 'changes_made': 1, 'deletes_made': 1}),
-				mimetype='application/json'
-				)
-		else:
-			item.errors.append(str(result[1]))
-			item.save()
-			return flask.Response(
-				response=bson.json_util.dumps({'error': 1, 'changes_made': 0, 'error_details': result[1]}),
-				mimetype='application/json'
-				)
+    elif item.action == 'delete':
+        result = delete_item(item)
+        if result[0]:
+            item.delete()
+            return flask.Response(
+                response=bson.json_util.dumps({'error': 0, 'changes_made': 1, 'deletes_made': 1}),
+                mimetype='application/json'
+                )
+        else:
+            item.errors.append(str(result[1]))
+            item.save()
+            return flask.Response(
+                response=bson.json_util.dumps({'error': 1, 'changes_made': 0, 'error_details': result[1]}),
+                mimetype='application/json'
+                )

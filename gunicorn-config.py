@@ -6,12 +6,12 @@ local_ip_address = s.getsockname()[0]
 
 from MookAPI import app_config
 def get_port():
-	if hasattr(app_config, 'port'):
-		return app_config.port
-	elif app_config.server_type == 'local':
-		return 5001
-	else:
-		return 5000
+    if hasattr(app_config, 'port'):
+        return app_config.port
+    elif app_config.server_type == 'local':
+        return 5001
+    else:
+        return 5000
 
 ## Adress where the server can be accessed
 bind = ['127.0.0.1:' + str(get_port()), local_ip_address + ':' + str(get_port())]

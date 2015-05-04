@@ -5,12 +5,12 @@ from .downloadable_file import *
 
 class VideoResourceContent(DownloadableFileResourceContent):
 
-	##FIXME: Override content_file to specify accepted extensions/mimetypes.
+    ##FIXME: Override content_file to specify accepted extensions/mimetypes.
 
-	pass
+    pass
 
 
 class VideoResource(DownloadableFileResource):
-	"""Stores a video file in the database."""
+    """Stores a video file in the database."""
 
-	resource_content = db.EmbeddedDocumentField(VideoResourceContent)
+    resource_content = db.EmbeddedDocumentField(VideoResourceContent)

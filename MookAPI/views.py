@@ -2,6 +2,6 @@ from MookAPI import app
 
 @app.route("/")
 def hello_world():
-	"""GET Hello World! page"""
+    """GET Hello World! page"""
 
-	return "Hello World, yeah!"
+    return "Hello World, yeah!"
