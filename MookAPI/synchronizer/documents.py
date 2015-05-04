@@ -4,22 +4,24 @@ import datetime
 import bson
 
 class ItemToSync(db.Document):
+	"""A document that describes a sync operation to perform on the local server."""
 
 	### PROPERTIES
 
-	## A counter to depile items in the right order
 	queue_position = db.SequenceField()
+	"""An auto-incrementing counter determining the order of the operations to perform."""
 
-	## ObjectId of the item on the central server
 	distant_id = db.ObjectIdField()
+	"""The ``id`` of the ``SyncableDocument`` on the central server."""
 
-	## Class of the item
 	class_name = db.StringField()
+	"""The class of the ``SyncableDocument`` affected by this operation."""
 
-	## Action to perform (delete local or fetch new version of distant)
 	action = db.StringField(choices=('update', 'delete'))
+	"""The operation to perform (``update`` or ``delete``)."""
 
-	## URL to fetch update info (null if action == 'delete')
 	url = db.StringField()
+	"""The URL at which the information of the document can be downloaded. Null if ``action`` is ``delete``."""
 
 	errors = db.ListField(db.StringField())
+	"""The list of the errors that occurred while trying to perform the operation."""

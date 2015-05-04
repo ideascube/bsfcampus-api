@@ -13,6 +13,7 @@ Contents:
 
 	mongo-coding-sync
 	resources-hierarchy
+	local-servers-sync
 
 Indices and tables
 ==================
