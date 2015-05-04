@@ -1,11 +1,11 @@
 import flask
-from MookAPI import db
+from MookAPI import db, api
+import views
 import datetime
 import bson
 from slugify import slugify
 import MookAPI.mongo_coder as mc
 from MookAPI.resources import documents as resources_documents
-
 
 class ResourceHierarchy(mc.SyncableDocument):
 	"""
@@ -137,7 +137,7 @@ class Lesson(ResourceHierarchy):
 
 	@property
 	def url(self):
-		return flask.url_for('hierarchy.get_lesson', lesson_id=self.id, _external=True)
+		return api.url_for(views.LessonView, lesson_id=self.id, _external=True)
 
 	@property
 	def resources(self):
@@ -223,7 +223,7 @@ class Skill(ResourceHierarchy):
 	
 	@property
 	def url(self):
-		return flask.url_for('hierarchy.get_skill', skill_id=self.id, _external=True)
+		return api.url_for(views.SkillView, skill_id=self.id, _external=True)
 
 	@property
 	def lessons(self):
@@ -301,7 +301,7 @@ class Track(ResourceHierarchy):
 
 	@property
 	def url(self):
-		return flask.url_for('hierarchy.get_track', track_id=self.id, _external=True)
+		return api.url_for(views.TrackView, track_id=self.id, _external=True)
 
 	@property
 	def skills(self):

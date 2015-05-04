@@ -5,6 +5,7 @@ Flask-OAuthLib
 Flask-MongoEngine
 Flask-Admin
 Flask-CORS
+Flask-RESTful
 python-slugify
 Pillow
 py-bcrypt

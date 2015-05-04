@@ -1,4 +1,6 @@
 from flask import Flask
+from flask import make_response
+from flask.ext.restful import Api
 from flask.ext.mongoengine import MongoEngine
 from flask.ext.admin import Admin
 from flask.ext.admin.contrib.mongoengine import ModelView
@@ -6,11 +8,11 @@ from flask.ext.security import Security, MongoEngineUserDatastore
 from flask_cors import CORS
 import app_config
 import base64
+from bson import json_util
 
 ### CREATE FLASK APP
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "cj3ff02m617k3WxO703dYke088HcU94R"
-
 
 ### SETUP DATABASE
 mongodb_settings = {}
@@ -28,6 +30,30 @@ if hasattr(app_config, 'mongodb_password'):
 	mongodb_settings['password'] = app_config.mongodb_password
 app.config["MONGODB_SETTINGS"] = mongodb_settings
 db = MongoEngine(app)
+
+import mongo_coder as mc
+
+### INITIATE API
+api = Api(app)
+
+@api.representation('application/json')
+def output_json(data, code, headers=None):
+
+	if isinstance(data, mc.MongoCoderDocument):
+		document = data.encode_mongo()
+		json_envelope = data.__class__.json_key()
+		data = {json_envelope: document}
+
+	elif isinstance(data, db.QuerySet):
+		if issubclass(data._document, mc.MongoCoderDocument):
+			documents = map(lambda d: d.encode_mongo(), data)
+			json_envelope = data._document.json_key_collection()
+			data = {json_envelope: documents}
+
+	resp = make_response(json_util.dumps(data), code)
+	resp.headers.extend(headers or {})
+	return resp
+
 
 
 ### ALLOW CROSS DOMAIN REQUESTS

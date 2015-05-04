@@ -44,5 +44,41 @@ Resources
 Hierarchy
 ---------
 
-.. automodule:: MookAPI.hierarchy.views
+Tracks
+``````
+
+.. autoclass:: MookAPI.hierarchy.views.TrackView
+	:members:
+
+.. autoclass:: MookAPI.hierarchy.views.TracksView
+	:members:
+
+.. autoclass:: MookAPI.hierarchy.views.TrackIconView
+	:members:
+
+Skills
+``````
+
+.. autoclass:: MookAPI.hierarchy.views.SkillView
+	:members:
+
+.. autoclass:: MookAPI.hierarchy.views.SkillsView
+	:members:
+
+.. autoclass:: MookAPI.hierarchy.views.TrackSkillsView
+	:members:
+
+.. autoclass:: MookAPI.hierarchy.views.SkillIconView
+	:members:
+
+Lessons
+``````
+
+.. autoclass:: MookAPI.hierarchy.views.LessonView
+	:members:
+
+.. autoclass:: MookAPI.hierarchy.views.LessonsView
+	:members:
+
+.. autoclass:: MookAPI.hierarchy.views.SkillLessonsView
 	:members:

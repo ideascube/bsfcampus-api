@@ -50,8 +50,10 @@ class MongoCoderMixin(object):
 						continue
 					url_key = key + '_url'
 					filename_key = key + '_filename'
-					if hasattr(self, url_key):
+					try:
 						son[url_key] = getattr(self, url_key)
+					except:
+						pass
 					son[filename_key] = value.filename
 				
 				## Recursively encode embedded documents....
