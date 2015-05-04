@@ -50,7 +50,7 @@ class SkillsView(restful.Resource):
     def _get_all():
         return documents.Skill.objects.order_by('track', 'order', 'title').all()
 
-    def _get_by_track(track_id):
+    def _get_by_track(self, track_id):
         return documents.Skill.objects.order_by('order', 'title').filter(track=track_id)
     
     def get(self, track_id=None):
@@ -104,8 +104,8 @@ class LessonsView(restful.Resource):
     def _get_all():
         return documents.Lesson.objects.order_by('skill', 'order', 'title').all()
 
-    def _get_by_skill(skill_id):
-        return documents.Lesson.objects.order_by('order', 'title').filter(track=track_id)
+    def _get_by_skill(self, skill_id):
+        return documents.Lesson.objects.order_by('order', 'title').filter(skill=skill_id)
     
     def get(self, skill_id=None):
         """
@@ -114,7 +114,7 @@ class LessonsView(restful.Resource):
         """
 
         if skill_id:
-            return self._get_by_skill(track_id)
+            return self._get_by_skill(skill_id)
         else:
             return self._get_all()
 

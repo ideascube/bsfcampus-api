@@ -13,10 +13,10 @@ class ResourcesView(restful.Resource):
     def _get_all():
         return documents.Resource.objects.order_by('lesson', 'order', 'title').all()
     
-    def _get_by_lesson(lesson_id):
+    def _get_by_lesson(self, lesson_id):
         return documents.Resource.objects.order_by('order', 'title').filter(lesson=lesson_id)
     
-    def _get_by_skill(skill_id):
+    def _get_by_skill(self, skill_id):
         lessons = MookAPI.hierarchy.documents.Lesson.objects.filter(skill=skill_id)
         return documents.Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=lessons)
 
