@@ -1,12 +1,11 @@
-import flask
-from MookAPI import db
-import datetime
-import bson
-import MookAPI.mongo_coder as mc
-from MookAPI.users.documents import User
-from mongoengine.common import _import_class
 import requests
-import os, sys
+
+import flask
+
+from MookAPI import db
+import MookAPI.mongo_coder as mc
+
+from MookAPI.users.documents import User
 
 class SyncableItem(mc.MongoCoderEmbeddedDocument):
     """
@@ -52,3 +51,7 @@ class LocalServer(mc.MongoCoderDocument):
     ## List of items to syncronize
     syncable_items = db.ListField(db.EmbeddedDocumentField(SyncableItem))
     """A list of SyncableItem_ embedded documents describing the items to synchronize on the local server."""
+
+    @classmethod
+    def json_key(cls):
+        return 'local_server' # At some point we should have the parent class do the underscoring automatically.

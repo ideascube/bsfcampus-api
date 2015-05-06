@@ -1,68 +1,75 @@
-import flask
-import documents
-import json
+import io
 import datetime
-from . import bp
-from bson import json_util
+
+import flask
+from flask.ext import restful
 from flask.ext.security import login_required, roles_required, current_user
 
-
-@bp.route("/sync")
-@login_required
-@roles_required('local_server')
-def get_local_server_sync_list():
-    """
-    Get a list of items to update or delete on the local server.
-    """
-
-    local_server = documents.LocalServer.objects.get_or_404(user=current_user.id)
-    
-    items = {
-        'update': [],
-        'delete': [],
-    }
-
-    for (index, item) in enumerate(local_server.syncable_items):
-        items['update'].extend(item.sync_list()['update'])
-        items['delete'].extend(item.sync_list()['delete'])
-        local_server.syncable_items[index].last_sync = datetime.datetime.now
-
-    local_server.save()
-
-    return flask.Response(
-        response=json_util.dumps({'items': items}),
-        mimetype="application/json"
-    )
+from MookAPI import api
+import documents
 
 
-@bp.route("/reset")
-@login_required
-@roles_required('local_server')
-def reset_local_server():
-    """
-    Mark all syncable items as never synced.
-    """
+class CentralServerResetLocalServerView(restful.Resource):
 
-    local_server = documents.LocalServer.objects.get_or_404(user=current_user.id)
-    
-    for (index, item) in enumerate(local_server.syncable_items):
-        local_server.syncable_items[index].last_sync = None
+    @login_required
+    @roles_required('local_server')
+    def get(self):
+        """
+        Mark all syncable items as never synced.
+        """
 
-    local_server.save()
+        local_server = documents.LocalServer.objects.get_or_404(user=current_user.id)
+        
+        for (index, item) in enumerate(local_server.syncable_items):
+            local_server.syncable_items[index].last_sync = None
 
-    return flask.jsonify(local_server=local_server)
+        local_server.save()
+
+        return local_server
+
+api.add_resource(CentralServerResetLocalServerView, '/local_servers/reset', endpoint='central_server_reset_local_server')
+
+class CentralServerSyncListView(restful.Resource):
+
+    @login_required
+    @roles_required('local_server')
+    def get(self):
+        """
+        Get a list of items to update or delete on the local server.
+        """
+
+        local_server = documents.LocalServer.objects.get_or_404(user=current_user.id)
+        
+        items = {
+            'update': [],
+            'delete': [],
+        }
+
+        for (index, item) in enumerate(local_server.syncable_items):
+            items['update'].extend(item.sync_list()['update'])
+            items['delete'].extend(item.sync_list()['delete'])
+            local_server.syncable_items[index].last_sync = datetime.datetime.now
+
+        local_server.save()
+
+        return {'items': items}
+
+api.add_resource(CentralServerSyncListView, '/local_servers/sync', endpoint='central_server_sync_list')
 
 
-@bp.route("/register")
-@login_required
-@roles_required('local_server')
-def register_local_server():
-    """
-    Registers the current user as a local server.
-    """
+class CentralServerRegisterLocalServerView(restful.Resource):
 
-    local_server = documents.LocalServer(user=current_user.id)
+    @login_required
+    @roles_required('local_server')
+    def get(self):
+        """
+        Registers the current user as a local server.
+        """
 
-    local_server.save()
+        local_server = documents.LocalServer(user=current_user.id)
 
-    return flask.jsonify(local_server=local_server)
+        local_server.save()
+
+        return local_server
+
+api.add_resource(CentralServerRegisterLocalServerView, '/local_servers/register', endpoint='central_server_register_local_server')
