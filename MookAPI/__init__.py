@@ -12,7 +12,7 @@ from bson import json_util
 
 ### CREATE FLASK APP
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "cj3ff02m617k3WxO703dYke088HcU94R"
+app.config["SECRET_KEY"] = app_config.app_secret
 
 ### SETUP DATABASE
 mongodb_settings = {}
