@@ -14,6 +14,7 @@ class MongoCoderMixin(object):
     A mixin that provides methods to encode and decode JSON representations of MongoEngine ``Document`` and ``EmbeddedDocument`` objects.
     This mixin is called in MongoCoderDocument_ and MongoCoderEmbeddedDocument_.
     """
+    ### Document the list of methods that subclasses calling this mixin must implement.
 
     def encode_mongo(self, instance=None):
         """

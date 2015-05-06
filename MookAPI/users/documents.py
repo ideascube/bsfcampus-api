@@ -1,6 +1,6 @@
 import flask
 from MookAPI import db
-from flask.ext.security import Security, MongoEngineUserDatastore, UserMixin, RoleMixin, login_required
+from flask.ext.security import Security, UserMixin, RoleMixin
 
 
 class Role(db.Document, RoleMixin):

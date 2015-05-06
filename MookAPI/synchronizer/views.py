@@ -82,6 +82,7 @@ class LocalServerFetchListView(restful.Resource):
         password = app_config.central_server_api_secret
         
         r = requests.get(url, auth=(email, password))
+        ## Synchronous!
 
         if r.status_code == 200:
 
