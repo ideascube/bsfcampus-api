@@ -6,6 +6,8 @@ from MookAPI import db
 import MookAPI.mongo_coder as mc
 
 from MookAPI.users.documents import User
+from MookAPI.hierarchy.documents import Track
+
 
 class SyncableItem(mc.MongoCoderEmbeddedDocument):
     """
@@ -21,7 +23,7 @@ class SyncableItem(mc.MongoCoderEmbeddedDocument):
 
     ## The item to synchronize
     ## Any item referenced in this field must be a subclass of SyncableDocument
-    item = db.GenericReferenceField()
+    item = db.ListField(db.ReferenceField(Track))
     """A reference to the top-level ``SyncableDocument`` to synchronize."""
 
     ### METHODS
@@ -54,4 +56,4 @@ class LocalServer(mc.MongoCoderDocument):
 
     @classmethod
     def json_key(cls):
-        return 'local_server' # At some point we should have the parent class do the underscoring automatically.
+        return 'local_server'  # At some point we should have the parent class do the underscoring automatically.
