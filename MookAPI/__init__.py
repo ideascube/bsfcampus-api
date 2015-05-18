@@ -36,9 +36,9 @@ import mongo_coder as mc
 ### INITIATE API
 api = Api(app)
 
+
 @api.representation('application/json')
 def output_json(data, code, headers=None):
-
     if isinstance(data, mc.MongoCoderDocument):
         document = data.encode_mongo()
         json_envelope = data.__class__.json_key()
@@ -55,7 +55,6 @@ def output_json(data, code, headers=None):
     return resp
 
 
-
 ### ALLOW CROSS DOMAIN REQUESTS
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -64,6 +63,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 ### SECURITY
 ## Documents
 import users, users.documents
+
 app.register_blueprint(users.bp, url_prefix="/users")
 ## Datastore
 user_datastore = MongoEngineUserDatastore(db, users.documents.User, users.documents.Role)
@@ -73,10 +73,10 @@ app.config['SECURITY_PASSWORD_SALT'] = app_config.password_salt
 app.config['SECURITY_REGISTERABLE'] = True
 app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
 security = Security(
-    app, 
+    app,
     datastore=user_datastore,
     register_blueprint=True
-    )
+)
 ## Header authentication
 @security.login_manager.request_loader
 def load_user_from_request(request):
@@ -88,8 +88,8 @@ def load_user_from_request(request):
         except TypeError:
             pass
         email, password = auth_key.split(":", 1)
-        user = users.documents.User.objects.get(email=email) #, password=password)
-        if user: 
+        user = users.documents.User.objects.get(email=email)  # , password=password)
+        if user:
             return user
     return None
 
@@ -100,8 +100,12 @@ def server_is_local():
     if hasattr(app_config, 'server_type'):
         return app_config.server_type.lower() == 'local'
     return False
+
+
 def server_is_central():
     return not server_is_local()
+
+
 ## Central-server-only
 def if_central(func):
     if server_is_central():
@@ -109,7 +113,10 @@ def if_central(func):
     else:
         def empty_function(*args, **kwargs):
             pass
+
         return empty_function
+
+
 ## Local-server-only
 def if_local(func):
     if server_is_local():
@@ -117,6 +124,7 @@ def if_local(func):
     else:
         def empty_function(*args, **kwargs):
             pass
+
         return empty_function
 
 
@@ -128,18 +136,22 @@ import views
 ### LOAD BLUEPRINTS
 ## Resources
 import resources
+
 app.register_blueprint(resources.bp, url_prefix="/resources")
 
 ## Hierarchy
 import hierarchy
+
 app.register_blueprint(hierarchy.bp, url_prefix="/hierarchy")
 
 ## Activity
 import activity
+
 app.register_blueprint(activity.bp, url_prefix="/activity")
 
 ## Config
 import config
+
 app.register_blueprint(config.bp, url_prefix="/config")
 
 ## The "local server" module allows to identify local servers on the central server.
@@ -148,13 +160,20 @@ app.register_blueprint(config.bp, url_prefix="/config")
 @if_central
 def import_local_servers():
     import local_servers
+
     app.register_blueprint(local_servers.bp, url_prefix="/local_servers")
+
+
 import_local_servers()
+
 
 @if_local
 def import_synchronizer():
     import synchronizer
+
     app.register_blueprint(synchronizer.bp, url_prefix="/synchronizer")
+
+
 import_synchronizer()
 
 
@@ -166,9 +185,11 @@ def create_admin_interface():
     admin = Admin(app)
     ## Exercise resources
     import resources.documents.exercise
+
     admin.add_view(ModelView(resources.documents.exercise.ExerciseResource, name='Exercise', category='Resources'))
     ## Rich text resources
     import resources.documents.rich_text
+
     admin.add_view(ModelView(resources.documents.rich_text.RichTextResource, name='Rich Text', category='Resources'))
     # No external video on server
     # ## External video resources
@@ -176,15 +197,20 @@ def create_admin_interface():
     # admin.add_view(ModelView(resources.documents.external_video.ExternalVideoResource, name='External Video', category='Resources'))
     ## Audio resources
     import resources.documents.audio
+
     admin.add_view(ModelView(resources.documents.audio.AudioResource, name='Audio', category='Resources'))
     ## Video resources
     import resources.documents.video
+
     admin.add_view(ModelView(resources.documents.video.VideoResource, name='Video', category='Resources'))
     ## Downloadable file resources
     import resources.documents.downloadable_file
-    admin.add_view(ModelView(resources.documents.downloadable_file.DownloadableFileResource, name='Downloadable File', category='Resources'))
+
+    admin.add_view(ModelView(resources.documents.downloadable_file.DownloadableFileResource, name='Downloadable File',
+                             category='Resources'))
     ## Tracks
     import hierarchy.documents as hierarchy_documents
+
     admin.add_view(ModelView(hierarchy_documents.Track, name='Track', category='Hierarchy'))
     admin.add_view(ModelView(hierarchy_documents.Skill, name='Skill', category='Hierarchy'))
     admin.add_view(ModelView(hierarchy_documents.Lesson, name='Lesson', category='Hierarchy'))
@@ -195,6 +221,7 @@ def create_admin_interface():
     admin.add_view(ModelView(users.documents.User, name='User', category='Authentication'))
     admin.add_view(ModelView(users.documents.Role, name='Role', category='Authentication'))
     import local_servers.documents as local_servers_documents
+
     admin.add_view(ModelView(local_servers_documents.LocalServer, name='Local server', category='Authentication'))
 
 create_admin_interface()
