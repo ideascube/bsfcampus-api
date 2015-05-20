@@ -90,7 +90,7 @@ class ResourceContentFileView(restful.Resource):
 
             return flask.send_file(
                 io.BytesIO(content_file.read()),
-                attachment_filename=content_image.filename,
+                attachment_filename=content_file.filename,
                 mimetype=content_file.contentType
             )
 
