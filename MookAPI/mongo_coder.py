@@ -148,7 +148,8 @@ class MongoCoderMixin(object):
             value = open(filename, 'rb')
 
             self[key].put(value, content_type=r.headers['content-type'], filename=filename)
-            # os.remove(filename)
+            # FIXME: fix Windows specific error when deleting file
+            os.remove(filename)
         ## Any other type: convert value before setting using setattr
         else:
             value = self._convert_value_from_json(value, field)
