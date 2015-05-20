@@ -10,3 +10,4 @@ python-slugify
 Pillow
 py-bcrypt
 requests
+python-daemon

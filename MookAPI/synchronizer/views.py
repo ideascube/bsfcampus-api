@@ -99,6 +99,7 @@ class LocalServerFetchListView(restful.Resource):
             return {
                 'error': 1,
                 'response_code': r.status_code,
+                'response_message': r.reason
             }
 
 api.add_resource(LocalServerFetchListView, '/synchronizer/fetch_list', endpoint='local_server_fetch_list')

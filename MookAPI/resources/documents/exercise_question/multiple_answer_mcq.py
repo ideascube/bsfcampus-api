@@ -36,11 +36,11 @@ class MultipleAnswerMCQExerciseQuestion(ExerciseQuestion):
     def answer_with_data(self, data):
         return MultipleAnswerMCQExerciseQuestionAnswer.init_with_data(data)
 
-    def getPropositionsById(self, propositionsId):
-        result = [];
+    def get_propositions_by_id(self, propositions_id):
+        result = []
         for proposition in self.propositions:
             print(str(proposition._id))
-            if proposition._id in propositionsId:
+            if proposition._id in propositions_id:
                 result.append(proposition)
         return result
 
@@ -60,6 +60,6 @@ class MultipleAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
         return obj
 
     def is_correct(self, question, parameters):
-        propositions = question.getPropositionsById(self.given_propositions)
+        propositions = question.get_propositions_by_id(self.given_propositions)
         correct_propositions = filter(lambda proposition: proposition.is_correct_answer, question.propositions)
         return set(propositions) == set(correct_propositions)

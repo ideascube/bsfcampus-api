@@ -74,7 +74,7 @@ class DropdownExerciseQuestionAnswer(ExerciseQuestionAnswer):
         return obj
 
     def is_correct(self, question, parameters):
-        propositions = question.getPropositionsById(self.given_propositions)
+        propositions = question.get_propositions_by_id(self.given_propositions)
         all_question_propositions = []
         for dropdown in question.dropdowns:
             all_question_propositions.extend(dropdown.propositions)
