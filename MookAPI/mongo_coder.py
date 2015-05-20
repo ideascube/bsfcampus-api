@@ -135,6 +135,7 @@ class MongoCoderMixin(object):
             url_key = key + '_url'
             filename_key = key + '_filename'
             url = json[url_key]
+            # FIXME: add a dir path for these temp files
             filename = json[filename_key] or 'temp'
             with open(filename, 'wb') as handle:
                 r = requests.get(url, stream=True)
@@ -147,7 +148,7 @@ class MongoCoderMixin(object):
             value = open(filename, 'rb')
 
             self[key].put(value, content_type=r.headers['content-type'], filename=filename)
-            os.remove(filename)
+            # os.remove(filename)
         ## Any other type: convert value before setting using setattr
         else:
             value = self._convert_value_from_json(value, field)

@@ -126,16 +126,17 @@ class LocalServerDepileItemView(restful.Resource):
 
 
     def _update_item(self, item):
+        item_class_name = item.class_name.split('.')[-1]
+        print (item_class_name)
         for module in document_modules:
-
-            if hasattr(module, item.class_name):
-                document_class = getattr(module, item.class_name)
+            if hasattr(module, item_class_name):
+                document_class = getattr(module, item_class_name)
                 local_objects = document_class.objects(distant_id=item.distant_id)
 
                 if len(local_objects) > 1:
                     return False, "There were at least two objects with that distant_id."
 
-                local_object = local_objects.first() # None if object is new.
+                local_object = local_objects.first()  # None if object is new.
 
                 updated_object, message = self._update_object(document_class, item.url, local_object)
 
@@ -146,22 +147,21 @@ class LocalServerDepileItemView(restful.Resource):
                 updated_object.save()
                 return True, None
 
-        return False, "Document class name not recognized"
+        return False, "Document class name not recognized: " + item_class_name
 
     def _delete_item(self, item):
+        item_class_name = item.class_name.split('.')[-1]
+        print (item_class_name)
         for module in document_modules:
-            if hasattr(module, item.class_name):
-                document_class = getattr(module, item.class_name)
+            if hasattr(module, item_class_name):
+                document_class = getattr(module, item_class_name)
                 local_objects = document_class.objects(distant_id=item.distant_id)
 
-                local_object = local_objects.first()
-                if local_object:
+                for local_object in local_objects:
                     local_object.delete()
-                    return True, None
-                else:
-                    return False, "There was not exactly one item to delete"
+                return True, None
 
-        return False, "Document class name not recognized"
+        return False, "Document class name not recognized: " + item_class_name
 
     def get(self):
 
