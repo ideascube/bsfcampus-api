@@ -23,7 +23,7 @@ class SyncableItem(mc.MongoCoderEmbeddedDocument):
 
     ## The item to synchronize
     ## Any item referenced in this field must be a subclass of SyncableDocument
-    item = db.ListField(db.ReferenceField(Track))
+    item = db.ReferenceField(Track)
     """A reference to the top-level ``SyncableDocument`` to synchronize."""
 
     ### METHODS
@@ -50,7 +50,7 @@ class LocalServer(mc.MongoCoderDocument):
     It must have a ``Role`` named ``local_server``.
     """
 
-    ## List of items to syncronize
+    ## List of items to synchronize
     syncable_items = db.ListField(db.EmbeddedDocumentField(SyncableItem))
     """A list of SyncableItem_ embedded documents describing the items to synchronize on the local server."""
 
