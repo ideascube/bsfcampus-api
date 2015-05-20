@@ -1,3 +1,7 @@
+### USAGE:
+### gunicorn -c gunicorn-config.py MookAPI:app -D
+### Remove "-D" to NOT run as a daemon (and see live log)
+
 ## This is a trick to find out the server's LAN IP address
 import socket
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
