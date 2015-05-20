@@ -33,9 +33,9 @@ class TrackIconView(restful.Resource):
         """Download the icon of the Track_ with id ``track_id``."""
 
         track = documents.Track.get_unique_object_or_404(track_id)
-        
-        return flask.Response(
-            response=io.BytesIO(track.icon.read()),
+
+        return flask.send_file(
+            io.BytesIO(track.icon.read()),
             attachment_filename=track.icon.filename,
             mimetype=track.icon.contentType
         )
@@ -87,9 +87,9 @@ class SkillIconView(restful.Resource):
         """Download the icon of the Skill_ with id ``skill_id``."""
 
         skill = documents.Skill.get_unique_object_or_404(skill_id)
-        
-        resp = flask.Response(
-            response=io.BytesIO(skill.icon.read()),
+
+        return flask.send_file(
+            io.BytesIO(skill.icon.read()),
             attachment_filename=skill.icon.filename,
             mimetype=skill.icon.contentType
         )
