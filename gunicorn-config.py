@@ -29,3 +29,6 @@ reload = True
 ## Number of workers (allows concurrent requests)
 import multiprocessing
 workers = multiprocessing.cpu_count() * 2 + 1
+
+## Workers timeout (in seconds). This limit is typically hit when uploading large files onto the server.
+timeout = 900 # 15 minutes
