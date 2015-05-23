@@ -8,6 +8,8 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(('8.8.8.8', 80))
 local_ip_address = s.getsockname()[0]
 
+import sys, os
+sys.path.insert(1, os.path.dirname(os.path.realpath(__file__)))
 from MookAPI import app_config
 def get_port():
     if hasattr(app_config, 'port'):
