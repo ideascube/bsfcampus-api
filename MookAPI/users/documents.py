@@ -30,4 +30,7 @@ class User(db.Document, UserMixin):
     roles = db.ListField(db.ReferenceField(Role), default=[])
 
     def __unicode__(self):
+        if self.email is None and self.username is not None:
+            return self.username
+
         return self.email

@@ -88,13 +88,13 @@ def load_user_from_request(request):
         except TypeError:
             pass
         user_id, password = auth_key.split(":", 1)
-        user = users.documents.User.objects.get(email=user_id)  # , password=password)
-        if user:
-            return user
+        user_list = users.documents.User.objects(email=user_id)  # , password=password)
+        if len(user_list) > 0:
+            return user_list[0]
         else:
-            user = users.documents.User.objects.get(username=user_id)  # , password=password)
-            if user:
-                return user
+            user_list = users.documents.User.objects(username=user_id)  # , password=password)
+            if len(user_list) > 0:
+                return user_list[0]
     return None
 
 

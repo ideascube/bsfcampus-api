@@ -25,4 +25,4 @@ server_type = 'central'
 
 ## Specify a port other than default (optional)
 ## Default is 5001 if server_type == 'local', 5000 otherwise
-# port = 5000
+port = 5000
