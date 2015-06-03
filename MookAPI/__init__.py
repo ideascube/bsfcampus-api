@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, abort
 from flask import make_response
 from flask.ext.restful import Api
 from flask.ext.mongoengine import MongoEngine
@@ -96,6 +96,10 @@ def load_user_from_request(request):
             if len(user_list) > 0:
                 return user_list[0]
     return None
+
+@security.login_manager.unauthorized_handler
+def unauthorized():
+    abort(401)
 
 
 ### CENTRAL-SERVER-ONLY AND LOCAL-SERVER-ONLY DECORATORS
