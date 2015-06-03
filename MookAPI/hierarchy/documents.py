@@ -217,6 +217,10 @@ class Skill(ResourceHierarchy):
     icon = db.ImageField()
     """An icon to illustrate the Skill_."""
 
+    ## short description
+    short_description = db.StringField()
+    """The short description of the skill, to appear where there is not enough space for the long one."""
+
     @property
     def icon_url(self):
         """The URL where the skill icon can be downloaded."""
