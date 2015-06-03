@@ -2,6 +2,7 @@ import io
 
 import flask
 from flask.ext import restful
+from flask.ext.security import login_required
 
 from MookAPI import api
 import documents
@@ -9,7 +10,8 @@ import documents
 ### TRACKS
 
 class TracksView(restful.Resource):
-    
+
+    @login_required
     def get(self):
         """Get the list of all Track_ objects, ordered by ``order`` and ``title``, enveloped in a single-key JSON dictionary."""
         
