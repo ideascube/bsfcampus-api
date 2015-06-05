@@ -10,7 +10,6 @@ from . import bp
 
 
 @bp.route("/exercise_attempts", methods=['POST'])
-@cross_origin()  # allow all origins all methods.
 @security.login_required
 def post_exercise_attempt():
     exercise_id = flask.request.get_json()['exercise']
