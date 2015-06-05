@@ -22,6 +22,7 @@ api.add_resource(TracksView, '/hierarchy/tracks', endpoint='tracks')
 
 class TrackView(restful.Resource):
 
+    @login_required
     def get(self, track_id):
         """Get the Track_ with id ``track_id`` enveloped in a single-key JSON dictionary."""
 
@@ -31,6 +32,7 @@ api.add_resource(TrackView, '/hierarchy/tracks/<track_id>', endpoint='track')
 
 
 class TrackIconView(restful.Resource):
+    @login_required
     def get(self, track_id):
         """Download the icon of the Track_ with id ``track_id``."""
 
@@ -55,6 +57,7 @@ class SkillsView(restful.Resource):
     def _get_by_track(self, track_id):
         return documents.Skill.objects.order_by('order', 'title').filter(track=track_id)
     
+    @login_required
     def get(self, track_id=None):
         """
         Returns a list of all Skill_ objects, ordered by ``order`` and ``title``, enveloped in a single-key JSON dictionary.
@@ -75,6 +78,7 @@ api.add_resource(
 
 class SkillView(restful.Resource):
     
+    @login_required
     def get(self, skill_id):
         """Get the Skill_ with id ``skill_id`` enveloped in a single-key JSON dictionary."""
 
@@ -85,6 +89,7 @@ api.add_resource(SkillView, '/hierarchy/skills/<skill_id>', endpoint='skill')
 
 class SkillIconView(restful.Resource):
     
+    @login_required
     def get(self, skill_id):
         """Download the icon of the Skill_ with id ``skill_id``."""
 
@@ -109,6 +114,7 @@ class LessonsView(restful.Resource):
     def _get_by_skill(self, skill_id):
         return documents.Lesson.objects.order_by('order', 'title').filter(skill=skill_id)
     
+    @login_required
     def get(self, skill_id=None):
         """
         Returns a list of all Skill_ objects, ordered by ``order`` and ``title``, enveloped in a single-key JSON dictionary.
@@ -129,6 +135,7 @@ api.add_resource(
 
 class LessonView(restful.Resource):
     
+    @login_required
     def get(self, lesson_id):
         """Get the Lesson_ with id ``lesson_id`` enveloped in a single-key JSON dictionary."""
 

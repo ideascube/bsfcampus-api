@@ -2,6 +2,7 @@ import io
 
 import flask
 from flask.ext import restful
+from flask.ext.security import login_required
 
 from MookAPI import api
 import documents
@@ -20,6 +21,7 @@ class ResourcesView(restful.Resource):
         lessons = MookAPI.hierarchy.documents.Lesson.objects.filter(skill=skill_id)
         return documents.Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=lessons)
 
+    @login_required
     def get(self, lesson_id=None, skill_id=None):
         """
         Returns a list of Resource_ objects, ordered by ``order`` and ``title``, enveloped in a single-key JSON dictionary.
@@ -42,6 +44,7 @@ api.add_resource(
 
 class ResourceView(restful.Resource):
 
+    @login_required
     def get(self, resource_id):
         """Get the Resource_ with id ``resource_id`` enveloped in a single-key JSON dictionary."""
 
@@ -52,6 +55,7 @@ api.add_resource(ResourceView, '/resources/<resource_id>', endpoint='resource')
 
 class ResourceHierarchyView(restful.Resource):
 
+    @login_required
     def get(self, resource_id):
         """
         Get the Resource_ with id ``resource_id`` and all its family tree:
@@ -80,6 +84,7 @@ api.add_resource(ResourceHierarchyView, '/resources/<resource_id>/hierarchy', en
 
 class ResourceContentFileView(restful.Resource):
 
+    @login_required
     def get(self, resource_id, filename):
         """Download the file associated with the Resource_ with id ``resource_id``."""
 
@@ -101,6 +106,7 @@ api.add_resource(ResourceContentFileView, '/resources/<resource_id>/content-file
 
 class ResourceContentImageView(restful.Resource):
 
+    @login_required
     def get(self, resource_id, filename):
         """Download the image associated with the Resource_ with id ``resource_id``."""
 
@@ -122,6 +128,7 @@ api.add_resource(ResourceContentImageView, '/resources/<resource_id>/content-ima
 
 class ExerciseResourceQuestionImageView(restful.Resource):
 
+    @login_required
     def get(self, resource_id, question_id, filename):
         """Download the image associated with the question with ``question_id`` in Exercise Resource_ with id ``resource_id``."""
 

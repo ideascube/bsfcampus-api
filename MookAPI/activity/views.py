@@ -5,11 +5,13 @@ from flask_cors import cross_origin
 import documents
 import documents.exercise_attempt
 from MookAPI.resources import documents as resources_documents
+import flask.ext.security as security
 from . import bp
 
 
 @bp.route("/exercise_attempts", methods=['POST'])
 @cross_origin()  # allow all origins all methods.
+@security.login_required
 def post_exercise_attempt():
     exercise_id = flask.request.get_json()['exercise']
     exercise = resources_documents.Resource.objects.get_or_404(id=exercise_id)
@@ -19,6 +21,8 @@ def post_exercise_attempt():
     attempt = documents.exercise_attempt.ExerciseAttempt.init_with_exercise(exercise)
     attempt.save()
 
+    security.core.current_user.add_exercise_attempt(attempt)
+
     return flask.Response(
         response=json_util.dumps({'exercise_attempt': attempt.encode_mongo()}),
         mimetype="application/json"
@@ -26,6 +30,7 @@ def post_exercise_attempt():
 
 
 @bp.route("/exercise_attempts/<attempt_id>")
+@security.login_required
 def get_exercise_attempt(attempt_id):
     """GET one exercise attempt"""
 
@@ -40,6 +45,7 @@ def get_exercise_attempt(attempt_id):
 
 
 @bp.route("/exercise_attempts/<attempt_id>/answer", methods=['POST'])
+@security.login_required
 def post_exercise_attempt_question_answer(attempt_id):
     """POST answer to current question of an exercise attempt"""
 
@@ -51,6 +57,10 @@ def post_exercise_attempt_question_answer(attempt_id):
     question_id = form_data['question_id']
     attempt.save_answer(question_id, form_data)
     attempt.save()
+
+    if attempt.is_exercise_completed():
+        exercise_resource = attempt.exercise
+        security.core.current_user.add_completed_resource(exercise_resource)
 
     return flask.Response(
         response=json_util.dumps({'exercise_attempt': attempt.encode_mongo()}),
