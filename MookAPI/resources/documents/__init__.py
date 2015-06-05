@@ -6,6 +6,7 @@ import flask
 
 import MookAPI.mongo_coder as mc
 from MookAPI import db, api
+import flask.ext.security as security
 from .. import views
 
 
@@ -74,7 +75,7 @@ class Resource(mc.SyncableDocument):
     @property
     def is_validated(self):
         """Whether the current user (if any) has validated this Resource_."""
-        return False
+        return self in security.current_user.completed_resources
     
     @classmethod
     def json_key(cls):

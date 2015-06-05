@@ -20,7 +20,7 @@ def post_exercise_attempt():
     attempt = documents.exercise_attempt.ExerciseAttempt.init_with_exercise(exercise)
     attempt.save()
 
-    security.core.current_user.add_exercise_attempt(attempt)
+    security.current_user.add_exercise_attempt(attempt)
 
     return flask.Response(
         response=json_util.dumps({'exercise_attempt': attempt.encode_mongo()}),
@@ -59,7 +59,7 @@ def post_exercise_attempt_question_answer(attempt_id):
 
     if attempt.is_exercise_completed():
         exercise_resource = attempt.exercise
-        security.core.current_user.add_completed_resource(exercise_resource)
+        security.current_user.add_completed_resource(exercise_resource)
 
     return flask.Response(
         response=json_util.dumps({'exercise_attempt': attempt.encode_mongo()}),
