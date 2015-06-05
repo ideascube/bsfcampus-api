@@ -103,7 +103,7 @@ class ExerciseAttempt(Activity):
     def encode_mongo(self):
         son = super(ExerciseAttempt, self).encode_mongo()
 
-        son['max_mistakes'] = self.exercise.resource_content.max_mistakes;
+        son['max_mistakes'] = self.exercise.resource_content.max_mistakes
         if self.exercise.resource_content.fail_linked_resource:
             son['fail_linked_resource'] = self.exercise.resource_content.fail_linked_resource.to_mongo()
         
@@ -119,3 +119,13 @@ class ExerciseAttempt(Activity):
                 break
         return son
 
+    def is_exercise_completed(self):
+        nb_total_questions = self.exercise.resource_content.number_of_questions
+        nb_max_mistakes = self.exercise.resource_content.max_mistakes
+        answered_questions = filter(lambda a: a.given_answer is not None, self.question_answers)
+        if len(answered_questions) >= nb_total_questions:
+            right_answers = filter(lambda a: a.is_answered_correctly, answered_questions)
+            if len(right_answers) >= nb_total_questions-nb_max_mistakes:
+                return True
+
+        return False
