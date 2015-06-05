@@ -75,8 +75,11 @@ app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
 security = Security(
     app,
     datastore=user_datastore,
-    register_blueprint=True
+    register_blueprint=True,
+    register_form=users.ExtendedRegisterForm,
+    confirm_register_form=users.ExtendedRegisterForm
 )
+
 ## Header authentication
 @security.login_manager.request_loader
 def load_user_from_request(request):
