@@ -38,6 +38,10 @@ class User(db.Document, UserMixin):
 
     completed_skills = db.ListField(db.ReferenceField(Skill), default=[])
 
+    started_tracks = db.ListField(db.ReferenceField(Track), default=[])
+
+    unlocked_track_tests = db.ListField(db.ReferenceField(Track), default=[])
+
     completed_tracks = db.ListField(db.ReferenceField(Track), default=[])
 
     def __unicode__(self):
@@ -52,15 +56,31 @@ class User(db.Document, UserMixin):
             self.save()
 
     def add_completed_resource(self, resource):
-        # TODO: check if skill is completed
         if resource not in self.completed_resources:
             self.completed_resources.append(resource)
+            skill = resource.lesson.skill
+            skill_progress = skill.progress
+            if skill not in self.completed_skills and skill_progress['current'] >= skill_progress['max']:
+                self.add_completed_skill(skill)
             self.save()
 
     def add_completed_skill(self, skill):
-        # TODO: check if track is completed
         if skill not in self.completed_skills:
             self.completed_skills.append(skill)
+            track = skill.track
+            track_progress = track.progress
+            if track not in self.unlocked_track_tests and track_progress['current'] >= track_progress['max']:
+                self.unlock_track_validation_test(track)
+            self.save()
+
+    def add_started_track(self, track):
+        if track not in self.started_tracks:
+            self.started_tracks.append(track)
+            self.save()
+
+    def unlock_track_validation_test(self, track):
+        if track not in self.unlocked_track_tests:
+            self.unlocked_track_tests.append(track)
             self.save()
 
     def add_completed_track(self, track):

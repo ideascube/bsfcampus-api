@@ -3,7 +3,7 @@ import io
 import flask
 from flask.ext import restful
 from flask.ext.security import login_required
-from flask.ext.security.core import current_user
+import flask.ext.security as security
 
 from MookAPI import api
 import documents
@@ -50,8 +50,9 @@ class ResourceView(restful.Resource):
         """Get the Resource_ with id ``resource_id`` enveloped in a single-key JSON dictionary."""
 
         resource = documents.Resource.get_unique_object_or_404(resource_id)
+        security.current_user.add_started_track(resource.lesson.skill.track)
         if not isinstance(resource, documents.exercise.ExerciseResource):
-            current_user.add_completed_resource(resource)
+            security.current_user.add_completed_resource(resource)
         return resource
 
 api.add_resource(ResourceView, '/resources/<resource_id>', endpoint='resource')

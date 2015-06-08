@@ -7,6 +7,7 @@ import flask
 import MookAPI.mongo_coder as mc
 from MookAPI import db, api
 import MookAPI.resources.documents
+import flask.ext.security as security
 import views
 
 
@@ -238,6 +239,11 @@ class Skill(ResourceHierarchy):
         return Lesson.objects.order_by('order', 'title').filter(skill=self)
 
     @property
+    def is_validated(self):
+        """Whether the current_user validated the hierarchy level based on their activity."""
+        return self in security.current_user.completed_skills
+
+    @property
     def progress(self):
         current = 0
         nb_resources = 0
@@ -322,7 +328,10 @@ class Track(ResourceHierarchy):
             if skill.is_validated:
                 current += 1
         return {'current': current, 'max': len(self.skills)}
-    
+
+    @property
+    def is_started(self):
+        return self in security.current_user.started_tracks
 
     ### METHODS
 
@@ -333,6 +342,8 @@ class Track(ResourceHierarchy):
         son = super(Track, self).encode_mongo()
 
         son['skills'] = map(lambda s: s.id, self.skills)
+        son['test_unlocked'] = self in security.current_user.unlocked_track_tests
+        son['is_started'] = self.is_started
 
         return son
 
