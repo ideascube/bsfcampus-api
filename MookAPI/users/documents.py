@@ -1,5 +1,6 @@
 import flask
 from MookAPI import db
+import MookAPI.mongo_coder as mc
 from flask.ext.security import Security, UserMixin, RoleMixin
 from MookAPI.resources.documents import Resource
 from MookAPI.hierarchy.documents import Track, Skill
@@ -15,7 +16,7 @@ class Role(db.Document, RoleMixin):
         return self.name
 
 
-class User(db.Document, UserMixin):
+class User(mc.SyncableDocument, UserMixin):
     first_name = db.StringField()
 
     last_name = db.StringField()
