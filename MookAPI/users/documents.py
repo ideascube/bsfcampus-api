@@ -1,4 +1,5 @@
 import flask
+import bson
 from MookAPI import db
 import MookAPI.mongo_coder as mc
 from flask.ext.security import Security, UserMixin, RoleMixin
@@ -17,9 +18,7 @@ class Role(db.Document, RoleMixin):
 
 
 class User(mc.SyncableDocument, UserMixin):
-    first_name = db.StringField()
-
-    last_name = db.StringField()
+    full_name = db.StringField()
 
     username = db.StringField()  # To make this unique we first need to update the registration form to include the field.
 
@@ -88,3 +87,14 @@ class User(mc.SyncableDocument, UserMixin):
         if track not in self.completed_tracks:
             self.completed_tracks.append(track)
             self.save()
+
+    @classmethod
+    def get_unique_object_or_404(cls, token):
+        """Get the only hierarchy level matching argument 'token', where 'token' can be the id or the slug."""
+
+        try:
+            bson.ObjectId(token)
+        except bson.errors.InvalidId:
+            return cls.objects.get_or_404(slug=token)
+        else:
+            return cls.objects.get_or_404(id=token)

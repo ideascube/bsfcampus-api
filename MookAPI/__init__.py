@@ -72,6 +72,9 @@ app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
 app.config['SECURITY_PASSWORD_SALT'] = app_config.password_salt
 app.config['SECURITY_REGISTERABLE'] = True
 app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
+app.config['SECURITY_POST_LOGIN_VIEW'] = None
+app.config['SECURITY_POST_REGISTER_VIEW'] = None
+app.config['SECURITY_POST_LOGOUT_VIEW'] = None
 security = Security(
     app,
     datastore=user_datastore,
@@ -102,7 +105,7 @@ def load_user_from_request(request):
 
 @security.login_manager.unauthorized_handler
 def unauthorized():
-    abort(401)
+    abort(403)
 
 
 ### CENTRAL-SERVER-ONLY AND LOCAL-SERVER-ONLY DECORATORS
