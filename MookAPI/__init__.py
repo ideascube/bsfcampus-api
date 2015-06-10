@@ -56,7 +56,7 @@ def output_json(data, code, headers=None):
 
 
 ### ALLOW CROSS DOMAIN REQUESTS
-cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+cors = CORS(app, resources={r"/*": {"origins": app_config.allow_origins}}, supports_credentials=True, allow_headers='Content-Type')
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 
