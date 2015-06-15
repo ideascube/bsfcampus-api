@@ -225,9 +225,9 @@ def create_admin_interface():
     ## Tracks
     import hierarchy.documents as hierarchy_documents
 
-    admin.add_view(ModelView(hierarchy_documents.Track, name='Track', category='Hierarchy'))
-    admin.add_view(ModelView(hierarchy_documents.Skill, name='Skill', category='Hierarchy'))
-    admin.add_view(ModelView(hierarchy_documents.Lesson, name='Lesson', category='Hierarchy'))
+    admin.add_view(ModelView(hierarchy_documents.track.Track, name='Track', category='Hierarchy'))
+    admin.add_view(ModelView(hierarchy_documents.skill.Skill, name='Skill', category='Hierarchy'))
+    admin.add_view(ModelView(hierarchy_documents.lesson.Lesson, name='Lesson', category='Hierarchy'))
     # ## Config
     # import config.documents
     # admin.add_view(ModelView(config.documents.ConfigParameters))

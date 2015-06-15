@@ -34,14 +34,14 @@ class OrderingExerciseQuestion(ExerciseQuestion):
     def answer_with_data(self, data):
         return OrderingExerciseQuestionAnswer.init_with_data(data)
 
-    def getItemsById(self, itemsId):
+    def get_items_by_id(self, itemsId):
         result = []
         for itemId in itemsId:
             print(itemId)
-            result.append(self.getItemById(itemId))
+            result.append(self.get_item_by_id(itemId))
         return result
 
-    def getItemById(self, itemId):
+    def get_item_by_id(self, itemId):
         for item in self.items:
             if str(item._id) == itemId:
                 return item
@@ -62,6 +62,6 @@ class OrderingExerciseQuestionAnswer(ExerciseQuestionAnswer):
         return obj
 
     def is_correct(self, question, parameters):
-        ordered_items = question.getItemsById(self.given_ordered_items)
+        ordered_items = question.get_items_by_id(self.given_ordered_items)
         correct_ordered_items = question.items
         return ordered_items == correct_ordered_items

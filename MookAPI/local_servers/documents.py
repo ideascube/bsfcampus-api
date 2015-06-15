@@ -6,7 +6,7 @@ from MookAPI import db
 import MookAPI.mongo_coder as mc
 
 from MookAPI.users.documents import User
-from MookAPI.hierarchy.documents import Track
+from MookAPI.hierarchy.documents import track
 
 
 class SyncableItem(mc.MongoCoderEmbeddedDocument):
@@ -23,7 +23,7 @@ class SyncableItem(mc.MongoCoderEmbeddedDocument):
 
     ## The item to synchronize
     ## Any item referenced in this field must be a subclass of SyncableDocument
-    item = db.ReferenceField(Track)
+    item = db.ReferenceField(track.Track)
     """A reference to the top-level ``SyncableDocument`` to synchronize."""
 
     ### METHODS

@@ -4,7 +4,7 @@ from MookAPI import db
 import MookAPI.mongo_coder as mc
 from flask.ext.security import Security, UserMixin, RoleMixin
 from MookAPI.resources.documents import Resource
-from MookAPI.hierarchy.documents import Track, Skill
+from MookAPI.hierarchy.documents import track, skill
 from MookAPI.activity.documents.exercise_attempt import ExerciseAttempt
 
 
@@ -36,13 +36,13 @@ class User(mc.SyncableDocument, UserMixin):
 
     completed_resources = db.ListField(db.ReferenceField(Resource), default=[])
 
-    completed_skills = db.ListField(db.ReferenceField(Skill), default=[])
+    completed_skills = db.ListField(db.ReferenceField(skill.Skill), default=[])
 
-    started_tracks = db.ListField(db.ReferenceField(Track), default=[])
+    started_tracks = db.ListField(db.ReferenceField(track.Track), default=[])
 
-    unlocked_track_tests = db.ListField(db.ReferenceField(Track), default=[])
+    unlocked_track_tests = db.ListField(db.ReferenceField(track.Track), default=[])
 
-    completed_tracks = db.ListField(db.ReferenceField(Track), default=[])
+    completed_tracks = db.ListField(db.ReferenceField(track.Track), default=[])
 
     def __unicode__(self):
         if self.email is None and self.username is not None:

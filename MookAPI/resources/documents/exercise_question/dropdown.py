@@ -50,7 +50,7 @@ class DropdownExerciseQuestion(ExerciseQuestion):
     def answer_with_data(self, data):
         return DropdownExerciseQuestionAnswer.init_with_data(data)
 
-    def getPropositionsById(self, propositionsId):
+    def get_propositions_by_id(self, propositionsId):
         result = [];
         for dropdown in self.dropdowns:
             for proposition in dropdown.propositions:

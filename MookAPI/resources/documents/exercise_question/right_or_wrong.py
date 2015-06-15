@@ -36,7 +36,7 @@ class RightOrWrongExerciseQuestion(ExerciseQuestion):
     def answer_with_data(self, data):
         return RightOrWrongExerciseQuestionAnswer.init_with_data(data)
 
-    def propositionById(self, propositionId):
+    def get_proposition_by_id(self, propositionId):
         result = None;
         for proposition in self.propositions:
             if proposition._id == propositionId:
@@ -57,7 +57,7 @@ class RightOrWrongExerciseQuestionAnswer(ExerciseQuestionAnswer):
         return obj
 
     def is_correct(self, question, parameters):
-        proposition = question.propositionById(ObjectId(self.given_proposition))
+        proposition = question.get_proposition_by_id(ObjectId(self.given_proposition))
         if (proposition != None):
             return proposition.is_correct_answer
         return False
