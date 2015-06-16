@@ -6,6 +6,7 @@ from flask.ext.security import Security, UserMixin, RoleMixin
 from MookAPI.resources.documents import Resource
 from MookAPI.hierarchy.documents import track, skill
 from MookAPI.activity.documents.exercise_attempt import ExerciseAttempt
+from MookAPI.activity.documents.skill_validation_attempt import SkillValidationAttempt
 
 
 class Role(db.Document, RoleMixin):
@@ -34,6 +35,8 @@ class User(mc.SyncableDocument, UserMixin):
 
     exercises_attempts = db.ListField(db.ReferenceField(ExerciseAttempt), default=[])
 
+    skill_validation_attempts = db.ListField(db.ReferenceField(SkillValidationAttempt), default=[])
+
     completed_resources = db.ListField(db.ReferenceField(Resource), default=[])
 
     completed_skills = db.ListField(db.ReferenceField(skill.Skill), default=[])
@@ -53,6 +56,11 @@ class User(mc.SyncableDocument, UserMixin):
     def add_exercise_attempt(self, attempt):
         if attempt not in self.exercises_attempts:
             self.exercises_attempts.append(attempt)
+            self.save()
+
+    def add_skill_validation_attempt(self, attempt):
+        if attempt not in self.skill_validation_attempts:
+            self.skill_validation_attempts.append(attempt)
             self.save()
 
     def add_completed_resource(self, resource):

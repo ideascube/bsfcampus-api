@@ -94,7 +94,7 @@ class ExerciseResource(Resource):
         if isinstance(obj, list):
             return map(_add_instance_single_object, obj)
         else:
-            return _add_instance_single_object(obj)    
+            return _add_instance_single_object(obj)
 
     @property
     def questions(self):

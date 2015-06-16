@@ -1,5 +1,7 @@
+import bson
 from MookAPI import db, api
 from . import ResourceHierarchy, lesson, skill_validation
+from MookAPI.resources.documents.exercise import ExerciseResource
 import flask.ext.security as security
 from .. import views
 
@@ -29,6 +31,18 @@ class Skill(ResourceHierarchy):
     ## skill validation test
     validation_exercise = db.EmbeddedDocumentField(skill_validation.SkillValidationExercise)
     """The exercise that the user might take to validate the skill."""
+
+    def _add_instance(self, obj):
+        """This is a hack to provide the ``_instance`` property to the shorthand question-getters."""
+
+        def _add_instance_single_object(obj):
+            obj._instance = self
+            return obj
+
+        if isinstance(obj, list):
+            return map(_add_instance_single_object, obj)
+        else:
+            return _add_instance_single_object(obj)
 
     @property
     def icon_url(self):
@@ -98,3 +112,36 @@ class Skill(ResourceHierarchy):
             items.extend(lesson.items_to_update(last_sync))
 
         return items
+
+    @property
+    def questions(self):
+        """A list of all children exercises' questions, whatever their type."""
+
+        questions = []
+        for l in self.lessons:
+            for r in l.resources:
+                if isinstance(r, ExerciseResource):
+                    questions.extend(r.questions)
+
+        return questions
+
+    def question(self, question_id):
+        """A shorthand getter for a question with a known `_id`."""
+
+        oid = bson.ObjectId(question_id)
+        for l in self.lessons:
+            for r in l.resources:
+                if isinstance(r, ExerciseResource):
+                    for q in r.questions:
+                        if q._id == oid:
+                            return r._add_instance(q)
+        return None
+
+    def random_questions(self, number=None):
+        """
+        A shorthand getter for a list of random questions.
+        See the documentation of `SkillValidationExercise.random_questions`.
+        """
+
+        questions = self.validation_exercise.random_questions(self, number)
+        return self._add_instance(questions)
