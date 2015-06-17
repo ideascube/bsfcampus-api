@@ -13,14 +13,14 @@ import MookAPI.hierarchy.documents
 class ResourcesView(restful.Resource):
 
     def _get_all(self):
-        return documents.Resource.objects.order_by('lesson', 'order', 'title').all()
+        return documents.Resource.objects.order_by('parent', 'order', 'title').all()
     
     def _get_by_lesson(self, lesson_id):
-        return documents.Resource.objects.order_by('order', 'title').filter(lesson=lesson_id)
+        return documents.Resource.objects.order_by('order', 'title').filter(parent=lesson_id)
     
     def _get_by_skill(self, skill_id):
         lessons = MookAPI.hierarchy.documents.Lesson.objects.filter(skill=skill_id)
-        return documents.Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=lessons)
+        return documents.Resource.objects.order_by('parent', 'order', 'title').filter(parent__in=lessons)
 
     @login_required
     def get(self, lesson_id=None, skill_id=None):
@@ -50,7 +50,7 @@ class ResourceView(restful.Resource):
         """Get the Resource_ with id ``resource_id`` enveloped in a single-key JSON dictionary."""
 
         resource = documents.Resource.get_unique_object_or_404(resource_id)
-        security.current_user.add_started_track(resource.lesson.skill.track)
+        security.current_user.add_started_track(resource.parent.skill.track)
         if not isinstance(resource, documents.exercise.ExerciseResource):
             security.current_user.add_completed_resource(resource)
         return resource
@@ -69,7 +69,7 @@ class ResourceHierarchyView(restful.Resource):
 
         resource = documents.Resource.get_unique_object_or_404(resource_id)
 
-        lesson = resource.lesson
+        lesson = resource.parent
         skill = lesson.skill
         track = skill.track
 

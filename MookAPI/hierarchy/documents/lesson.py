@@ -30,7 +30,7 @@ class Lesson(ResourceHierarchy):
     @property
     def resources(self):
         """A queryset of the Resource_ objects that belong to the current Lesson_."""
-        return MookAPI.resources.documents.Resource.objects.order_by('order', 'title').filter(lesson=self)
+        return MookAPI.resources.documents.Resource.objects.order_by('order', 'title').filter(parent=self)
 
     @property
     def progress(self):

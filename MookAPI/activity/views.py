@@ -5,6 +5,7 @@ from flask_cors import cross_origin
 import documents
 import documents.exercise_attempt
 import documents.skill_validation_attempt
+import documents.track_validation_attempt
 from MookAPI.resources import documents as resources_documents
 from MookAPI.hierarchy import documents as hierarchy_documents
 import flask.ext.security as security
@@ -126,5 +127,65 @@ def post_skill_validation_attempt_question_answer(attempt_id):
 
     return flask.Response(
         response=json_util.dumps({'skill_validation_attempt': attempt.encode_mongo()}),
+        mimetype="application/json"
+    )
+
+
+## Track Validation's attempts
+
+@bp.route("/track_validation_attempts", methods=['POST'])
+@security.login_required
+def post_track_validation_attempt():
+    exercise_id = flask.request.get_json()['exercise']
+    exercise = resources_documents.Resource.objects.get_or_404(id=exercise_id)
+
+    print "CREATING track validation attempt for exercise {exercise}".format(exercise=exercise.id)
+
+    attempt = documents.track_validation_attempt.TrackValidationAttempt.init_with_exercise(exercise)
+    attempt.save()
+
+    security.current_user.add_exercise_attempt(attempt)
+
+    return flask.Response(
+        response=json_util.dumps({'track_validation_attempt': attempt.encode_mongo()}),
+        mimetype="application/json"
+    )
+
+
+@bp.route("/track_validation_attempts/<attempt_id>")
+@security.login_required
+def get_track_validation_attempt(attempt_id):
+    """GET one track validation attempt"""
+
+    print "GETTING track validation attempt with id {attempt_id}".format(attempt_id=attempt_id)
+
+    track_validation_attempt = documents.track_validation_attempt.TrackValidationAttempt.objects.get_or_404(id=attempt_id)
+
+    return flask.Response(
+        response=json_util.dumps({'track_validation_attempt': track_validation_attempt.encode_mongo()}),
+        mimetype="application/json"
+    )
+
+
+@bp.route("/track_validation_attempts/<attempt_id>/answer", methods=['POST'])
+@security.login_required
+def post_track_validation_attempt_question_answer(attempt_id):
+    """POST answer to current question of a track validation attempt"""
+
+    print "POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id)
+
+    attempt = documents.track_validation_attempt.TrackValidationAttempt.objects.get_or_404(id=attempt_id)
+
+    form_data = json_util.loads(flask.request.form.get('form_data'))
+    question_id = form_data['question_id']
+    attempt.save_answer(question_id, form_data)
+    attempt.save()
+
+    if attempt.is_exercise_completed():
+        track = attempt.exercise.parent
+        security.current_user.add_completed_track(track)
+
+    return flask.Response(
+        response=json_util.dumps({'track_validation_attempt': attempt.encode_mongo()}),
         mimetype="application/json"
     )

@@ -60,8 +60,8 @@ class Resource(mc.SyncableDocument):
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
     """The date the Resource_ was created."""
 
-    lesson = db.ReferenceField('Lesson')
-    """The parent Lesson_."""
+    parent = db.ReferenceField('Lesson')
+    """The parent hierarchy object (usually Lesson, but can be overridden)."""
 
     resource_content = db.EmbeddedDocumentField(ResourceContent)
     """The actual content of the Resource_, stored in a ResourceContent_ embedded document."""
@@ -84,38 +84,38 @@ class Resource(mc.SyncableDocument):
     @property
     def skill(self):
         """Shorthand virtual property to the parent Skill_ of the parent Lesson_."""
-        return self.lesson.skill
+        return self.parent.skill
 
     @property
     def track(self):
         """Shorthand virtual property to the parent Track_ of the parent Skill_ of the parent Lesson_."""
-        return self.lesson.skill.track
+        return self.parent.skill.track
     
     ### METHODS
 
     def siblings(self):
         """A queryset of Resource_ objects in the same Lesson_, including the current Resource_."""
-        return Resource.objects.order_by('order', 'title').filter(lesson=self.lesson)
+        return Resource.objects.order_by('order', 'title').filter(parent=self.parent)
         
     def siblings_strict(self):
         """A queryset of Resource_ objects in the same Lesson_, excluding the current Resource_."""
-        return Resource.objects.order_by('order', 'title').filter(lesson=self.lesson, id__ne=self.id)
+        return Resource.objects.order_by('order', 'title').filter(parent=self.parent, id__ne=self.id)
         
     def aunts(self):
         """A queryset of Lesson_ objects in the same Skill_, including the current Lesson_."""
-        return self.lesson.siblings()
+        return self.parent.siblings()
 
     def aunts_strict(self):
         """A queryset of Lesson_ objects in the same Skill_, excluding the current Lesson_."""
-        return self.lesson.siblings_strict()
+        return self.parent.siblings_strict()
 
     def cousins(self):
         """A queryset of Resource_ objects in the same Skill_, including the current Resource_."""
-        return Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=self.aunts())
+        return Resource.objects.order_by('parent', 'order', 'title').filter(parent__in=self.aunts())
     
     def cousins_strict(self):
         """A queryset of Resource_ objects in the same Skill_, excluding the current Resource_."""
-        return Resource.objects.order_by('lesson', 'order', 'title').filter(lesson__in=self.aunts_strict())
+        return Resource.objects.order_by('parent', 'order', 'title').filter(parent__in=self.aunts_strict())
     
     def _set_slug(self):
         """Sets a slug for the hierarchy level based on the title."""
@@ -168,7 +168,7 @@ class Resource(mc.SyncableDocument):
         return [
             self.track._breadcrumb_item(),
             self.skill._breadcrumb_item(),
-            self.lesson._breadcrumb_item(),
+            self.parent._breadcrumb_item(),
             self._breadcrumb_item()
         ]
         

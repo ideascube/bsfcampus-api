@@ -1,4 +1,7 @@
+import random
+
 from MookAPI import db, api
+import MookAPI.resources.documents.track_validation
 from . import ResourceHierarchy, skill
 import flask.ext.security as security
 from .. import views
@@ -44,6 +47,11 @@ class Track(ResourceHierarchy):
     def is_started(self):
         return self in security.current_user.started_tracks
 
+    @property
+    def track_validation_tests(self):
+        """A queryset of the TrackValidationResource_ objects that belong to the current Track_."""
+        return MookAPI.resources.documents.track_validation.TrackValidationResource.objects.order_by('order', 'title').filter(parent=self)
+
     ### METHODS
 
     def breadcrumb(self):
@@ -52,6 +60,9 @@ class Track(ResourceHierarchy):
     def encode_mongo(self):
         son = super(Track, self).encode_mongo()
 
+        validation_tests = map(lambda t: t.id, self.track_validation_tests)
+        i = random.randrange(0, len(validation_tests))
+        son['validation_test'] = validation_tests[i]
         son['skills'] = map(lambda s: s.id, self.skills)
         son['test_unlocked'] = self in security.current_user.unlocked_track_tests
         son['is_started'] = self.is_started

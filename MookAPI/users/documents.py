@@ -66,7 +66,7 @@ class User(mc.SyncableDocument, UserMixin):
     def add_completed_resource(self, resource):
         if resource not in self.completed_resources:
             self.completed_resources.append(resource)
-            skill = resource.lesson.skill
+            skill = resource.parent.skill
             skill_progress = skill.progress
             if skill not in self.completed_skills and skill_progress['current'] >= skill_progress['max']:
                 self.add_completed_skill(skill)
