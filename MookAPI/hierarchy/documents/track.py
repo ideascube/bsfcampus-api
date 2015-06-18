@@ -36,6 +36,11 @@ class Track(ResourceHierarchy):
         return skill.Skill.objects.order_by('order', 'title').filter(track=self)
 
     @property
+    def is_validated(self):
+        """Whether the current_user validated the hierarchy level based on their activity."""
+        return self in security.current_user.completed_tracks
+
+    @property
     def progress(self):
         current = 0
         for skill in self.skills:
