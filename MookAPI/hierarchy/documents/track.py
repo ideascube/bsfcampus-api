@@ -66,8 +66,9 @@ class Track(ResourceHierarchy):
         son = super(Track, self).encode_mongo()
 
         validation_tests = map(lambda t: t.id, self.track_validation_tests)
-        i = random.randrange(0, len(validation_tests))
-        son['validation_test'] = validation_tests[i]
+        if len(validation_tests) > 0:
+            i = random.randrange(0, len(validation_tests))
+            son['validation_test'] = validation_tests[i]
         son['skills'] = map(lambda s: s.id, self.skills)
         son['test_unlocked'] = self in security.current_user.unlocked_track_tests
         son['is_started'] = self.is_started
