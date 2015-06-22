@@ -144,7 +144,7 @@ def post_track_validation_attempt():
     attempt = documents.track_validation_attempt.TrackValidationAttempt.init_with_exercise(exercise)
     attempt.save()
 
-    security.current_user.add_exercise_attempt(attempt)
+    security.current_user.add_track_validation_attempt(attempt)
 
     return flask.Response(
         response=json_util.dumps({'track_validation_attempt': attempt.encode_mongo()}),

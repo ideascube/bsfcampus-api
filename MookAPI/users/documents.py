@@ -7,6 +7,7 @@ from MookAPI.resources.documents import Resource
 from MookAPI.hierarchy.documents import track, skill
 from MookAPI.activity.documents.exercise_attempt import ExerciseAttempt
 from MookAPI.activity.documents.skill_validation_attempt import SkillValidationAttempt
+from MookAPI.activity.documents.track_validation_attempt import TrackValidationAttempt
 
 
 class Role(db.Document, RoleMixin):
@@ -37,6 +38,8 @@ class User(mc.SyncableDocument, UserMixin):
 
     skill_validation_attempts = db.ListField(db.ReferenceField(SkillValidationAttempt), default=[])
 
+    track_validation_attempts = db.ListField(db.ReferenceField(TrackValidationAttempt), default=[])
+
     completed_resources = db.ListField(db.ReferenceField(Resource), default=[])
 
     completed_skills = db.ListField(db.ReferenceField(skill.Skill), default=[])
@@ -61,6 +64,11 @@ class User(mc.SyncableDocument, UserMixin):
     def add_skill_validation_attempt(self, attempt):
         if attempt not in self.skill_validation_attempts:
             self.skill_validation_attempts.append(attempt)
+            self.save()
+
+    def add_track_validation_attempt(self, attempt):
+        if attempt not in self.track_validation_attempts:
+            self.track_validation_attempts.append(attempt)
             self.save()
 
     def add_completed_resource(self, resource):
