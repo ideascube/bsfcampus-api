@@ -37,6 +37,11 @@ class SkillValidationAttempt(Activity):
 
         return obj
 
+    def __unicode__(self):
+        if self.skill is not None:
+            return self.skill.title
+        return self.id
+
     def question_answer(self, question_id):
         oid = ObjectId(question_id)
         for question_answer in self.question_answers:

@@ -1,6 +1,6 @@
 import flask
 import bson
-from MookAPI import db
+from MookAPI import db, app
 import MookAPI.mongo_coder as mc
 from flask.ext.security import Security, UserMixin, RoleMixin
 from MookAPI.resources.documents import Resource
@@ -22,9 +22,9 @@ class Role(db.Document, RoleMixin):
 class User(mc.SyncableDocument, UserMixin):
     full_name = db.StringField()
 
-    username = db.StringField()  # To make this unique we first need to update the registration form to include the field.
+    username = db.StringField(unique_with='email')
 
-    email = db.EmailField(unique=True, required=True)
+    email = db.EmailField(unique_with='username')
 
     password = db.StringField()
 
@@ -34,21 +34,21 @@ class User(mc.SyncableDocument, UserMixin):
 
     roles = db.ListField(db.ReferenceField(Role), default=[])
 
-    exercises_attempts = db.ListField(db.ReferenceField(ExerciseAttempt), default=[])
+    exercises_attempts = db.ListField(db.ReferenceField(ExerciseAttempt), default=[], required=False)
 
-    skill_validation_attempts = db.ListField(db.ReferenceField(SkillValidationAttempt), default=[])
+    skill_validation_attempts = db.ListField(db.ReferenceField(SkillValidationAttempt), default=[], required=False)
 
-    track_validation_attempts = db.ListField(db.ReferenceField(TrackValidationAttempt), default=[])
+    track_validation_attempts = db.ListField(db.ReferenceField(TrackValidationAttempt), default=[], required=False)
 
-    completed_resources = db.ListField(db.ReferenceField(Resource), default=[])
+    completed_resources = db.ListField(db.ReferenceField(Resource), default=[], required=False)
 
-    completed_skills = db.ListField(db.ReferenceField(skill.Skill), default=[])
+    completed_skills = db.ListField(db.ReferenceField(skill.Skill), default=[], required=False)
 
-    started_tracks = db.ListField(db.ReferenceField(track.Track), default=[])
+    started_tracks = db.ListField(db.ReferenceField(track.Track), default=[], required=False)
 
-    unlocked_track_tests = db.ListField(db.ReferenceField(track.Track), default=[])
+    unlocked_track_tests = db.ListField(db.ReferenceField(track.Track), default=[], required=False)
 
-    completed_tracks = db.ListField(db.ReferenceField(track.Track), default=[])
+    completed_tracks = db.ListField(db.ReferenceField(track.Track), default=[], required=False)
 
     def __unicode__(self):
         if self.email is None and self.username is not None:
@@ -114,3 +114,13 @@ class User(mc.SyncableDocument, UserMixin):
             return cls.objects.get_or_404(slug=token)
         else:
             return cls.objects.get_or_404(id=token)
+
+    @staticmethod
+    def hash_pass(password):
+        """
+        Return the md5 hash of the password+salt
+        """
+        #  FIXME: the hashing is removed until we change the user authentication process
+        # salted_password = password + app.secret_key
+        # return sha256_crypt.encrypt(salted_password)
+        return password

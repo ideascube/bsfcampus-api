@@ -70,6 +70,11 @@ class ExerciseAttempt(Activity):
 
         return obj
 
+    def __unicode__(self):
+        if self.exercise is not None:
+            return self.exercise.title
+        return self.id
+
     def question_answer(self, question_id):
         oid = ObjectId(question_id)
         for question_answer in self.question_answers:

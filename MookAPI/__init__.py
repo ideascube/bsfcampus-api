@@ -54,9 +54,9 @@ def output_json(data, code, headers=None):
     resp.headers.extend(headers or {})
     return resp
 
-
 ### ALLOW CROSS DOMAIN REQUESTS
-cors = CORS(app, resources={r"/*": {"origins": app_config.allow_origins}}, supports_credentials=True, allow_headers='Content-Type')
+cors = CORS(app, resources={r"/*": {"origins": app_config.allow_origins}}, supports_credentials=True,
+            allow_headers='Content-Type')
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 
@@ -103,6 +103,7 @@ def load_user_from_request(request):
                 return user_list[0]
     return None
 
+
 @security.login_manager.unauthorized_handler
 def unauthorized():
     abort(403)
@@ -140,7 +141,6 @@ def if_local(func):
             pass
 
         return empty_function
-
 
 ### LOAD APP-LEVEL MODULES
 ## Views: define HTTP endpoints
@@ -198,52 +198,72 @@ import_synchronizer()
 def create_admin_interface():
     admin = Admin(app)
 
+    from admin import ResourceView
+
     ## Exercise resources
     import resources.documents.exercise
-    admin.add_view(ModelView(resources.documents.exercise.ExerciseResource, name='Exercise', category='Resources'))
+
+    admin.add_view(ResourceView(resources.documents.exercise.ExerciseResource, name='Exercise', category='Resources'))
 
     ## Track Validation Tests
     import resources.documents.track_validation
-    admin.add_view(ModelView(resources.documents.track_validation.TrackValidationResource, name='Track Validation Test', category='Resources'))
+
+    admin.add_view(ResourceView(resources.documents.track_validation.TrackValidationResource, name='Track Validation Test',
+                             category='Resources'))
 
     ## Rich text resources
     import resources.documents.rich_text
-    admin.add_view(ModelView(resources.documents.rich_text.RichTextResource, name='Rich Text', category='Resources'))
+
+    admin.add_view(ResourceView(resources.documents.rich_text.RichTextResource, name='Rich Text', category='Resources'))
 
     # No external video on server
     # ## External video resources
     # import resources.documents.external_video
+    # admin.add_view(ResourceView(resources.documents.external_video.ExternalVideoResource, name='External Video', category='Resources'))
     # admin.add_view(ModelView(resources.documents.external_video.ExternalVideoResource, name='External Video', category='Resources'))
 
     ## Audio resources
     import resources.documents.audio
-    admin.add_view(ModelView(resources.documents.audio.AudioResource, name='Audio', category='Resources'))
+    admin.add_view(ResourceView(resources.documents.audio.AudioResource,
+                                                name='Audio',
+                                                category='Resources'))
+    # admin.add_view(ModelView(resources.documents.audio.AudioResource, name='Audio', category='Resources'))
 
     ## Video resources
     import resources.documents.video
-    admin.add_view(ModelView(resources.documents.video.VideoResource, name='Video', category='Resources'))
+
+    admin.add_view(ResourceView(resources.documents.video.VideoResource, name='Video', category='Resources'))
 
     ## Downloadable file resources
     import resources.documents.downloadable_file
-    admin.add_view(ModelView(resources.documents.downloadable_file.DownloadableFileResource, name='Downloadable File',
-                             category='Resources'))
+    admin.add_view(ResourceView(resources.documents.downloadable_file.DownloadableFileResource,
+                                                name='Downloadable File',
+                                                category='Resources'))
+    # admin.add_view(ModelView(resources.documents.downloadable_file.DownloadableFileResource, name='Downloadable File',
+    #                          category='Resources'))
 
     ## Hierarchy
     import hierarchy.documents as hierarchy_documents
-    admin.add_view(ModelView(hierarchy_documents.track.Track, name='Track', category='Hierarchy'))
-    admin.add_view(ModelView(hierarchy_documents.skill.Skill, name='Skill', category='Hierarchy'))
-    admin.add_view(ModelView(hierarchy_documents.lesson.Lesson, name='Lesson', category='Hierarchy'))
+    from admin import HierarchyTrackView, HierarchySkillView, HierarchyLessonView
+
+    admin.add_view(HierarchyTrackView(hierarchy_documents.track.Track, name='Track', category='Hierarchy'))
+    admin.add_view(HierarchySkillView(hierarchy_documents.skill.Skill, name='Skill', category='Hierarchy'))
+    admin.add_view(HierarchyLessonView(hierarchy_documents.lesson.Lesson, name='Lesson', category='Hierarchy'))
 
     # ## Config
     # import config.documents
     # admin.add_view(ModelView(config.documents.ConfigParameters))
 
     ## Authentication
-    admin.add_view(ModelView(users.documents.User, name='User', category='Authentication'))
+    from admin import UserView
+
+    admin.add_view(UserView(users.documents.User, name='User', category='Authentication'))
     admin.add_view(ModelView(users.documents.Role, name='Role', category='Authentication'))
 
     ## Local servers
     import local_servers.documents as local_servers_documents
+
     admin.add_view(ModelView(local_servers_documents.LocalServer, name='Local server', category='Authentication'))
+
 
 create_admin_interface()
