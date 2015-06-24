@@ -35,22 +35,19 @@ class Track(ResourceHierarchy):
         """A queryset of the Skill_ objects that belong to the current Track_."""
         return skill.Skill.objects.order_by('order', 'title').filter(track=self)
 
-    @property
-    def is_validated(self):
-        """Whether the current_user validated the hierarchy level based on their activity."""
-        return self in security.current_user.completed_tracks
-
-    @property
-    def progress(self):
+    def is_validated(self, user):
+        """Whether the user validated the hierarchy level based on their activity."""
+        return self in user.completed_tracks
+    
+    def progress(self, user):
         current = 0
         for skill in self.skills:
-            if skill.is_validated:
+            if skill.is_validated(user):
                 current += 1
         return {'current': current, 'max': len(self.skills)}
 
-    @property
-    def is_started(self):
-        return self in security.current_user.started_tracks
+    def is_started(self, user):
+        return self in user.started_tracks
 
     @property
     def track_validation_tests(self):
@@ -71,9 +68,20 @@ class Track(ResourceHierarchy):
             son['validation_test'] = validation_tests[i]
         son['skills'] = map(lambda s: s.id, self.skills)
         son['test_unlocked'] = self in security.current_user.unlocked_track_tests
-        son['is_started'] = self.is_started
+        son['is_started'] = self.is_started(security.current_user)
 
         return son
+
+    def encode_mongo_for_dashboard(self, user):
+        response = super(Track, self).encode_mongo_for_dashboard(user)
+        response['icon_url'] = self.icon_url
+        response['is_started'] = self.is_started(user)
+        response['skills'] = []
+        for skill in self.skills:
+            response['skills'].append(skill.encode_mongo_for_dashboard(user))
+        response['skills'].sort(key=lambda s: s['order'])
+
+        return response
 
     def all_syncable_items(self):
         items = super(Track, self).all_syncable_items()

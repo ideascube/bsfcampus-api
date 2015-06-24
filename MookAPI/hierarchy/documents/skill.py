@@ -60,19 +60,17 @@ class Skill(ResourceHierarchy):
         """A queryset of the Lesson_ objects that belong to the current Skill_."""
         return lesson.Lesson.objects.order_by('order', 'title').filter(skill=self)
 
-    @property
-    def is_validated(self):
+    def is_validated(self, user):
         """Whether the current_user validated the hierarchy level based on their activity."""
-        return self in security.current_user.completed_skills
+        return self in user.completed_skills
 
-    @property
-    def progress(self):
+    def progress(self, user):
         current = 0
         nb_resources = 0
         for lesson in self.lessons:
             for resource in lesson.resources:
                 nb_resources += 1
-                if resource.is_validated:
+                if resource.is_validated(user):
                     current += 1
         return {'current': current, 'max': nb_resources}
 
@@ -92,6 +90,17 @@ class Skill(ResourceHierarchy):
         son['bg_color'] = self.track.bg_color
 
         return son
+
+    def encode_mongo_for_dashboard(self, user):
+        response = super(Skill, self).encode_mongo_for_dashboard(user)
+        response['icon_url'] = self.icon_url
+        response['short_description'] = self.short_description
+        response['lessons'] = []
+        for lesson in self.lessons:
+            response['lessons'].append(lesson.encode_mongo_for_dashboard(user))
+        response['lessons'].sort(key=lambda l: l['order'])
+
+        return response
 
     def top_level_syncable_document(self):
         return self.track
