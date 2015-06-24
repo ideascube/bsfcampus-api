@@ -25,7 +25,7 @@ def post_exercise_attempt():
     attempt.save()
 
     current_user._get_current_object().add_exercise_attempt(attempt)
-	current_user._get_current_object().save()
+    current_user._get_current_object().save()
 
     return flask.Response(
         response=json_util.dumps({'exercise_attempt': attempt.encode_mongo()}),
