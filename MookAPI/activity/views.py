@@ -25,6 +25,7 @@ def post_exercise_attempt():
     attempt.save()
 
     security.current_user.add_exercise_attempt(attempt)
+    security.current_user.save()
 
     return flask.Response(
         response=json_util.dumps({'exercise_attempt': attempt.encode_mongo()}),
@@ -64,6 +65,7 @@ def post_exercise_attempt_question_answer(attempt_id):
     if attempt.is_exercise_completed():
         exercise_resource = attempt.exercise
         security.current_user.add_completed_resource(exercise_resource)
+        security.current_user.save()
 
     return flask.Response(
         response=json_util.dumps({'exercise_attempt': attempt.encode_mongo()}),
@@ -85,6 +87,7 @@ def post_skill_validation_attempt():
     attempt.save()
 
     security.current_user.add_skill_validation_attempt(attempt)
+    security.current_user.save()
 
     return flask.Response(
         response=json_util.dumps({'skill_validation_attempt': attempt.encode_mongo()}),
@@ -124,6 +127,7 @@ def post_skill_validation_attempt_question_answer(attempt_id):
     if attempt.is_skill_validation_completed():
         skill = attempt.skill
         security.current_user.add_completed_skill(skill)
+        security.current_user.save()
 
     return flask.Response(
         response=json_util.dumps({'skill_validation_attempt': attempt.encode_mongo()}),
@@ -145,6 +149,7 @@ def post_track_validation_attempt():
     attempt.save()
 
     security.current_user.add_track_validation_attempt(attempt)
+    security.current_user.save()
 
     return flask.Response(
         response=json_util.dumps({'track_validation_attempt': attempt.encode_mongo()}),
@@ -184,6 +189,7 @@ def post_track_validation_attempt_question_answer(attempt_id):
     if attempt.is_exercise_completed():
         track = attempt.exercise.parent
         security.current_user.add_completed_track(track)
+        security.current_user.save()
 
     return flask.Response(
         response=json_util.dumps({'track_validation_attempt': attempt.encode_mongo()}),

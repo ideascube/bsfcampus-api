@@ -59,17 +59,14 @@ class User(mc.SyncableDocument, UserMixin):
     def add_exercise_attempt(self, attempt):
         if attempt not in self.exercises_attempts:
             self.exercises_attempts.append(attempt)
-            self.save()
 
     def add_skill_validation_attempt(self, attempt):
         if attempt not in self.skill_validation_attempts:
             self.skill_validation_attempts.append(attempt)
-            self.save()
 
     def add_track_validation_attempt(self, attempt):
         if attempt not in self.track_validation_attempts:
             self.track_validation_attempts.append(attempt)
-            self.save()
 
     def add_completed_resource(self, resource):
         if resource not in self.completed_resources:
@@ -78,7 +75,6 @@ class User(mc.SyncableDocument, UserMixin):
             skill_progress = skill.progress
             if skill not in self.completed_skills and skill_progress['current'] >= skill_progress['max']:
                 self.add_completed_skill(skill)
-            self.save()
 
     def add_completed_skill(self, skill):
         if skill not in self.completed_skills:
@@ -87,33 +83,18 @@ class User(mc.SyncableDocument, UserMixin):
             track_progress = track.progress
             if track not in self.unlocked_track_tests and track_progress['current'] >= track_progress['max']:
                 self.unlock_track_validation_test(track)
-            self.save()
 
     def add_started_track(self, track):
         if track not in self.started_tracks:
             self.started_tracks.append(track)
-            self.save()
 
     def unlock_track_validation_test(self, track):
         if track not in self.unlocked_track_tests:
             self.unlocked_track_tests.append(track)
-            self.save()
 
     def add_completed_track(self, track):
         if track not in self.completed_tracks:
             self.completed_tracks.append(track)
-            self.save()
-
-    @classmethod
-    def get_unique_object_or_404(cls, token):
-        """Get the only hierarchy level matching argument 'token', where 'token' can be the id or the slug."""
-
-        try:
-            bson.ObjectId(token)
-        except bson.errors.InvalidId:
-            return cls.objects.get_or_404(slug=token)
-        else:
-            return cls.objects.get_or_404(id=token)
 
     @staticmethod
     def hash_pass(password):

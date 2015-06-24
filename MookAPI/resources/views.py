@@ -53,6 +53,7 @@ class ResourceView(restful.Resource):
         security.current_user.add_started_track(resource.parent.skill.track)
         if not isinstance(resource, documents.exercise.ExerciseResource):
             security.current_user.add_completed_resource(resource)
+        security.current_user.save()
         return resource
 
 api.add_resource(ResourceView, '/resources/<resource_id>', endpoint='resource')
