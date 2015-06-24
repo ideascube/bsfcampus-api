@@ -1,9 +1,8 @@
 import io
 
 import flask
-from flask.ext import restful
-from flask.ext.security import login_required
-import flask.ext.security as security
+import flask_restful as restful
+from flask_jwt import jwt_required, current_user
 
 from MookAPI import api
 import documents
@@ -22,7 +21,7 @@ class ResourcesView(restful.Resource):
         lessons = MookAPI.hierarchy.documents.Lesson.objects.filter(skill=skill_id)
         return documents.Resource.objects.order_by('parent', 'order', 'title').filter(parent__in=lessons)
 
-    @login_required
+    @jwt_required()
     def get(self, lesson_id=None, skill_id=None):
         """
         Returns a list of Resource_ objects, ordered by ``order`` and ``title``, enveloped in a single-key JSON dictionary.
@@ -45,20 +44,15 @@ api.add_resource(
 
 class ResourceView(restful.Resource):
 
-    @login_required
+    @jwt_required()
     def get(self, resource_id):
         """Get the Resource_ with id ``resource_id`` enveloped in a single-key JSON dictionary."""
 
         resource = documents.Resource.get_unique_object_or_404(resource_id)
-        do_save_user = False
-        if resource.parent.skill.track not in security.current_user.started_tracks:
-            security.current_user.add_started_track(resource.parent.skill.track)
-            do_save_user = True
-        if not (isinstance(resource, documents.exercise.ExerciseResource) or isinstance(resource, documents.downloadable_file.DownloadableFileResource)):
-            security.current_user.add_completed_resource(resource)
-            do_save_user = True
-        if do_save_user:
-            security.current_user.save()
+        current_user._get_current_object().add_started_track(resource.parent.skill.track)
+        if not isinstance(resource, documents.exercise.ExerciseResource):
+            current_user._get_current_object().add_completed_resource(resource)
+        current_user._get_current_object().save()
         return resource
 
 api.add_resource(ResourceView, '/resources/<resource_id>', endpoint='resource')
@@ -66,7 +60,7 @@ api.add_resource(ResourceView, '/resources/<resource_id>', endpoint='resource')
 
 class ResourceHierarchyView(restful.Resource):
 
-    @login_required
+    @jwt_required()
     def get(self, resource_id):
         """
         Get the Resource_ with id ``resource_id`` and all its family tree:
@@ -95,7 +89,7 @@ api.add_resource(ResourceHierarchyView, '/resources/<resource_id>/hierarchy', en
 
 class ResourceContentFileView(restful.Resource):
 
-    @login_required
+    @jwt_required()
     def get(self, resource_id, filename):
         """Download the file associated with the Resource_ with id ``resource_id``."""
 
@@ -119,7 +113,7 @@ api.add_resource(ResourceContentFileView, '/resources/<resource_id>/content-file
 
 class ResourceContentImageView(restful.Resource):
 
-    @login_required
+    @jwt_required()
     def get(self, resource_id, filename):
         """Download the image associated with the Resource_ with id ``resource_id``."""
 
@@ -141,7 +135,7 @@ api.add_resource(ResourceContentImageView, '/resources/<resource_id>/content-ima
 
 class ExerciseResourceQuestionImageView(restful.Resource):
 
-    @login_required
+    @jwt_required()
     def get(self, resource_id, question_id, filename):
         """Download the image associated with the question with ``question_id`` in Exercise Resource_ with id ``resource_id``."""
 

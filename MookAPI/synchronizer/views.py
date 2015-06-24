@@ -2,10 +2,10 @@ import sys
 import requests
 import bson
 
-import flask
-from flask.ext import restful
+import flask_restful as restful
 
 from MookAPI import app_config, api
+
 import documents
 
 ##FIXME Do something better here.

@@ -3,7 +3,7 @@ import random
 from MookAPI import db, api
 import MookAPI.resources.documents.track_validation
 from . import ResourceHierarchy, skill
-import flask.ext.security as security
+from flask_jwt import current_user
 from .. import views
 
 class Track(ResourceHierarchy):
@@ -35,19 +35,22 @@ class Track(ResourceHierarchy):
         """A queryset of the Skill_ objects that belong to the current Track_."""
         return skill.Skill.objects.order_by('order', 'title').filter(track=self)
 
-    def is_validated(self, user):
-        """Whether the user validated the hierarchy level based on their activity."""
-        return self in user.completed_tracks
-    
-    def progress(self, user):
+    @property
+    def is_validated(self):
+        """Whether the current_user validated the hierarchy level based on their activity."""
+        return self in current_user._get_current_object().completed_tracks
+
+    @property
+    def progress(self):
         current = 0
         for skill in self.skills:
-            if skill.is_validated(user):
+            if skill.is_validated:
                 current += 1
         return {'current': current, 'max': len(self.skills)}
 
-    def is_started(self, user):
-        return self in user.started_tracks
+    @property
+    def is_started(self):
+        return self in current_user._get_current_object().started_tracks
 
     @property
     def track_validation_tests(self):
@@ -67,8 +70,8 @@ class Track(ResourceHierarchy):
             i = random.randrange(0, len(validation_tests))
             son['validation_test'] = validation_tests[i]
         son['skills'] = map(lambda s: s.id, self.skills)
-        son['test_unlocked'] = self in security.current_user.unlocked_track_tests
-        son['is_started'] = self.is_started(security.current_user)
+        son['test_unlocked'] = self in current_user._get_current_object().unlocked_track_tests
+        son['is_started'] = self.is_started
 
         return son
 

@@ -6,6 +6,7 @@ Flask-MongoEngine==0.7.1
 Flask-Admin==1.1.0
 Flask-CORS==2.0.1
 Flask-RESTful==0.3.3
+Flask-JWT==0.2.0
 python-slugify==1.1.2
 Pillow==2.8.2
 py-bcrypt==0.4

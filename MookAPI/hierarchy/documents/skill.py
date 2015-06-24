@@ -2,7 +2,7 @@ import bson
 from MookAPI import db, api
 from . import ResourceHierarchy, lesson, skill_validation
 from MookAPI.resources.documents.exercise import ExerciseResource
-import flask.ext.security as security
+from flask_jwt import current_user
 from .. import views
 
 class Skill(ResourceHierarchy):
@@ -60,17 +60,19 @@ class Skill(ResourceHierarchy):
         """A queryset of the Lesson_ objects that belong to the current Skill_."""
         return lesson.Lesson.objects.order_by('order', 'title').filter(skill=self)
 
-    def is_validated(self, user):
+    @property
+    def is_validated(self):
         """Whether the current_user validated the hierarchy level based on their activity."""
-        return self in user.completed_skills
+        return self in current_user._get_current_object().completed_skills
 
-    def progress(self, user):
+    @property
+    def progress(self):
         current = 0
         nb_resources = 0
         for lesson in self.lessons:
             for resource in lesson.resources:
                 nb_resources += 1
-                if resource.is_validated(user):
+                if resource.is_validated:
                     current += 1
         return {'current': current, 'max': nb_resources}
 

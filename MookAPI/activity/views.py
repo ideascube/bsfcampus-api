@@ -8,13 +8,13 @@ import documents.skill_validation_attempt
 import documents.track_validation_attempt
 from MookAPI.resources import documents as resources_documents
 from MookAPI.hierarchy import documents as hierarchy_documents
-import flask.ext.security as security
+from flask_jwt import jwt_required, current_user
 from . import bp
 
 ## Exercises (as Resources) attempts
 
 @bp.route("/exercise_attempts", methods=['POST'])
-@security.login_required
+@jwt_required()
 def post_exercise_attempt():
     exercise_id = flask.request.get_json()['exercise']
     exercise = resources_documents.Resource.objects.get_or_404(id=exercise_id)
@@ -24,8 +24,8 @@ def post_exercise_attempt():
     attempt = documents.exercise_attempt.ExerciseAttempt.init_with_exercise(exercise)
     attempt.save()
 
-    security.current_user.add_exercise_attempt(attempt)
-    security.current_user.save()
+    current_user._get_current_object().add_exercise_attempt(attempt)
+	current_user._get_current_object().save()
 
     return flask.Response(
         response=json_util.dumps({'exercise_attempt': attempt.encode_mongo()}),
@@ -34,7 +34,7 @@ def post_exercise_attempt():
 
 
 @bp.route("/exercise_attempts/<attempt_id>")
-@security.login_required
+@jwt_required()
 def get_exercise_attempt(attempt_id):
     """GET one exercise attempt"""
 
@@ -49,7 +49,7 @@ def get_exercise_attempt(attempt_id):
 
 
 @bp.route("/exercise_attempts/<attempt_id>/answer", methods=['POST'])
-@security.login_required
+@jwt_required()
 def post_exercise_attempt_question_answer(attempt_id):
     """POST answer to current question of an exercise attempt"""
 
@@ -64,8 +64,8 @@ def post_exercise_attempt_question_answer(attempt_id):
 
     if attempt.is_exercise_completed():
         exercise_resource = attempt.exercise
-        security.current_user.add_completed_resource(exercise_resource)
-        security.current_user.save()
+        current_user._get_current_object().add_completed_resource(exercise_resource)
+        current_user._get_current_object().save()
 
     return flask.Response(
         response=json_util.dumps({'exercise_attempt': attempt.encode_mongo()}),
@@ -76,7 +76,7 @@ def post_exercise_attempt_question_answer(attempt_id):
 ## Skill Validation's attempts
 
 @bp.route("/skill_validation_attempts", methods=['POST'])
-@security.login_required
+@jwt_required()
 def post_skill_validation_attempt():
     skill_id = flask.request.get_json()['skill']
     skill = hierarchy_documents.skill.Skill.objects.get_or_404(id=skill_id)
@@ -86,8 +86,8 @@ def post_skill_validation_attempt():
     attempt = documents.skill_validation_attempt.SkillValidationAttempt.init_with_skill(skill)
     attempt.save()
 
-    security.current_user.add_skill_validation_attempt(attempt)
-    security.current_user.save()
+    current_user._get_current_object().add_skill_validation_attempt(attempt)
+    current_user._get_current_object().save()
 
     return flask.Response(
         response=json_util.dumps({'skill_validation_attempt': attempt.encode_mongo()}),
@@ -96,7 +96,7 @@ def post_skill_validation_attempt():
 
 
 @bp.route("/skill_validation_attempts/<attempt_id>")
-@security.login_required
+@jwt_required()
 def get_skill_validation_attempt(attempt_id):
     """GET one skill validation attempt"""
 
@@ -111,7 +111,7 @@ def get_skill_validation_attempt(attempt_id):
 
 
 @bp.route("/skill_validation_attempts/<attempt_id>/answer", methods=['POST'])
-@security.login_required
+@jwt_required()
 def post_skill_validation_attempt_question_answer(attempt_id):
     """POST answer to current question of a skill validation attempt"""
 
@@ -126,8 +126,8 @@ def post_skill_validation_attempt_question_answer(attempt_id):
 
     if attempt.is_skill_validation_completed():
         skill = attempt.skill
-        security.current_user.add_completed_skill(skill)
-        security.current_user.save()
+        current_user._get_current_object().add_completed_skill(skill)
+        current_user._get_current_object().save()
 
     return flask.Response(
         response=json_util.dumps({'skill_validation_attempt': attempt.encode_mongo()}),
@@ -138,7 +138,7 @@ def post_skill_validation_attempt_question_answer(attempt_id):
 ## Track Validation's attempts
 
 @bp.route("/track_validation_attempts", methods=['POST'])
-@security.login_required
+@jwt_required()
 def post_track_validation_attempt():
     exercise_id = flask.request.get_json()['exercise']
     exercise = resources_documents.Resource.objects.get_or_404(id=exercise_id)
@@ -148,8 +148,8 @@ def post_track_validation_attempt():
     attempt = documents.track_validation_attempt.TrackValidationAttempt.init_with_exercise(exercise)
     attempt.save()
 
-    security.current_user.add_track_validation_attempt(attempt)
-    security.current_user.save()
+    current_user._get_current_object().add_track_validation_attempt(attempt)
+    current_user._get_current_object().save()
 
     return flask.Response(
         response=json_util.dumps({'track_validation_attempt': attempt.encode_mongo()}),
@@ -158,7 +158,7 @@ def post_track_validation_attempt():
 
 
 @bp.route("/track_validation_attempts/<attempt_id>")
-@security.login_required
+@jwt_required()
 def get_track_validation_attempt(attempt_id):
     """GET one track validation attempt"""
 
@@ -173,7 +173,7 @@ def get_track_validation_attempt(attempt_id):
 
 
 @bp.route("/track_validation_attempts/<attempt_id>/answer", methods=['POST'])
-@security.login_required
+@jwt_required()
 def post_track_validation_attempt_question_answer(attempt_id):
     """POST answer to current question of a track validation attempt"""
 
@@ -188,8 +188,8 @@ def post_track_validation_attempt_question_answer(attempt_id):
 
     if attempt.is_exercise_completed():
         track = attempt.exercise.parent
-        security.current_user.add_completed_track(track)
-        security.current_user.save()
+        current_user._get_current_object().add_completed_track(track)
+        current_user._get_current_object().save()
 
     return flask.Response(
         response=json_util.dumps({'track_validation_attempt': attempt.encode_mongo()}),

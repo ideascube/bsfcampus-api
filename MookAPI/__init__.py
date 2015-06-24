@@ -4,10 +4,10 @@ from flask.ext.restful import Api
 from flask.ext.mongoengine import MongoEngine
 from flask.ext.admin import Admin
 from flask.ext.admin.contrib.mongoengine import ModelView
-from flask.ext.security import Security, MongoEngineUserDatastore
 from flask_cors import CORS
+from flask_jwt import JWT
 import app_config
-import base64
+import datetime
 from bson import json_util
 
 ### CREATE FLASK APP
@@ -57,54 +57,40 @@ cors = CORS(app, resources={r"/*": {"origins": app_config.allow_origins}}, suppo
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 
-### SECURITY
+### USERS
 ## Documents
 import users
 
 app.register_blueprint(users.bp, url_prefix="/users")
-## Datastore
-user_datastore = MongoEngineUserDatastore(db, users.documents.User, users.documents.Role)
-## Configuration
-app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
-app.config['SECURITY_PASSWORD_SALT'] = app_config.password_salt
-app.config['SECURITY_REGISTERABLE'] = True
-app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
-app.config['SECURITY_POST_LOGIN_VIEW'] = None
-app.config['SECURITY_POST_REGISTER_VIEW'] = None
-app.config['SECURITY_POST_LOGOUT_VIEW'] = None
-security = Security(
-    app,
-    datastore=user_datastore,
-    register_blueprint=True,
-    register_form=users.ExtendedRegisterForm,
-    confirm_register_form=users.ExtendedRegisterForm
-)
 
-## Header authentication
-@security.login_manager.request_loader
-def load_user_from_request(request):
-    auth_key = request.headers.get('Authorization')
-    if auth_key:
-        auth_key = auth_key.replace('Basic ', '', 1)
-        try:
-            auth_key = base64.b64decode(auth_key)
-        except TypeError:
-            pass
-        user_id, password = auth_key.split(":", 1)
-        user_list = users.documents.User.objects(email=user_id)  # , password=password)
-        if len(user_list) > 0:
-            return user_list[0]
-        else:
-            user_list = users.documents.User.objects(username=user_id)  # , password=password)
-            if len(user_list) > 0:
-                return user_list[0]
-    return None
+app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(hours=2)
+jwt = JWT(app)
 
+@jwt.authentication_handler
+def authenticate(username, password):
+    try:
+        user = users.documents.User.objects.get(username=username)
+        #TODO: Check password!
+    except:
+        return None
+    else:
+        return user
 
-@security.login_manager.unauthorized_handler
-def unauthorized():
-    abort(403)
+@jwt.payload_handler
+def make_payload(user):
+    return {
+        'user_id': str(user.id)
+    }
 
+@jwt.user_handler
+def load_user(payload):
+    user_id = payload['user_id']
+    try:
+        user = users.documents.User.objects.get(id=user_id)
+    except:
+        return None
+    else:
+        return user
 
 ### CENTRAL-SERVER-ONLY AND LOCAL-SERVER-ONLY DECORATORS
 ## Server is central unless specified otherwise.
