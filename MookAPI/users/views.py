@@ -15,13 +15,13 @@ class CurrentUserView(Resource):
         """Get the current logged in user data"""
         print ("get current user")
 
-        if not security.current_user.id:
+        try:
+            current_user_id = security.current_user.id
+            print (current_user_id)
+            return documents.User.get_unique_object_or_404(current_user_id)
+        except AttributeError:
             response = {"status_code": 401}
             return response
-
-        current_user_id = security.current_user.id
-        print (current_user_id)
-        return documents.User.get_unique_object_or_404(current_user_id)
 
     @login_required
     def post(self):

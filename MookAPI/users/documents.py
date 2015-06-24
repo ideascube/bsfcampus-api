@@ -22,9 +22,9 @@ class Role(db.Document, RoleMixin):
 class User(mc.SyncableDocument, UserMixin):
     full_name = db.StringField()
 
-    username = db.StringField(unique_with='email')
+    username = db.StringField()  # To make this unique we first need to update the registration form to include the field.
 
-    email = db.EmailField(unique_with='username')
+    email = db.EmailField(unique=True, required=True)
 
     password = db.StringField()
 
