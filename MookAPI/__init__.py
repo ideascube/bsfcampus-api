@@ -16,10 +16,7 @@ app.config["SECRET_KEY"] = app_config.app_secret
 
 ### SETUP DATABASE
 mongodb_settings = {}
-if hasattr(app_config, 'mongodb_db'):
-    mongodb_settings['DB'] = app_config.mongodb_db
-else:
-    mongodb_settings['DB'] = 'mookbsf'
+mongodb_settings['DB'] = getattr(app_config, 'mongodb_db', 'mookbsf')
 if hasattr(app_config, 'mongodb_host'):
     mongodb_settings['HOST'] = app_config.mongodb_host
 if hasattr(app_config, 'mongodb_port'):
@@ -62,7 +59,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 ### SECURITY
 ## Documents
-import users, users.documents
+import users
 
 app.register_blueprint(users.bp, url_prefix="/users")
 ## Datastore
@@ -124,23 +121,19 @@ def server_is_central():
 ## Central-server-only
 def if_central(func):
     if server_is_central():
-        return func
-    else:
-        def empty_function(*args, **kwargs):
-            pass
-
-        return empty_function
-
+        func()
+    return func
 
 ## Local-server-only
 def if_local(func):
     if server_is_local():
-        return func
-    else:
-        def empty_function(*args, **kwargs):
-            pass
+        func()
+    return func
 
-        return empty_function
+## Execute the decorated function no matter what
+def execute_always(func):
+    func()
+    return func
 
 ### LOAD APP-LEVEL MODULES
 ## Views: define HTTP endpoints
@@ -174,27 +167,19 @@ app.register_blueprint(config.bp, url_prefix="/config")
 @if_central
 def import_local_servers():
     import local_servers
-
     app.register_blueprint(local_servers.bp, url_prefix="/local_servers")
-
-
-import_local_servers()
 
 
 @if_local
 def import_synchronizer():
     import synchronizer
-
     app.register_blueprint(synchronizer.bp, url_prefix="/synchronizer")
 
 
-import_synchronizer()
-
-
 ### ADMINISTRATION INTERFACE
-## Eventually this back-office should not exist on the local servers (maybe even on the central server...)
-## To do that, uncomment the decorator
-# @if_central
+## Eventually this back-office should not exist on the local servers
+## To do that, use the @if_central decorator instead of @execute_always
+@execute_always
 def create_admin_interface():
     admin = Admin(app)
 
@@ -264,6 +249,3 @@ def create_admin_interface():
     import local_servers.documents as local_servers_documents
 
     admin.add_view(ModelView(local_servers_documents.LocalServer, name='Local server', category='Authentication'))
-
-
-create_admin_interface()
