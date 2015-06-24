@@ -16,10 +16,7 @@ app.config["SECRET_KEY"] = app_config.app_secret
 
 ### SETUP DATABASE
 mongodb_settings = {}
-if hasattr(app_config, 'mongodb_db'):
-    mongodb_settings['DB'] = app_config.mongodb_db
-else:
-    mongodb_settings['DB'] = 'mookbsf'
+mongodb_settings['DB'] = getattr(app_config, 'mongodb_db', 'mookbsf')
 if hasattr(app_config, 'mongodb_host'):
     mongodb_settings['HOST'] = app_config.mongodb_host
 if hasattr(app_config, 'mongodb_port'):
@@ -62,7 +59,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 ### SECURITY
 ## Documents
-import users, users.documents
+import users
 
 app.register_blueprint(users.bp, url_prefix="/users")
 ## Datastore
