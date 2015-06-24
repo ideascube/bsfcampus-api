@@ -39,14 +39,13 @@ api.add_resource(CurrentUserView, '/users/current', endpoint='current_user')
 
 class CurrentUserDashboardView(Resource):
 
-    @login_required
+    @jwt_required
     def get(self):
         """Get the current logged in user data to display in the dashboard"""
-        current_user_id = security.current_user.id
 
         response = {}
         response.dashboard = {}
-        response.dashboard.user = documents.User.get_unique_object_or_404(current_user_id)
+        response.dashboard.user = current_user._get_current_object()
 
         response.dashboard.tracks = []
         for track in Track.objects:
@@ -67,7 +66,7 @@ api.add_resource(UserView, '/users/<user_id>', endpoint='user')
 
 class UserDashboardView(Resource):
 
-    @login_required
+    @jwt_required
     def get(self, user_id):
         """Get the user data to display in the dashboard"""
 
@@ -82,12 +81,3 @@ class UserDashboardView(Resource):
         return response
 
 api.add_resource(UserDashboardView, '/users/<user_id>/dashboard', endpoint='user_dashboard')
-
-class LogoutCurrentUserView(Resource):
-
-    @login_required
-    def post(self):
-        """Logs out the current user"""
-        security.logout_user()
-
-api.add_resource(LogoutCurrentUserView, '/users/logout', endpoint='logout_user')
