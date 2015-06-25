@@ -32,7 +32,8 @@ api.add_resource(TrackView, '/hierarchy/tracks/<track_id>', endpoint='track')
 
 
 class TrackIconView(restful.Resource):
-    @jwt_required()
+
+    # @jwt_required()
     def get(self, track_id):
         """Download the icon of the Track_ with id ``track_id``."""
 
@@ -89,7 +90,7 @@ api.add_resource(SkillView, '/hierarchy/skills/<skill_id>', endpoint='skill')
 
 class SkillIconView(restful.Resource):
     
-    @jwt_required()
+    # @jwt_required()
     def get(self, skill_id):
         """Download the icon of the Skill_ with id ``skill_id``."""
 

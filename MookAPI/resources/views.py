@@ -89,7 +89,7 @@ api.add_resource(ResourceHierarchyView, '/resources/<resource_id>/hierarchy', en
 
 class ResourceContentFileView(restful.Resource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, resource_id, filename):
         """Download the file associated with the Resource_ with id ``resource_id``."""
 
@@ -113,7 +113,7 @@ api.add_resource(ResourceContentFileView, '/resources/<resource_id>/content-file
 
 class ResourceContentImageView(restful.Resource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, resource_id, filename):
         """Download the image associated with the Resource_ with id ``resource_id``."""
 
@@ -135,7 +135,7 @@ api.add_resource(ResourceContentImageView, '/resources/<resource_id>/content-ima
 
 class ExerciseResourceQuestionImageView(restful.Resource):
 
-    @jwt_required()
+    # @jwt_required()
     def get(self, resource_id, question_id, filename):
         """Download the image associated with the question with ``question_id`` in Exercise Resource_ with id ``resource_id``."""
 
