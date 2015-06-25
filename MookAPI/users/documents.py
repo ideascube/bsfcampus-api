@@ -72,7 +72,7 @@ class User(mc.SyncableDocument, UserMixin):
         if resource not in self.completed_resources:
             self.completed_resources.append(resource)
             skill = resource.parent.skill
-            skill_progress = skill.progress
+            skill_progress = skill.progress(self)
             if skill not in self.completed_skills and skill_progress['current'] >= skill_progress['max']:
                 self.add_completed_skill(skill)
 
@@ -80,7 +80,7 @@ class User(mc.SyncableDocument, UserMixin):
         if skill not in self.completed_skills:
             self.completed_skills.append(skill)
             track = skill.track
-            track_progress = track.progress
+            track_progress = track.progress(self)
             if track not in self.unlocked_track_tests and track_progress['current'] >= track_progress['max']:
                 self.unlock_track_validation_test(track)
 
