@@ -22,6 +22,11 @@ class ResourceContent(mc.MongoCoderEmbeddedDocument):
         'abstract': True
     }
 
+    def encode_mongo_for_dashboard(self, user):
+        response = {'_cls': self._class_name}
+
+        return response
+
 
 class Resource(mc.SyncableDocument):
     """
@@ -149,8 +154,8 @@ class Resource(mc.SyncableDocument):
         return son
 
     def encode_mongo_for_dashboard(self, user):
-        response = {'id': self._data.get("id", None), 'is_validated': self.is_validated(user), 'title': self.title,
-                    'order': self.order, 'type': self.resource_content._class_name}
+        response = {'_id': self._data.get("id", None), 'is_validated': self.is_validated(user), 'title': self.title,
+                    'order': self.order, 'resource_content': self.resource_content.encode_mongo_for_dashboard(user)}
 
         return response
 

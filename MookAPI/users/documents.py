@@ -96,6 +96,17 @@ class User(mc.SyncableDocument, UserMixin):
         if track not in self.completed_tracks:
             self.completed_tracks.append(track)
 
+    @classmethod
+    def get_unique_object_or_404(cls, token):
+        """Get the only hierarchy level matching argument 'token', where 'token' can be the id or the slug."""
+
+        try:
+            bson.ObjectId(token)
+        except bson.errors.InvalidId:
+            return cls.objects.get_or_404(slug=token)
+        else:
+            return cls.objects.get_or_404(id=token)
+
     @staticmethod
     def hash_pass(password):
         """

@@ -18,7 +18,8 @@ class CurrentUserView(Resource):
         try:
             current_user_id = security.current_user.id
             print (current_user_id)
-            return documents.User.get_unique_object_or_404(current_user_id)
+            user = documents.User.get_unique_object_or_404(current_user_id)
+            return user
         except AttributeError:
             response = {"status_code": 401}
             return response

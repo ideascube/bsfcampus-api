@@ -113,7 +113,7 @@ class ResourceHierarchy(mc.SyncableDocument):
         return son
 
     def encode_mongo_for_dashboard(self, user):
-        response = {'id': self._data.get("id", None), 'is_validated': self.is_validated(security.current_user),
+        response = {'_id': self._data.get("id", None), 'is_validated': self.is_validated(security.current_user),
                     'progress': self.progress(security.current_user), 'title': self.title, 'order': self.order}
 
         return response
