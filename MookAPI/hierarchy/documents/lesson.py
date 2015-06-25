@@ -32,10 +32,11 @@ class Lesson(ResourceHierarchy):
         """A queryset of the Resource_ objects that belong to the current Lesson_."""
         return MookAPI.resources.documents.Resource.objects.order_by('order', 'title').filter(parent=self)
 
-    def progress(self, user):
+    @property
+    def progress(self):
         current = 0
         for resource in self.resources:
-            if resource.is_validated(user):
+            if resource.is_validated:
                 current += 1
         return {'current': current, 'max': len(self.resources)}
 
