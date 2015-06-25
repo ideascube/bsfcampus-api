@@ -2,8 +2,9 @@ import datetime
 import bson
 import slugify
 
+from flask_jwt import current_user
+
 import MookAPI.mongo_coder as mc
-import flask.ext.security as security
 from MookAPI import db
 
 
@@ -36,7 +37,8 @@ class ResourceHierarchy(mc.SyncableDocument):
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
     """The date the hierarchy level was created."""
 
-    def is_validated(self, user):
+    @property
+    def is_validated(self):
         """Whether the user validated the hierarchy level based on their activity."""
         ## Override this method in each subclass
         return False
@@ -106,14 +108,19 @@ class ResourceHierarchy(mc.SyncableDocument):
     def encode_mongo(self):
         son = super(ResourceHierarchy, self).encode_mongo()
 
-        son['is_validated'] = self.is_validated(security.current_user)
-        son['progress'] = self.progress(security.current_user)
+        son['is_validated'] = self.is_validated
+        son['progress'] = self.progress
         son['breadcrumb'] = self.breadcrumb()
 
         return son
 
     def encode_mongo_for_dashboard(self, user):
-        response = {'_id': self._data.get("id", None), 'is_validated': self.is_validated(security.current_user),
-                    'progress': self.progress(security.current_user), 'title': self.title, 'order': self.order}
+        response = {
+            '_id': self._data.get("id", None),
+            'is_validated': self.is_validated,
+            'progress': self.progress,
+            'title': self.title,
+            'order': self.order
+        }
 
         return response
