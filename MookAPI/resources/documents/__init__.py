@@ -155,8 +155,13 @@ class Resource(mc.SyncableDocument):
         return son
 
     def encode_mongo_for_dashboard(self, user):
-        response = {'_id': self._data.get("id", None), 'is_validated': self.is_validated(user), 'title': self.title,
-                    'order': self.order, 'resource_content': self.resource_content.encode_mongo_for_dashboard(user)}
+        response = {
+            '_id': self._data.get("id", None),
+            'is_validated': self.is_validated(user),
+            'title': self.title,
+            'order': self.order,
+            'resource_content': self.resource_content.encode_mongo_for_dashboard(user)
+        }
 
         return response
 

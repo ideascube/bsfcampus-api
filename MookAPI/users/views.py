@@ -130,7 +130,7 @@ class UserDashboardView(Resource):
         """Get the user data to display in the dashboard"""
 
         response = {'dashboard': {}}
-        response['dashboard']['user'] = documents.User.get_unique_object_or_404(user_id)
+        response['dashboard']['user'] = documents.User.objects.get(id=user_id)
 
         response['dashboard']['tracks'] = []
         for track in Track.objects:

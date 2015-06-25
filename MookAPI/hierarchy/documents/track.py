@@ -78,7 +78,7 @@ class Track(ResourceHierarchy):
     def encode_mongo_for_dashboard(self, user):
         response = super(Track, self).encode_mongo_for_dashboard(user)
         response['icon_url'] = self.icon_url
-        response['is_started'] = self.is_started(user)
+        response['is_started'] = self.is_started
         response['skills'] = []
         for skill in self.skills:
             response['skills'].append(skill.encode_mongo_for_dashboard(user))
