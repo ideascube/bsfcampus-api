@@ -109,5 +109,8 @@ class User(mc.SyncableDocument):
         """
         return bcrypt.encrypt(password)
 
+    def verify_pass(self, password):
+        return bcrypt.verify(password, self.password)
+
     def __unicode__(self):
         return self.username or self.email or self.id

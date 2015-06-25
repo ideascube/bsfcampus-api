@@ -71,11 +71,12 @@ jwt = JWT(app)
 def authenticate(username, password):
     try:
         user = users.documents.User.objects.get(username=username)
-        #TODO: Check password!
+        if user.verify_pass(password):
+            return user
+        else:
+            return None
     except:
         return None
-    else:
-        return user
 
 @jwt.payload_handler
 def make_payload(user):
