@@ -1,8 +1,7 @@
-import flask
-import bson
-from MookAPI import db, app
+from passlib.hash import bcrypt
+
+from MookAPI import db
 import MookAPI.mongo_coder as mc
-from flask.ext.security import Security, UserMixin, RoleMixin
 from MookAPI.resources.documents import Resource
 from MookAPI.hierarchy.documents import track, skill
 from MookAPI.activity.documents.exercise_attempt import ExerciseAttempt
@@ -10,7 +9,7 @@ from MookAPI.activity.documents.skill_validation_attempt import SkillValidationA
 from MookAPI.activity.documents.track_validation_attempt import TrackValidationAttempt
 
 
-class Role(db.Document, RoleMixin):
+class Role(db.Document):
     name = db.StringField(max_length=80, unique=True)
 
     description = db.StringField()
@@ -19,12 +18,13 @@ class Role(db.Document, RoleMixin):
         return self.name
 
 
-class User(mc.SyncableDocument, UserMixin):
+class User(mc.SyncableDocument):
+
     full_name = db.StringField()
 
-    username = db.StringField()  # To make this unique we first need to update the registration form to include the field.
+    username = db.StringField(unique=True, required=True)
 
-    email = db.EmailField(unique=True, required=True)
+    email = db.EmailField(unique=False)
 
     password = db.StringField()
 
@@ -32,7 +32,7 @@ class User(mc.SyncableDocument, UserMixin):
 
     accept_cgu = db.BooleanField(default=False)
 
-    roles = db.ListField(db.ReferenceField(Role), default=[])
+    roles = db.ListField(db.ReferenceField(Role))
 
     exercises_attempts = db.ListField(db.ReferenceField(ExerciseAttempt), default=[], required=False)
 
@@ -50,11 +50,6 @@ class User(mc.SyncableDocument, UserMixin):
 
     completed_tracks = db.ListField(db.ReferenceField(track.Track), default=[], required=False)
 
-    def __unicode__(self):
-        if self.email is None and self.username is not None:
-            return self.username
-
-        return self.email
 
     def add_exercise_attempt(self, attempt):
         if attempt not in self.exercises_attempts:
@@ -112,7 +107,7 @@ class User(mc.SyncableDocument, UserMixin):
         """
         Return the md5 hash of the password+salt
         """
-        #  FIXME: the hashing is removed until we change the user authentication process
-        # salted_password = password + app.secret_key
-        # return sha256_crypt.encrypt(salted_password)
-        return password
+        return bcrypt.encrypt(password)
+
+    def __unicode__(self):
+        return self.username or self.email or self.id

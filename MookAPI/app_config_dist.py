@@ -8,11 +8,8 @@ mongodb_port = 27017
 mongodb_username = None
 mongodb_password = None
 
-## A secret key for the Flask app
+## A secret key for the Flask app. Use http://randomkeygen.com/ to generate a random string.
 app_secret = 'Find a nice salt to put here'
-
-## This salt is used to encrpyt data. Use http://randomkeygen.com/ to generate a random string.
-password_salt = 'Find another nice salt to put here'
 
 ## Is this a central or a local server? Choose 'central' or 'local'. Default: 'central'
 server_type = 'central'
