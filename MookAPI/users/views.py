@@ -43,7 +43,7 @@ api.add_resource(CurrentUserView, '/users/current', endpoint='current_user')
 
 class CurrentUserDashboardView(Resource):
 
-    @jwt_required
+    @jwt_required()
     def get(self):
         """Get the current logged in user data to display in the dashboard"""
 
@@ -125,7 +125,7 @@ api.add_resource(UserRegisterView, '/register', endpoint='register')
 
 class UserDashboardView(Resource):
 
-    @jwt_required
+    @jwt_required()
     def get(self, user_id):
         """Get the user data to display in the dashboard"""
 
