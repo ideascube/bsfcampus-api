@@ -50,10 +50,15 @@ class ResourceView(restful.Resource):
         """Get the Resource_ with id ``resource_id`` enveloped in a single-key JSON dictionary."""
 
         resource = documents.Resource.get_unique_object_or_404(resource_id)
-        security.current_user.add_started_track(resource.parent.skill.track)
-        if not isinstance(resource, documents.exercise.ExerciseResource):
+        do_save_user = False
+        if resource.parent.skill.track not in security.current_user.started_tracks:
+            security.current_user.add_started_track(resource.parent.skill.track)
+            do_save_user = True
+        if not (isinstance(resource, documents.exercise.ExerciseResource) or isinstance(resource, documents.downloadable_file.DownloadableFileResource)):
             security.current_user.add_completed_resource(resource)
-        security.current_user.save()
+            do_save_user = True
+        if do_save_user:
+            security.current_user.save()
         return resource
 
 api.add_resource(ResourceView, '/resources/<resource_id>', endpoint='resource')
@@ -98,6 +103,8 @@ class ResourceContentFileView(restful.Resource):
 
         if isinstance(resource, documents.downloadable_file.DownloadableFileResource):
             content_file = resource.resource_content.content_file
+            security.current_user.add_completed_resource(resource)
+            security.current_user.save()
 
             return flask.send_file(
                 io.BytesIO(content_file.read()),
