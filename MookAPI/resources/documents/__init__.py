@@ -77,10 +77,9 @@ class Resource(mc.SyncableDocument):
     def url(self):
         return api.url_for(views.ResourceView, resource_id=self.id, _external=True)
 
-    @property
-    def is_validated(self):
+    def is_validated(self, user):
         """Whether the current user (if any) has validated this Resource_."""
-        return self in current_user._get_current_object().completed_resources
+        return self in user.completed_resources
     
     @classmethod
     def json_key(cls):
@@ -148,8 +147,10 @@ class Resource(mc.SyncableDocument):
     def encode_mongo(self):
         son = super(Resource, self).encode_mongo()
 
+        user = current_user._get_current_object()
+
         son['breadcrumb'] = self.breadcrumb()
-        son['is_validated'] = self.is_validated
+        son['is_validated'] = self.is_validated(user)
         son['bg_color'] = self.track.bg_color
 
         return son

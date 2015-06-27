@@ -60,19 +60,17 @@ class Skill(ResourceHierarchy):
         """A queryset of the Lesson_ objects that belong to the current Skill_."""
         return lesson.Lesson.objects.order_by('order', 'title').filter(skill=self)
 
-    @property
-    def is_validated(self):
+    def is_validated(self, user):
         """Whether the current_user validated the hierarchy level based on their activity."""
-        return self in current_user._get_current_object().completed_skills
+        return self in user.completed_skills
 
-    @property
-    def progress(self):
+    def progress(self, user):
         current = 0
         nb_resources = 0
         for lesson in self.lessons:
             for resource in lesson.resources:
                 nb_resources += 1
-                if resource.is_validated:
+                if resource.is_validated(user):
                     current += 1
         return {'current': current, 'max': nb_resources}
 

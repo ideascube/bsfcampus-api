@@ -35,22 +35,19 @@ class Track(ResourceHierarchy):
         """A queryset of the Skill_ objects that belong to the current Track_."""
         return skill.Skill.objects.order_by('order', 'title').filter(track=self)
 
-    @property
-    def is_validated(self):
+    def is_validated(self, user):
         """Whether the current_user validated the hierarchy level based on their activity."""
-        return self in current_user._get_current_object().completed_tracks
+        return self in user.completed_tracks
 
-    @property
-    def progress(self):
+    def progress(self, user):
         current = 0
         for skill in self.skills:
-            if skill.is_validated:
+            if skill.is_validated(user):
                 current += 1
         return {'current': current, 'max': len(self.skills)}
 
-    @property
-    def is_started(self):
-        return self in current_user._get_current_object().started_tracks
+    def is_started(self, user):
+        return self in user.started_tracks
 
     @property
     def track_validation_tests(self):
@@ -65,20 +62,22 @@ class Track(ResourceHierarchy):
     def encode_mongo(self):
         son = super(Track, self).encode_mongo()
 
+        user = current_user._get_current_object()
+
         validation_tests = map(lambda t: t.id, self.track_validation_tests)
         if len(validation_tests) > 0:
             i = random.randrange(0, len(validation_tests))
             son['validation_test'] = validation_tests[i]
         son['skills'] = map(lambda s: s.id, self.skills)
-        son['test_unlocked'] = self in current_user._get_current_object().unlocked_track_tests
-        son['is_started'] = self.is_started
+        son['test_unlocked'] = self in user.unlocked_track_tests
+        son['is_started'] = self.is_started(user)
 
         return son
 
     def encode_mongo_for_dashboard(self, user):
         response = super(Track, self).encode_mongo_for_dashboard(user)
         response['icon_url'] = self.icon_url
-        response['is_started'] = self.is_started
+        response['is_started'] = self.is_started(user)
         response['skills'] = []
         for skill in self.skills:
             response['skills'].append(skill.encode_mongo_for_dashboard(user))

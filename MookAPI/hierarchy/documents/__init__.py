@@ -37,8 +37,7 @@ class ResourceHierarchy(mc.SyncableDocument):
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
     """The date the hierarchy level was created."""
 
-    @property
-    def is_validated(self):
+    def is_validated(self, user):
         """Whether the user validated the hierarchy level based on their activity."""
         ## Override this method in each subclass
         return False
@@ -108,8 +107,10 @@ class ResourceHierarchy(mc.SyncableDocument):
     def encode_mongo(self):
         son = super(ResourceHierarchy, self).encode_mongo()
 
-        son['is_validated'] = self.is_validated
-        son['progress'] = self.progress
+        user = current_user._get_current_object()
+
+        son['is_validated'] = self.is_validated(user)
+        son['progress'] = self.progress(user)
         son['breadcrumb'] = self.breadcrumb()
 
         return son
@@ -117,8 +118,8 @@ class ResourceHierarchy(mc.SyncableDocument):
     def encode_mongo_for_dashboard(self, user):
         response = {
             '_id': self._data.get("id", None),
-            'is_validated': self.is_validated,
-            'progress': self.progress,
+            'is_validated': self.is_validated(user),
+            'progress': self.progress(user),
             'title': self.title,
             'order': self.order
         }
