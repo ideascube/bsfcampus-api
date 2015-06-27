@@ -1,4 +1,5 @@
 from passlib.hash import bcrypt
+import bson
 
 from MookAPI import db
 import MookAPI.mongo_coder as mc
