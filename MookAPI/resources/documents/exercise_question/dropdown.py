@@ -1,11 +1,17 @@
 from bson import ObjectId
 
-from MookAPI import db
-from . import ExerciseQuestion, ExerciseQuestionAnswer
-import MookAPI.mongo_coder as mc
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from . import ExerciseQuestionJsonSerializer,\
+    ExerciseQuestion, \
+    ExerciseQuestionAnswerJsonSerializer, \
+    ExerciseQuestionAnswer
 
 
-class DropdownExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
+class DropdownExerciseQuestionPropositionJsonSerializer(JsonSerializer):
+    pass
+
+class DropdownExerciseQuestionProposition(DropdownExerciseQuestionPropositionJsonSerializer, db.EmbeddedDocument):
     """Stores a proposition to a blank field."""
 
     ## Object Id
@@ -18,7 +24,10 @@ class DropdownExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
     is_correct_answer = db.BooleanField(default=False)
 
 
-class DropdownExerciseQuestionDropdown(mc.MongoCoderEmbeddedDocument):
+class DropdownExerciseQuestionDropdownJsonSerializer(JsonSerializer):
+    pass
+
+class DropdownExerciseQuestionDropdown(DropdownExerciseQuestionDropdownJsonSerializer, db.EmbeddedDocument):
     """Stores a list of propositions to a blank field in a text."""
 
     ## Object Id
@@ -28,7 +37,10 @@ class DropdownExerciseQuestionDropdown(mc.MongoCoderEmbeddedDocument):
     propositions = db.ListField(db.EmbeddedDocumentField(DropdownExerciseQuestionProposition))
 
 
-class DropdownExerciseQuestion(ExerciseQuestion):
+class DropdownExerciseQuestionJsonSerializer(ExerciseQuestionJsonSerializer):
+    pass
+
+class DropdownExerciseQuestion(DropdownExerciseQuestionJsonSerializer, ExerciseQuestion):
     """question where blanks need to be filled with word chosen from a dropdown list."""
 
     ## Object Id
@@ -59,7 +71,10 @@ class DropdownExerciseQuestion(ExerciseQuestion):
         return result
 
 
-class DropdownExerciseQuestionAnswer(ExerciseQuestionAnswer):
+class DropdownExerciseQuestionAnswerJsonSerializer(ExerciseQuestionAnswerJsonSerializer):
+    pass
+
+class DropdownExerciseQuestionAnswer(DropdownExerciseQuestionAnswerJsonSerializer, ExerciseQuestionAnswer):
     """Answers given for a dropdown question"""
 
     ## The list of chosen propositions, identified by their ObjectIds

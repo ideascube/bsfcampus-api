@@ -1,16 +1,15 @@
-import exceptions
-
-import flask
 from bson import ObjectId
 
-from MookAPI import db
-import MookAPI.mongo_coder as mc
-from . import Activity
-from MookAPI.resources.documents.exercise import ExerciseResource
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from . import ActivityJsonSerializer, Activity
 from MookAPI.resources.documents.exercise_question import ExerciseQuestionAnswer
 
 
-class ExerciseAttemptQuestionAnswer(mc.MongoCoderEmbeddedDocument):
+class ExerciseAttemptQuestionAnswerJsonSerializer(JsonSerializer):
+    pass
+
+class ExerciseAttemptQuestionAnswer(ExerciseAttemptQuestionAnswerJsonSerializer, db.EmbeddedDocument):
     """
     Stores the data relative to one answer in an attempt to an exercise, including the answer given.
     """
@@ -44,7 +43,26 @@ class ExerciseAttemptQuestionAnswer(mc.MongoCoderEmbeddedDocument):
         return self.given_answer is not None
 
 
-class ExerciseAttempt(Activity):
+class ExerciseAttemptJsonSerializer(ActivityJsonSerializer):
+
+    @staticmethod
+    def question_answers_modifier(son, exercise_attempt):
+        for (index, qa) in enumerate(exercise_attempt.question_answers):
+            question = exercise_attempt.exercise.question(qa.question_id)
+            if qa.given_answer is not None:
+                son[index]['question'] = question.with_computed_correct_answer(qa.parameters)
+            else:
+                son[index]['question'] = question.without_correct_answer()
+                break
+
+        return son
+
+    __json_additional__ = ['max_mistakes', 'fail_linked_resource']
+    __json_modifiers__ = dict(
+        question_answers=question_answers_modifier.__func__
+    )
+
+class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     """
     Records any attempt at an exercise.
     """
@@ -52,10 +70,20 @@ class ExerciseAttempt(Activity):
     ### PROPERTIES
 
     ## Exercise
-    exercise = db.ReferenceField(ExerciseResource)
+    exercise = db.ReferenceField('ExerciseResource')
 
     ## Question answers
     question_answers = db.ListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
+
+    @property
+    def max_mistakes(self):
+        return self.exercise.resource_content.max_mistakes
+
+    @property
+    def fail_linked_resource(self):
+        if self.exercise.resource_content.fail_linked_resource:
+            return self.exercise.resource_content.fail_linked_resource
+        return None
 
     ### METHODS
 
@@ -66,7 +94,7 @@ class ExerciseAttempt(Activity):
         obj.exercise = exercise
 
         questions = exercise.random_questions()
-        obj.question_answers = map(lambda q: ExerciseAttemptQuestionAnswer.init_with_question(q), questions)
+        obj.question_answers = [ExerciseAttemptQuestionAnswer.init_with_question(q) for q in questions]
 
         return obj
 
@@ -80,7 +108,7 @@ class ExerciseAttempt(Activity):
         for question_answer in self.question_answers:
             if question_answer.question_id == oid:
                 return question_answer
-        raise exceptions.KeyError("Question not found.")
+        raise KeyError("Question not found.")
 
     def set_question_answer(self, question_id, question_answer):
         oid = ObjectId(question_id)
@@ -88,7 +116,7 @@ class ExerciseAttempt(Activity):
             if qa.question_id == oid:
                 self.question_answers[index] = question_answer
                 return question_answer
-        raise exceptions.KeyError("Question not found.")
+        raise KeyError("Question not found.")
 
     def save_answer(self, question_id, data):
         """
@@ -105,24 +133,24 @@ class ExerciseAttempt(Activity):
             )
         self.set_question_answer(question_id, attempt_question_answer)
 
-    def encode_mongo(self):
-        son = super(ExerciseAttempt, self).encode_mongo()
-
-        son['max_mistakes'] = self.exercise.resource_content.max_mistakes
-        if self.exercise.resource_content.fail_linked_resource:
-            son['fail_linked_resource'] = self.exercise.resource_content.fail_linked_resource.to_mongo()
-        
-        ## Answered questions: include full question with correct answer
-        ## First unanswered question: include full question without correct answer
-        ## Subsequent questions: question id only (default)
-        for (index, qa) in enumerate(self.question_answers):
-            question = self.exercise.question(qa.question_id)
-            if qa.given_answer is not None:
-                son['question_answers'][index]['question'] = question.with_computed_correct_answer(qa.parameters)
-            else:
-                son['question_answers'][index]['question'] = question.without_correct_answer()
-                break
-        return son
+    # def encode_mongo(self):
+    #     son = super(ExerciseAttempt, self).encode_mongo()
+    #
+    #     son['max_mistakes'] = self.exercise.resource_content.max_mistakes
+    #     if self.exercise.resource_content.fail_linked_resource:
+    #         son['fail_linked_resource'] = self.exercise.resource_content.fail_linked_resource.to_mongo()
+    #
+    #     ## Answered questions: include full question with correct answer
+    #     ## First unanswered question: include full question without correct answer
+    #     ## Subsequent questions: question id only (default)
+    #     for (index, qa) in enumerate(self.question_answers):
+    #         question = self.exercise.question(qa.question_id)
+    #         if qa.given_answer is not None:
+    #             son['question_answers'][index]['question'] = question.with_computed_correct_answer(qa.parameters)
+    #         else:
+    #             son['question_answers'][index]['question'] = question.without_correct_answer()
+    #             break
+    #     return son
 
     def is_exercise_completed(self):
         nb_total_questions = self.exercise.resource_content.number_of_questions

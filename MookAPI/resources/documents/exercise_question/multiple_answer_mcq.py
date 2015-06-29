@@ -1,11 +1,17 @@
 from bson import ObjectId
 
-from MookAPI import db
-from . import ExerciseQuestion, ExerciseQuestionAnswer
-import MookAPI.mongo_coder as mc
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from . import ExerciseQuestionJsonSerializer,\
+    ExerciseQuestion, \
+    ExerciseQuestionAnswerJsonSerializer, \
+    ExerciseQuestionAnswer
 
 
-class MultipleAnswerMCQExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
+class MultipleAnswerMCQExerciseQuestionPropositionJsonSerializer(JsonSerializer):
+    pass
+
+class MultipleAnswerMCQExerciseQuestionProposition(MultipleAnswerMCQExerciseQuestionPropositionJsonSerializer, db.EmbeddedDocument):
     """Stores a proposition to a multiple-answer MCQ."""
 
     ## Object Id
@@ -18,7 +24,10 @@ class MultipleAnswerMCQExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument
     is_correct_answer = db.BooleanField(default=False)
 
 
-class MultipleAnswerMCQExerciseQuestion(ExerciseQuestion):
+class MultipleAnswerMCQExerciseQuestionJsonSerializer(ExerciseQuestionJsonSerializer):
+    pass
+
+class MultipleAnswerMCQExerciseQuestion(MultipleAnswerMCQExerciseQuestionJsonSerializer, ExerciseQuestion):
     """Multiple choice question with several possible answers."""
 
     ## Object Id
@@ -45,7 +54,10 @@ class MultipleAnswerMCQExerciseQuestion(ExerciseQuestion):
         return result
 
 
-class MultipleAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
+class MultipleAnswerMCQExerciseQuestionAnswerJsonSerializer(ExerciseQuestionAnswerJsonSerializer):
+    pass
+
+class MultipleAnswerMCQExerciseQuestionAnswer(MultipleAnswerMCQExerciseQuestionAnswerJsonSerializer, ExerciseQuestionAnswer):
     """Answers given to a multiple-answer MCQ."""
 
     ## The list of chosen propositions, identified by their ObjectIds

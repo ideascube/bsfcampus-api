@@ -1,8 +1,13 @@
-from MookAPI import db
-from . import *
+from MookAPI.core import db
+from . import ResourceContentJsonSerializer, \
+    ResourceContent, \
+    Resource, \
+    ResourceJsonSerializer
 
+class ExternalVideoResourceContentJsonSerializer(ResourceContentJsonSerializer):
+    pass
 
-class ExternalVideoResourceContent(ResourceContent):
+class ExternalVideoResourceContent(ExternalVideoResourceContentJsonSerializer, ResourceContent):
 
     _SOURCES = (
         'youtube',
@@ -15,7 +20,10 @@ class ExternalVideoResourceContent(ResourceContent):
     """A unique identifier of the video on the `source` website."""
 
 
-class ExternalVideoResource(Resource):
+class ExternalVideoResourceJsonSerializer(ResourceJsonSerializer):
+    pass
+
+class ExternalVideoResource(ExternalVideoResourceJsonSerializer, Resource):
     """References a video from the Internet."""
 
     resource_content = db.EmbeddedDocumentField(ExternalVideoResourceContent)

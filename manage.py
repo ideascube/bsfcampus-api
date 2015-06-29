@@ -1,33 +1,50 @@
-import os, sys, codecs
+import os, sys, codecs, multiprocessing
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from flask.ext.script import Manager, Server
-
-from MookAPI import app, app_config
-
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 
+from flask.ext.script import Manager, Server
+from MookAPI.api import create_app
+import settings_central, settings_local
 
-def get_port():
-    if hasattr(app_config, 'port'):
-        return app_config.port
-    elif app_config.server_type == 'local':
-        return 5001
-    else:
-        return 5000
+processes = multiprocessing.cpu_count() * 2 + 1
 
+def launch_central_server():
 
-manager = Manager(app)
+    manager = Manager(create_app(settings_override=settings_central.Config))
 
-manager.add_command("runserver", Server(
-    use_debugger=True,
-    use_reloader=True,
-    host='0.0.0.0',
-    threaded=True,
-    port=get_port()
-))
+    manager.add_command(
+        'runserver',
+        Server(
+            port=settings_central.port,
+            processes=processes,
+            use_reloader=False
+        )
+    )
+
+    manager.run()
+
+def launch_local_server():
+
+    manager = Manager(create_app(settings_override=settings_local.Config))
+
+    manager.add_command(
+        'runserver',
+        Server(
+            port=settings_local.port,
+            processes=processes,
+            use_reloader=False
+        )
+    )
+
+    manager.run()
 
 if __name__ == "__main__":
-    manager.run()
+    if len(sys.argv) > 2:
+        if sys.argv[2] == 'local':
+            launch_local_server()
+        else:
+            launch_central_server()
+    else:
+        launch_central_server()

@@ -1,9 +1,9 @@
-__author__ = 'FredFourcade'
+from exercise_attempt import ExerciseAttemptJsonSerializer, ExerciseAttempt
 
-from exercise_attempt import ExerciseAttempt
+class TrackValidationAttemptJsonSerializer(ExerciseAttemptJsonSerializer):
+    pass
 
-
-class TrackValidationAttempt(ExerciseAttempt):
+class TrackValidationAttempt(TrackValidationAttemptJsonSerializer, ExerciseAttempt):
     """
     Records any attempt at a track validation test.
     """

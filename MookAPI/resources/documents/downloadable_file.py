@@ -1,9 +1,15 @@
-from MookAPI import db, api
-from . import *
-from .. import views
+from flask import url_for
 
+from MookAPI.core import db
+from . import ResourceContentJsonSerializer, \
+    ResourceContent, \
+    ResourceJsonSerializer, \
+    Resource
 
-class DownloadableFileResourceContent(ResourceContent):
+class DownloadableFileResourceContentJsonSerializer(ResourceContentJsonSerializer):
+    pass
+
+class DownloadableFileResourceContent(DownloadableFileResourceContentJsonSerializer, ResourceContent):
     
     content_file = db.FileField(required=True)
     """A file to download."""
@@ -17,13 +23,15 @@ class DownloadableFileResourceContent(ResourceContent):
         if not hasattr(self, '_instance'):
             return None
 
-        return api.url_for(
-            views.ResourceContentFileView,
+        return url_for(
+            "resources.get_resource_content_file",
             resource_id=self._instance.id,
             filename=self.content_file.filename,
             _external=True
-            )
+        )
 
+class DownloadableFileResourceJsonSerializer(ResourceJsonSerializer):
+    pass
 
 class DownloadableFileResource(Resource):
     """Stores a file in the database."""

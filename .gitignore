@@ -2,3 +2,5 @@
 *.sublime-workspace
 *.pyc
 .idea/
+settings_central.py
+settings_local.py

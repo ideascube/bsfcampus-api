@@ -2,13 +2,18 @@ from random import shuffle
 
 from bson import ObjectId
 
-from MookAPI import db
-from . import ExerciseQuestion, ExerciseQuestionAnswer
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from . import ExerciseQuestionJsonSerializer,\
+    ExerciseQuestion, \
+    ExerciseQuestionAnswerJsonSerializer, \
+    ExerciseQuestionAnswer
 
-import MookAPI.mongo_coder as mc
 
+class CategorizeExerciseQuestionItem(JsonSerializer):
+    pass
 
-class CategorizeExerciseQuestionItem(mc.MongoCoderEmbeddedDocument):
+class CategorizeExerciseQuestionItem(CategorizeExerciseQuestionItem, db.EmbeddedDocument):
     """Stores an item that belongs to one category."""
 
     ## Object Id
@@ -18,7 +23,10 @@ class CategorizeExerciseQuestionItem(mc.MongoCoderEmbeddedDocument):
     text = db.StringField()
 
 
-class CategorizeExerciseQuestionCategory(mc.MongoCoderEmbeddedDocument):
+class CategorizeExerciseQuestionCategoryJsonSerializer(JsonSerializer):
+    pass
+
+class CategorizeExerciseQuestionCategory(CategorizeExerciseQuestionCategoryJsonSerializer, db.EmbeddedDocument):
     """Stores a category for the categorize question."""
 
     ## Object Id
@@ -31,7 +39,10 @@ class CategorizeExerciseQuestionCategory(mc.MongoCoderEmbeddedDocument):
     items = db.ListField(db.EmbeddedDocumentField(CategorizeExerciseQuestionItem))
 
 
-class CategorizeExerciseQuestion(ExerciseQuestion):
+class CategorizeExerciseQuestionJsonSerializer(ExerciseQuestionJsonSerializer):
+    pass
+
+class CategorizeExerciseQuestion(CategorizeExerciseQuestionJsonSerializer, ExerciseQuestion):
     """A list of items that need to be categorized."""
 
     ## Object Id
@@ -66,7 +77,10 @@ class CategorizeExerciseQuestion(ExerciseQuestion):
         return result
 
 
-class CategorizeExerciseQuestionAnswer(ExerciseQuestionAnswer):
+class CategorizeExerciseQuestionAnswerJsonSerializer(ExerciseQuestionAnswerJsonSerializer):
+    pass
+
+class CategorizeExerciseQuestionAnswer(CategorizeExerciseQuestionAnswerJsonSerializer, ExerciseQuestionAnswer):
     """categorized items given for this Categorize question."""
 
     ## The categories sent by the client, identified by their ObjectIds.

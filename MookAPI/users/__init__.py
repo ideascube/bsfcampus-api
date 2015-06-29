@@ -1,6 +1,8 @@
-from flask import Blueprint
+from MookAPI.core import Service
+from .documents import Role, User
 
-bp = Blueprint("users", __name__)
+class RolesService(Service):
+    __model__ = Role
 
-import documents
-import views
+class UsersService(Service):
+    __model__ = User

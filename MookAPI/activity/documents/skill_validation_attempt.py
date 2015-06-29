@@ -1,17 +1,29 @@
-__author__ = 'FredFourcade'
-
-import exceptions
-
-import flask
 from bson import ObjectId
 
-from MookAPI import db
-from . import Activity
-from MookAPI.hierarchy.documents.skill import Skill
+from MookAPI.core import db
+from . import ActivityJsonSerializer, Activity
 from exercise_attempt import ExerciseAttemptQuestionAnswer
 
+class SkillValidationAttemptJsonSerializer(ActivityJsonSerializer):
 
-class SkillValidationAttempt(Activity):
+    @staticmethod
+    def question_answers_modifier(son, attempt):
+        for (index, qa) in enumerate(attempt.question_answers):
+            question = attempt.skill.question(qa.question_id)
+            if qa.given_answer is not None:
+                son[index]['question'] = question.with_computed_correct_answer(qa.parameters)
+            else:
+                son[index]['question'] = question.without_correct_answer()
+                break
+
+        return son
+
+    __json_additional__ = ['max_mistakes']
+    __json_modifiers__ = dict(
+        question_answers=question_answers_modifier.__func__
+    )
+
+class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
     """
     Records any attempt at an exercise.
     """
@@ -19,10 +31,14 @@ class SkillValidationAttempt(Activity):
     ### PROPERTIES
 
     ## Skill
-    skill = db.ReferenceField(Skill)
+    skill = db.ReferenceField('Skill')
 
     ## Question answers
     question_answers = db.ListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
+
+    @property
+    def max_mistakes(self):
+        return self.skill.validation_exercise.max_mistakes
 
     ### METHODS
 
@@ -47,7 +63,7 @@ class SkillValidationAttempt(Activity):
         for question_answer in self.question_answers:
             if question_answer.question_id == oid:
                 return question_answer
-        raise exceptions.KeyError("Question not found.")
+        raise KeyError("Question not found.")
 
     def set_question_answer(self, question_id, question_answer):
         oid = ObjectId(question_id)
@@ -55,7 +71,7 @@ class SkillValidationAttempt(Activity):
             if qa.question_id == oid:
                 self.question_answers[index] = question_answer
                 return question_answer
-        raise exceptions.KeyError("Question not found.")
+        raise KeyError("Question not found.")
 
     def save_answer(self, question_id, data):
         """
@@ -71,23 +87,6 @@ class SkillValidationAttempt(Activity):
             attempt_question_answer.parameters
         )
         self.set_question_answer(question_id, attempt_question_answer)
-
-    def encode_mongo(self):
-        son = super(SkillValidationAttempt, self).encode_mongo()
-
-        son['max_mistakes'] = self.skill.validation_exercise.max_mistakes
-
-        ## Answered questions: include full question with correct answer
-        ## First unanswered question: include full question without correct answer
-        ## Subsequent questions: question id only (default)
-        for (index, qa) in enumerate(self.question_answers):
-            question = self.skill.question(qa.question_id)
-            if qa.given_answer is not None:
-                son['question_answers'][index]['question'] = question.with_computed_correct_answer(qa.parameters)
-            else:
-                son['question_answers'][index]['question'] = question.without_correct_answer()
-                break
-        return son
 
     def is_skill_validation_completed(self):
         nb_total_questions = self.skill.validation_exercise.number_of_questions

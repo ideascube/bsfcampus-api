@@ -1,11 +1,46 @@
 import bson
-from MookAPI import db, api
-from . import ResourceHierarchy, lesson, skill_validation
-from MookAPI.resources.documents.exercise import ExerciseResource
-from flask_jwt import current_user
-from .. import views
+import random
 
-class Skill(ResourceHierarchy):
+from flask import url_for
+
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from . import ResourceHierarchyJsonSerializer, ResourceHierarchy
+
+
+class SkillValidationExerciseJsonSerializer(JsonSerializer):
+    pass
+
+class SkillValidationExercise(SkillValidationExerciseJsonSerializer, db.EmbeddedDocument):
+
+    number_of_questions = db.IntField()
+    """The number of questions to ask from this exercise."""
+
+    max_mistakes = db.IntField()
+    """The number of mistakes authorized before failing the exercise."""
+
+    def random_questions(self, skill, number=None):
+        """
+        A list of random questions picked from the skill's children exercises.
+        If `number` is not specified, it will be set to the skillValidationExercise's `number_of_questions` property.
+        The list will contain `number` questions, or all questions if there are not enough questions in the exercise.
+        """
+
+        if not number:
+            number = self.number_of_questions
+
+        all_questions = skill.questions
+        random.shuffle(all_questions)
+        return all_questions[:number]
+
+
+class SkillJsonSerializer(ResourceHierarchyJsonSerializer):
+    __json_additional__ = []
+    __json_additional__.extend(ResourceHierarchyJsonSerializer.__json_additional__)
+    __json_additional__.extend(['bg_color', 'lessons_refs'])
+    __json_rename__ = dict(lessons_refs='lessons')
+
+class Skill(SkillJsonSerializer, ResourceHierarchy):
     """
     .. _Skill:
 
@@ -29,8 +64,57 @@ class Skill(ResourceHierarchy):
     """The short description of the skill, to appear where there is not enough space for the long one."""
 
     ## skill validation test
-    validation_exercise = db.EmbeddedDocumentField(skill_validation.SkillValidationExercise)
+    validation_exercise = db.EmbeddedDocumentField(SkillValidationExercise)
     """The exercise that the user might take to validate the skill."""
+
+    ### VIRTUAL PROPERTIES
+
+    @property
+    def icon_url(self):
+        """The URL where the skill icon can be downloaded."""
+        return url_for("hierarchy.get_skill_icon", skill_id=self.id, _external=True)
+
+    @property
+    def url(self):
+        return url_for("hierarchy.get_skill", skill_id=self.id, _external=True)
+
+    @property
+    def lessons(self):
+        """A queryset of the Lesson_ objects that belong to the current Skill_."""
+        from MookAPI.services import lessons
+        return lessons.find(skill=self).order_by('order', 'title')
+
+    @property
+    def lessons_refs(self):
+        return [lesson.to_json_dbref() for lesson in self.lessons]
+
+    def is_validated_by_user(self, user):
+        """Whether the current_user validated the hierarchy level based on their activity."""
+        return self in user.completed_skills
+
+    def user_progress(self, user):
+        current = 0
+        nb_resources = 0
+        for lesson in self.lessons:
+            for resource in lesson.resources:
+                nb_resources += 1
+                if resource.is_validated_by_user(user):
+                    current += 1
+        return {'current': current, 'max': nb_resources}
+
+    @property
+    def bg_color(self):
+        return self.track.bg_color
+
+    @property
+    def breadcrumb(self):
+        return [
+            self.track._breadcrumb_item(),
+            self._breadcrumb_item()
+            ]
+
+
+    ### METHODS
 
     def _add_instance(self, obj):
         """This is a hack to provide the ``_instance`` property to the shorthand question-getters."""
@@ -43,53 +127,6 @@ class Skill(ResourceHierarchy):
             return map(_add_instance_single_object, obj)
         else:
             return _add_instance_single_object(obj)
-
-    @property
-    def icon_url(self):
-        """The URL where the skill icon can be downloaded."""
-        return api.url_for(views.SkillIconView, skill_id=self.id, _external=True)
-
-    ### VIRTUAL PROPERTIES
-
-    @property
-    def url(self):
-        return api.url_for(views.SkillView, skill_id=self.id, _external=True)
-
-    @property
-    def lessons(self):
-        """A queryset of the Lesson_ objects that belong to the current Skill_."""
-        return lesson.Lesson.objects.order_by('order', 'title').filter(skill=self)
-
-    def is_validated(self, user):
-        """Whether the current_user validated the hierarchy level based on their activity."""
-        return self in user.completed_skills
-
-    def progress(self, user):
-        current = 0
-        nb_resources = 0
-        for lesson in self.lessons:
-            for resource in lesson.resources:
-                nb_resources += 1
-                if resource.is_validated(user):
-                    current += 1
-        return {'current': current, 'max': nb_resources}
-
-
-    ### METHODS
-
-    def breadcrumb(self):
-        return [
-            self.track._breadcrumb_item(),
-            self._breadcrumb_item()
-            ]
-
-    def encode_mongo(self):
-        son = super(Skill, self).encode_mongo()
-
-        son['lessons'] = map(lambda l: l.id, self.lessons)
-        son['bg_color'] = self.track.bg_color
-
-        return son
 
     def encode_mongo_for_dashboard(self, user):
         response = super(Skill, self).encode_mongo_for_dashboard(user)
@@ -126,10 +163,12 @@ class Skill(ResourceHierarchy):
     def questions(self):
         """A list of all children exercises' questions, whatever their type."""
 
+        from MookAPI.services import exercise_resources
+
         questions = []
         for l in self.lessons:
             for r in l.resources:
-                if isinstance(r, ExerciseResource):
+                if exercise_resources._isinstance(r):
                     questions.extend(r.questions)
 
         return questions
@@ -137,10 +176,12 @@ class Skill(ResourceHierarchy):
     def question(self, question_id):
         """A shorthand getter for a question with a known `_id`."""
 
+        from MookAPI.services import exercise_resources
+
         oid = bson.ObjectId(question_id)
         for l in self.lessons:
             for r in l.resources:
-                if isinstance(r, ExerciseResource):
+                if exercise_resources._isinstance(r):
                     for q in r.questions:
                         if q._id == oid:
                             return r._add_instance(q)

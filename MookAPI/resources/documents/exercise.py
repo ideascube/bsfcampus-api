@@ -1,8 +1,13 @@
-import exceptions
 import bson
+import exceptions
 import random
 
-from . import *
+from . import ResourceContentJsonSerializer, \
+    ResourceContent, \
+    Resource, \
+    ResourceJsonSerializer
+from MookAPI.core import db
+
 from exercise_question.unique_answer_mcq import UniqueAnswerMCQExerciseQuestion
 from exercise_question.multiple_answer_mcq import MultipleAnswerMCQExerciseQuestion
 from exercise_question.right_or_wrong import RightOrWrongExerciseQuestion
@@ -11,7 +16,10 @@ from exercise_question.ordering import OrderingExerciseQuestion
 from exercise_question.categorize import CategorizeExerciseQuestion
 
 
-class ExerciseResourceContent(ResourceContent):
+class ExerciseResourceContentJsonSerializer(ResourceContentJsonSerializer):
+    pass
+
+class ExerciseResourceContent(ExerciseResourceContentJsonSerializer, ResourceContent):
 
     unique_answer_mcq_questions = db.ListField(db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestion))
     """A (possibly empty) list of unique-answer multiple-choice questions (`UniqueAnswerMCQExerciseQuestion`)."""
@@ -78,8 +86,10 @@ class ExerciseResourceContent(ResourceContent):
     fail_linked_resource = db.ReferenceField(Resource)
     """A resource to look again when failing the exercise."""
 
+class ExerciseResourceJsonSerializer(ResourceJsonSerializer):
+    pass
 
-class ExerciseResource(Resource):
+class ExerciseResource(ExerciseResourceJsonSerializer, Resource):
     """An exercise with a list of questions."""
 
     resource_content = db.EmbeddedDocumentField(ExerciseResourceContent)

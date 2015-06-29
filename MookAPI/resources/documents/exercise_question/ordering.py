@@ -1,13 +1,18 @@
+from bson import ObjectId
 from random import shuffle
 
-from bson import ObjectId
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from . import ExerciseQuestionJsonSerializer,\
+    ExerciseQuestion, \
+    ExerciseQuestionAnswerJsonSerializer, \
+    ExerciseQuestionAnswer
 
-from MookAPI import db
-from . import ExerciseQuestion, ExerciseQuestionAnswer
-import MookAPI.mongo_coder as mc
 
+class OrderingExerciseQuestionItemJsonSerializer(JsonSerializer):
+    pass
 
-class OrderingExerciseQuestionItem(mc.MongoCoderEmbeddedDocument):
+class OrderingExerciseQuestionItem(OrderingExerciseQuestionItemJsonSerializer, db.EmbeddedDocument):
     """Stores an item for the overall ordering question."""
 
     ## Object Id
@@ -17,7 +22,10 @@ class OrderingExerciseQuestionItem(mc.MongoCoderEmbeddedDocument):
     text = db.StringField()
 
 
-class OrderingExerciseQuestion(ExerciseQuestion):
+class OrderingExerciseQuestionOrderingExerciseQuestionItemJsonSerializer(ExerciseQuestionJsonSerializer):
+    pass
+
+class OrderingExerciseQuestion(OrderingExerciseQuestionOrderingExerciseQuestionItemJsonSerializer, ExerciseQuestion):
     """A list of items that need to be ordered. May be horizontal or vertical"""
 
     ## Object Id
@@ -48,7 +56,10 @@ class OrderingExerciseQuestion(ExerciseQuestion):
         return None
 
 
-class OrderingExerciseQuestionAnswer(ExerciseQuestionAnswer):
+class OrderingExerciseQuestionAnswerJsonSerializer(ExerciseQuestionAnswerJsonSerializer):
+    pass
+
+class OrderingExerciseQuestionAnswer(OrderingExerciseQuestionAnswerJsonSerializer, ExerciseQuestionAnswer):
     """Ordered items given for this ordering question."""
 
     ## The given propositions, identified by their ObjectIds

@@ -2,15 +2,17 @@ import datetime
 import bson
 import slugify
 
+from flask import url_for
 from flask_jwt import current_user
 
-import MookAPI.mongo_coder as mc
-from MookAPI import db, api
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from MookAPI.sync import SyncableDocument
 
-from .. import views
+class ResourceContentJsonSerializer(JsonSerializer):
+    pass
 
-
-class ResourceContent(mc.MongoCoderEmbeddedDocument):
+class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
     """
     .. _ResourceContent:
     
@@ -28,7 +30,11 @@ class ResourceContent(mc.MongoCoderEmbeddedDocument):
         return response
 
 
-class Resource(mc.SyncableDocument):
+class ResourceJsonSerializer(JsonSerializer):
+    __json_additional__ = ['url', 'breadcrumb', 'is_validated', 'bg_color']
+    __json_dbref__ = ['title', 'slug']
+
+class Resource(ResourceJsonSerializer, SyncableDocument):
     """
     .. _Resource:
     
@@ -75,16 +81,17 @@ class Resource(mc.SyncableDocument):
 
     @property
     def url(self):
-        return api.url_for(views.ResourceView, resource_id=self.id, _external=True)
+        return url_for("resources.get_resource", resource_id=self.id, _external=True)
 
-    def is_validated(self, user):
+    def is_validated_by_user(self, user):
         """Whether the current user (if any) has validated this Resource_."""
         return self in user.completed_resources
-    
-    @classmethod
-    def json_key(cls):
-        return 'resource'
 
+    @property
+    def is_validated(self):
+        user = current_user._get_current_object()
+        return self.is_validated_by_user(user)
+    
     @property
     def skill(self):
         """Shorthand virtual property to the parent Skill_ of the parent Lesson_."""
@@ -144,21 +151,14 @@ class Resource(mc.SyncableDocument):
     def clean(self):
         self._set_slug()
 
-    def encode_mongo(self):
-        son = super(Resource, self).encode_mongo()
-
-        user = current_user._get_current_object()
-
-        son['breadcrumb'] = self.breadcrumb()
-        son['is_validated'] = self.is_validated(user)
-        son['bg_color'] = self.track.bg_color
-
-        return son
+    @property
+    def bg_color(self):
+        return self.track.bg_color
 
     def encode_mongo_for_dashboard(self, user):
         response = {
             '_id': self._data.get("id", None),
-            'is_validated': self.is_validated(user),
+            'is_validated': self.is_validated_by_user(user),
             'title': self.title,
             'order': self.order,
             'resource_content': self.resource_content.encode_mongo_for_dashboard(user)
@@ -169,14 +169,13 @@ class Resource(mc.SyncableDocument):
     def _breadcrumb_item(self):
         """Returns some minimal information about the object for use in a breadcrumb."""
 
-        idkey = self.__class__.json_key() + '_id'
         return {
             'title': self.title,
             'url': self.url,
             'id': self.id,
-            idkey: self.id ## Deprecated. Use 'id' instead.
         }
 
+    @property
     def breadcrumb(self):
         """
         Returns an array of the breadcrumbs up until the current object: [Track_, Skill_, Lesson_, Resource_]
@@ -195,7 +194,7 @@ class Resource(mc.SyncableDocument):
     @classmethod
     def get_unique_object_or_404(cls, token):
         try:
-            oid = bson.ObjectId(token)
+            bson.ObjectId(token)
         except bson.errors.InvalidId:
             return cls.objects.get_or_404(slug=token)
         else:

@@ -1,16 +1,11 @@
 from passlib.hash import bcrypt
 import bson
 
-from MookAPI import db
-import MookAPI.mongo_coder as mc
-from MookAPI.resources.documents import Resource
-from MookAPI.hierarchy.documents import track, skill
-from MookAPI.activity.documents.exercise_attempt import ExerciseAttempt
-from MookAPI.activity.documents.skill_validation_attempt import SkillValidationAttempt
-from MookAPI.activity.documents.track_validation_attempt import TrackValidationAttempt
+from MookAPI.core import db
+from MookAPI.sync import SyncableDocument
 
 
-class Role(db.Document):
+class Role(SyncableDocument):
     name = db.StringField(max_length=80, unique=True)
 
     description = db.StringField()
@@ -19,7 +14,7 @@ class Role(db.Document):
         return self.name
 
 
-class User(mc.SyncableDocument):
+class User(SyncableDocument):
 
     full_name = db.StringField()
 
@@ -35,21 +30,21 @@ class User(mc.SyncableDocument):
 
     roles = db.ListField(db.ReferenceField(Role))
 
-    exercises_attempts = db.ListField(db.ReferenceField(ExerciseAttempt), default=[], required=False)
+    exercises_attempts = db.ListField(db.ReferenceField('ExerciseAttempt'), default=[], required=False)
 
-    skill_validation_attempts = db.ListField(db.ReferenceField(SkillValidationAttempt), default=[], required=False)
+    skill_validation_attempts = db.ListField(db.ReferenceField('SkillValidationAttempt'), default=[], required=False)
 
-    track_validation_attempts = db.ListField(db.ReferenceField(TrackValidationAttempt), default=[], required=False)
+    track_validation_attempts = db.ListField(db.ReferenceField('TrackValidationAttempt'), default=[], required=False)
 
-    completed_resources = db.ListField(db.ReferenceField(Resource), default=[], required=False)
+    completed_resources = db.ListField(db.ReferenceField('Resource'), default=[], required=False)
 
-    completed_skills = db.ListField(db.ReferenceField(skill.Skill), default=[], required=False)
+    completed_skills = db.ListField(db.ReferenceField('Skill'), default=[], required=False)
 
-    started_tracks = db.ListField(db.ReferenceField(track.Track), default=[], required=False)
+    started_tracks = db.ListField(db.ReferenceField('Track'), default=[], required=False)
 
-    unlocked_track_tests = db.ListField(db.ReferenceField(track.Track), default=[], required=False)
+    unlocked_track_tests = db.ListField(db.ReferenceField('Track'), default=[], required=False)
 
-    completed_tracks = db.ListField(db.ReferenceField(track.Track), default=[], required=False)
+    completed_tracks = db.ListField(db.ReferenceField('Track'), default=[], required=False)
 
 
     def add_exercise_attempt(self, attempt):
@@ -68,7 +63,7 @@ class User(mc.SyncableDocument):
         if resource not in self.completed_resources:
             self.completed_resources.append(resource)
             skill = resource.parent.skill
-            skill_progress = skill.progress(self)
+            skill_progress = skill.user_progress(self)
             if skill not in self.completed_skills and skill_progress['current'] >= skill_progress['max']:
                 self.add_completed_skill(skill)
 
@@ -76,7 +71,7 @@ class User(mc.SyncableDocument):
         if skill not in self.completed_skills:
             self.completed_skills.append(skill)
             track = skill.track
-            track_progress = track.progress(self)
+            track_progress = track.user_progress(self)
             if track not in self.unlocked_track_tests and track_progress['current'] >= track_progress['max']:
                 self.unlock_track_validation_test(track)
 
@@ -99,7 +94,7 @@ class User(mc.SyncableDocument):
         try:
             bson.ObjectId(token)
         except bson.errors.InvalidId:
-            return cls.objects.get_or_404(slug=token)
+            return cls.objects.get_or_404(username=token)
         else:
             return cls.objects.get_or_404(id=token)
 

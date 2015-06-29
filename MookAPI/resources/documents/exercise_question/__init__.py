@@ -1,14 +1,16 @@
 import exceptions
 import bson
 
-import flask
+from flask import url_for
 
-import MookAPI.mongo_coder as mc
-from MookAPI import db, api
-from ... import views
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
 
 
-class ExerciseQuestion(mc.MongoCoderEmbeddedDocument):
+class ExerciseQuestionJsonSerializer(JsonSerializer):
+    pass
+
+class ExerciseQuestion(ExerciseQuestionJsonSerializer, db.EmbeddedDocument):
     """
     Generic collection, every question type will inherit from this.
     Subclasses should override method "without_correct_answer" in order to define the version sent to clients.
@@ -42,32 +44,35 @@ class ExerciseQuestion(mc.MongoCoderEmbeddedDocument):
         if not hasattr(self, '_instance'):
             return None
 
-        return api.url_for(
-            views.ExerciseResourceQuestionImageView,
+        return url_for(
+            "resources.get_exercise_question_image",
             resource_id=self._instance.id,
             question_id=self._id,
             filename=self.question_image.filename,
             _external=True
-            )
+        )
     
 
     ## Answer feedback (explanation of the right answer)
     answer_feedback = db.StringField()
 
     def without_correct_answer(self):
-        son = self.encode_mongo()
+        son = self.to_json()
         son.pop('answer_feedback', None)
         return son
 
     def with_computed_correct_answer(self, parameters):
-        son = self.encode_mongo()
+        son = self.to_json()
         return son
 
     def answer_with_data(self, data):
         return ExerciseQuestionAnswer.init_with_data(data)
 
 
-class ExerciseQuestionAnswer(mc.MongoCoderEmbeddedDocument):
+class ExerciseQuestionAnswerJsonSerializer(JsonSerializer):
+    pass
+
+class ExerciseQuestionAnswer(ExerciseQuestionAnswerJsonSerializer, db.EmbeddedDocument):
     """
     Generic collection to save answers given to a question.
     Subclasses should define their own properties to store the given answer.

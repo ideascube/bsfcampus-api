@@ -1,7 +1,10 @@
-import flask
-from MookAPI import db
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
 
-class ItemToSync(db.Document):
+class ItemToSyncSerializer(JsonSerializer):
+    pass
+
+class ItemToSync(ItemToSyncSerializer, db.Document):
     """A document that describes a sync operation to perform on the local server."""
 
     ### PROPERTIES

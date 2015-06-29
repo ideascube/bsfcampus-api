@@ -1,6 +1,5 @@
-from flask import Blueprint
+from MookAPI.core import Service
+from .documents import ItemToSync
 
-bp = Blueprint("synchronizer", __name__)
-
-import documents
-import views
+class ItemsToSyncService(Service):
+    __model__ = ItemToSync

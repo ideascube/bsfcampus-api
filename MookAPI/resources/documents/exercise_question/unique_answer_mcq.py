@@ -1,11 +1,17 @@
 from bson import ObjectId
 
-from MookAPI import db
-from . import ExerciseQuestion, ExerciseQuestionAnswer
-import MookAPI.mongo_coder as mc
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from . import ExerciseQuestionJsonSerializer,\
+    ExerciseQuestion, \
+    ExerciseQuestionAnswerJsonSerializer, \
+    ExerciseQuestionAnswer
 
 
-class UniqueAnswerMCQExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
+class UniqueAnswerMCQExerciseQuestionPropositionJsonSerializer(JsonSerializer):
+    pass
+
+class UniqueAnswerMCQExerciseQuestionProposition(UniqueAnswerMCQExerciseQuestionPropositionJsonSerializer, db.EmbeddedDocument):
     """Stores a proposition to a unique-answer MCQ."""
 
     ## Object Id
@@ -18,7 +24,10 @@ class UniqueAnswerMCQExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
     is_correct_answer = db.BooleanField(default=False)
 
 
-class UniqueAnswerMCQExerciseQuestion(ExerciseQuestion):
+class UniqueAnswerMCQExerciseQuestionJsonSerializer(ExerciseQuestionJsonSerializer):
+    pass
+
+class UniqueAnswerMCQExerciseQuestion(UniqueAnswerMCQExerciseQuestionJsonSerializer, ExerciseQuestion):
     """Multiple choice question with one possible answer only."""
 
     ## Object Id
@@ -37,14 +46,17 @@ class UniqueAnswerMCQExerciseQuestion(ExerciseQuestion):
         return UniqueAnswerMCQExerciseQuestionAnswer.init_with_data(data)
 
     def get_proposition_by_id(self, propositionId):
-        result = None;
+        result = None
         for proposition in self.propositions:
             if proposition._id == propositionId:
                 result = proposition
         return result
 
 
-class UniqueAnswerMCQExerciseQuestionAnswer(ExerciseQuestionAnswer):
+class UniqueAnswerMCQExerciseQuestionAnswerJsonSerializer(ExerciseQuestionAnswerJsonSerializer):
+    pass
+
+class UniqueAnswerMCQExerciseQuestionAnswer(UniqueAnswerMCQExerciseQuestionAnswerJsonSerializer, ExerciseQuestionAnswer):
     """Answer given to a unique-answer MCQ."""
 
     ## The chosen propositions, identified by its ObjectId

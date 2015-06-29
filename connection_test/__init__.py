@@ -1,5 +1,3 @@
-__author__ = 'FredFourcade'
-
 from MookAPI import app_config
 import threading
 import urllib2

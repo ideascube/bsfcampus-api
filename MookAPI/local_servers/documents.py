@@ -1,15 +1,12 @@
-import requests
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from MookAPI.hierarchy import TracksService
+from MookAPI.users import UsersService
 
-import flask
+class SyncableItemJsonSerializer(JsonSerializer):
+    pass
 
-from MookAPI import db
-import MookAPI.mongo_coder as mc
-
-from MookAPI.users.documents import User
-from MookAPI.hierarchy.documents import track
-
-
-class SyncableItem(mc.MongoCoderEmbeddedDocument):
+class SyncableItem(SyncableItemJsonSerializer, db.EmbeddedDocument):
     """
     .. _SyncableItem:
 
@@ -23,7 +20,7 @@ class SyncableItem(mc.MongoCoderEmbeddedDocument):
 
     ## The item to synchronize
     ## Any item referenced in this field must be a subclass of SyncableDocument
-    item = db.ReferenceField(track.Track)
+    item = db.ReferenceField(TracksService.__model__)
     """A reference to the top-level ``SyncableDocument`` to synchronize."""
 
     ### METHODS
@@ -35,7 +32,10 @@ class SyncableItem(mc.MongoCoderEmbeddedDocument):
         return self.item.items_to_sync(self.last_sync)
 
 
-class LocalServer(mc.MongoCoderDocument):
+class LocalServerJsonSerializer(JsonSerializer):
+    pass
+
+class LocalServer(LocalServerJsonSerializer, db.Document):
     """
     .. _LocalServer:
 
@@ -44,7 +44,7 @@ class LocalServer(mc.MongoCoderDocument):
 
     ### PROPERTIES
 
-    user = db.ReferenceField(User, unique=True)
+    user = db.ReferenceField(UsersService.__model__, unique=True)
     """
     The ``User`` account associated to the ``LocalServer``.
     It must have a ``Role`` named ``local_server``.

@@ -1,11 +1,14 @@
-from MookAPI import db
 import datetime
-import bson
-from slugify import slugify
-import MookAPI.mongo_coder as mc
+
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from MookAPI.sync import SyncableDocument
 
 
-class Activity(mc.SyncableDocument):
+class ActivityJsonSerializer(JsonSerializer):
+    pass
+
+class Activity(ActivityJsonSerializer, SyncableDocument):
     """Describes any kind of user activity."""
 
     meta = {

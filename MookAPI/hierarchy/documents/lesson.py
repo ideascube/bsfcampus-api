@@ -1,9 +1,17 @@
-from MookAPI import db, api
-import MookAPI.resources.documents
-from . import ResourceHierarchy
-from .. import views
+from flask import url_for
 
-class Lesson(ResourceHierarchy):
+from MookAPI.core import db
+import MookAPI.resources.documents
+from . import ResourceHierarchyJsonSerializer, ResourceHierarchy
+
+
+class LessonJsonSerializer(ResourceHierarchyJsonSerializer):
+    __json_additional__ = []
+    __json_additional__.extend(ResourceHierarchyJsonSerializer.__json_additional__)
+    __json_additional__.extend(['resources_refs'])
+    __json_rename__ = dict(resources_refs='resources')
+
+class Lesson(LessonJsonSerializer, ResourceHierarchy):
     """
     .. _Lesson:
 
@@ -25,22 +33,25 @@ class Lesson(ResourceHierarchy):
 
     @property
     def url(self):
-        return api.url_for(views.LessonView, lesson_id=self.id, _external=True)
+        return url_for("hierarchy.get_lesson", lesson_id=self.id, _external=True)
 
     @property
     def resources(self):
         """A queryset of the Resource_ objects that belong to the current Lesson_."""
         return MookAPI.resources.documents.Resource.objects.order_by('order', 'title').filter(parent=self)
 
-    def progress(self, user):
+    @property
+    def resources_refs(self):
+        return [resource.to_json_dbref() for resource in self.resources]
+
+    def user_progress(self, user):
         current = 0
         for resource in self.resources:
-            if resource.is_validated(user):
+            if resource.is_validated_by_user(user):
                 current += 1
         return {'current': current, 'max': len(self.resources)}
 
-    ### METHODS
-
+    @property
     def breadcrumb(self):
         return [
             self.track._breadcrumb_item(),
@@ -48,18 +59,13 @@ class Lesson(ResourceHierarchy):
             self._breadcrumb_item()
             ]
 
+    ### METHODS
+
     def siblings(self):
         return Lesson.objects.order_by('order', 'title').filter(skill=self.skill)
 
     def siblings_strict(self):
         return Lesson.objects.order_by('order', 'title').filter(skill=self.skill, id__ne=self.id)
-
-    def encode_mongo(self):
-        son = super(Lesson, self).encode_mongo()
-
-        son['resources'] = map(lambda r: r.id, self.resources)
-
-        return son
 
     def encode_mongo_for_dashboard(self, user):
         response = super(Lesson, self).encode_mongo_for_dashboard(user)
@@ -81,7 +87,6 @@ class Lesson(ResourceHierarchy):
 
         return items
 
-    # @if_central
     def items_to_update(self, last_sync):
         items = super(Lesson, self).items_to_update(last_sync)
 

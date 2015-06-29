@@ -1,6 +1,12 @@
-from MookAPI import db
-from .downloadable_file import *
+from MookAPI.core import db
+from .downloadable_file import DownloadableFileResourceContentJsonSerializer, \
+    DownloadableFileResourceContent, \
+    DownloadableFileResourceJsonSerializer, \
+    DownloadableFileResource
 
+
+class VideoResourceContentJsonSerializer(DownloadableFileResourceContentJsonSerializer):
+    pass
 
 class VideoResourceContent(DownloadableFileResourceContent):
 
@@ -8,6 +14,9 @@ class VideoResourceContent(DownloadableFileResourceContent):
 
     pass
 
+
+class VideoResourceJsonSerializer(DownloadableFileResourceJsonSerializer):
+    pass
 
 class VideoResource(DownloadableFileResource):
     """Stores a video file in the database."""

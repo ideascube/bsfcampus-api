@@ -1,11 +1,17 @@
 from bson import ObjectId
 
-from MookAPI import db
-from . import ExerciseQuestion, ExerciseQuestionAnswer
-import MookAPI.mongo_coder as mc
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
+from . import ExerciseQuestionJsonSerializer,\
+    ExerciseQuestion, \
+    ExerciseQuestionAnswerJsonSerializer, \
+    ExerciseQuestionAnswer
 
 
-class RightOrWrongExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
+class RightOrWrongExerciseQuestionPropositionJsonSerializer(JsonSerializer):
+    pass
+
+class RightOrWrongExerciseQuestionProposition(RightOrWrongExerciseQuestionPropositionJsonSerializer, db.EmbeddedDocument):
     """Stores a proposition to a right or wrong question."""
 
     ## Object Id
@@ -18,7 +24,10 @@ class RightOrWrongExerciseQuestionProposition(mc.MongoCoderEmbeddedDocument):
     is_correct_answer = db.BooleanField(default=False)
 
 
-class RightOrWrongExerciseQuestion(ExerciseQuestion):
+class RightOrWrongExerciseQuestionJsonSerializer(ExerciseQuestionJsonSerializer):
+    pass
+
+class RightOrWrongExerciseQuestion(RightOrWrongExerciseQuestionJsonSerializer, ExerciseQuestion):
     """Question with a right or wrong answer"""
 
     ## Object Id
@@ -44,7 +53,10 @@ class RightOrWrongExerciseQuestion(ExerciseQuestion):
         return result
 
 
-class RightOrWrongExerciseQuestionAnswer(ExerciseQuestionAnswer):
+class RightOrWrongExerciseQuestionAnswerJsonSerializer(ExerciseQuestionAnswerJsonSerializer):
+    pass
+
+class RightOrWrongExerciseQuestionAnswer(RightOrWrongExerciseQuestionAnswerJsonSerializer, ExerciseQuestionAnswer):
     """Answer given to a right or wrong question."""
 
     ## The chosen propositions, identified by its ObjectId

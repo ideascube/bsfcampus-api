@@ -1,6 +1,5 @@
-from flask import Blueprint
+from MookAPI.core import Service
+from .documents import LocalServer
 
-bp = Blueprint("local_servers", __name__)
-
-import documents
-import views
+class LocalServersService(Service):
+    __model__ = LocalServer

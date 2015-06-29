@@ -4,11 +4,14 @@ import slugify
 
 from flask_jwt import current_user
 
-import MookAPI.mongo_coder as mc
-from MookAPI import db
+from MookAPI.sync import SyncableDocument
+from MookAPI.core import db
+from MookAPI.helpers import JsonSerializer
 
+class ResourceHierarchyJsonSerializer(JsonSerializer):
+    __json_additional__ = ['is_validated', 'progress', 'breadcrumb']
 
-class ResourceHierarchy(mc.SyncableDocument):
+class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
     """
     .. _ResourceHierarchy:
     
@@ -37,18 +40,28 @@ class ResourceHierarchy(mc.SyncableDocument):
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
     """The date the hierarchy level was created."""
 
-    def is_validated(self, user):
+    def is_validated_by_user(self, user):
         """Whether the user validated the hierarchy level based on their activity."""
         ## Override this method in each subclass
         return False
 
-    def progress(self, user):
+    @property
+    def is_validated(self):
+        user = current_user._get_current_object()
+        return self.is_validated_by_user(user)
+
+    def user_progress(self, user):
         """
         How many sub-units in this level have been validated (current) and how many are there in total (max).
         Returns a dictionary with format: {'current': Int, 'max': Int}
         """
         ## Override this method in each subclass
         return {'current': 0, 'max': 0}
+
+    @property
+    def progress(self):
+        user = current_user._get_current_object()
+        return self.user_progress(user)
     
     
     ### METHODS
@@ -92,34 +105,22 @@ class ResourceHierarchy(mc.SyncableDocument):
 
     def _breadcrumb_item(self):
         """Returns some minimal information about the object for use in a breadcrumb."""
-        idkey = self.__class__.json_key() + '_id'
         return {
             'title': self.title,
             'url': self.url,
             'id': self.id,
-            idkey: self.id ## Deprecated. Use 'id' instead.
         }
 
+    @property
     def breadcrumb(self):
         """Returns an array of the breadcrumbs up until the current object."""
         return []
 
-    def encode_mongo(self):
-        son = super(ResourceHierarchy, self).encode_mongo()
-
-        user = current_user._get_current_object()
-
-        son['is_validated'] = self.is_validated(user)
-        son['progress'] = self.progress(user)
-        son['breadcrumb'] = self.breadcrumb()
-
-        return son
-
     def encode_mongo_for_dashboard(self, user):
         response = {
             '_id': self._data.get("id", None),
-            'is_validated': self.is_validated(user),
-            'progress': self.progress(user),
+            'is_validated': self.is_validated_by_user(user),
+            'progress': self.user_progress(user),
             'title': self.title,
             'order': self.order
         }
