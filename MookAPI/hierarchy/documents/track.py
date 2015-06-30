@@ -89,7 +89,7 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
     @property
     def breadcrumb(self):
-        return [self._breadcrumb_item()]
+        return [self.to_json_dbref()]
 
     ### METHODS
 

@@ -166,15 +166,6 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
 
         return response
 
-    def _breadcrumb_item(self):
-        """Returns some minimal information about the object for use in a breadcrumb."""
-
-        return {
-            'title': self.title,
-            'url': self.url,
-            'id': self.id,
-        }
-
     @property
     def breadcrumb(self):
         """
@@ -182,10 +173,10 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
         """
 
         return [
-            self.track._breadcrumb_item(),
-            self.skill._breadcrumb_item(),
-            self.parent._breadcrumb_item(),
-            self._breadcrumb_item()
+            self.track.to_json_dbref(),
+            self.skill.to_json_dbref(),
+            self.parent.to_json_dbref(),
+            self.to_json_dbref()
         ]
         
     def __unicode__(self):

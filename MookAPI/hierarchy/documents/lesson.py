@@ -54,9 +54,9 @@ class Lesson(LessonJsonSerializer, ResourceHierarchy):
     @property
     def breadcrumb(self):
         return [
-            self.track._breadcrumb_item(),
-            self.skill._breadcrumb_item(),
-            self._breadcrumb_item()
+            self.track.to_json_dbref(),
+            self.skill.to_json_dbref(),
+            self.to_json_dbref()
             ]
 
     ### METHODS

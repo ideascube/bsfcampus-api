@@ -10,6 +10,7 @@ from MookAPI.helpers import JsonSerializer
 
 class ResourceHierarchyJsonSerializer(JsonSerializer):
     __json_additional__ = ['is_validated', 'progress', 'breadcrumb']
+    __json_dbref__ = ['title', 'slug']
 
 class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
     """
@@ -102,14 +103,6 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
             return cls.objects.get_or_404(slug=token)
         else:
             return cls.objects.get_or_404(id=token)
-
-    def _breadcrumb_item(self):
-        """Returns some minimal information about the object for use in a breadcrumb."""
-        return {
-            'title': self.title,
-            'url': self.url,
-            'id': self.id,
-        }
 
     @property
     def breadcrumb(self):
