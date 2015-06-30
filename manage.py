@@ -17,6 +17,7 @@ def launch_central_server():
     manager.add_command(
         'runserver',
         Server(
+            host='0.0.0.0',
             port=settings_central.port,
             processes=processes,
             use_reloader=False
@@ -32,6 +33,7 @@ def launch_local_server():
     manager.add_command(
         'runserver',
         Server(
+            host='0.0.0.0',
             port=settings_local.port,
             processes=processes,
             use_reloader=False
