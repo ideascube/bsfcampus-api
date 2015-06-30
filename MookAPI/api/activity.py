@@ -64,7 +64,9 @@ def post_exercise_attempt_question_answer(attempt_id):
     if attempt.is_exercise_completed():
         exercise_resource = attempt.exercise
         current_user._get_current_object().add_completed_resource(exercise_resource)
-        current_user._get_current_object().save()
+        current_user._get_current_object().save(validate=False)
+        # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
+        # It should be solved in version 0.10.1
 
     return jsonify(data=attempt)
 

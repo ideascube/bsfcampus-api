@@ -43,7 +43,9 @@ def get_resource(resource_id):
     user.add_started_track(resource.parent.skill.track)
     if not exercise_resources._isinstance(resource):
         user.add_completed_resource(resource)
-    user.save()
+    user.save(validate=False)
+    # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
+    # It should be solved in version 0.10.1
 
     return jsonify(data=resource)
 
@@ -77,7 +79,9 @@ def get_resource_content_file(resource_id, filename):
         user = current_user._get_current_object()
         if user:
             user.add_completed_resource(resource)
-            user.save()
+            user.save(validate=False)
+            # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
+            # It should be solved in version 0.10.1
 
         return send_file(
             io.BytesIO(content_file.read()),
