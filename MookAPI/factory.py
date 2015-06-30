@@ -18,7 +18,7 @@ def create_app(
     from .helpers import register_blueprints
     register_blueprints(app, package_name, package_path)
 
-    from .admin import admin
-    admin.init_app(app)
+    from .admin_ui import admin_ui
+    admin_ui.init_app(app)
 
     return app
