@@ -1,7 +1,8 @@
 from bson import json_util
 
 from flask import Blueprint, request, jsonify
-from flask_jwt import jwt_required, current_user
+from MookAPI.auth import jwt_required
+from flask_jwt import current_user
 
 from MookAPI.services import \
     exercise_attempts, \

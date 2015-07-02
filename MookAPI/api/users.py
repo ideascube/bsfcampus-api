@@ -1,10 +1,11 @@
 from mongoengine import NotUniqueError
 
 from flask import Blueprint, request, jsonify
-from flask_jwt import jwt_required, current_user
+from flask_jwt import current_user
 from flask_mongoengine import ValidationError
 
 from MookAPI.services import tracks, users
+from MookAPI.auth import jwt_required
 
 from . import route
 

@@ -1,7 +1,8 @@
 import datetime
 
 from flask import Blueprint, jsonify
-from flask_jwt import jwt_required, current_user
+from flask_jwt import current_user
+from MookAPI.auth import jwt_required
 
 from MookAPI.services import local_servers
 

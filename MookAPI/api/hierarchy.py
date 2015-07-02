@@ -1,7 +1,7 @@
 import io
 
 from flask import Blueprint, jsonify, send_file
-from flask_jwt import jwt_required
+from MookAPI.auth import jwt_required
 
 from MookAPI.services import tracks, skills, lessons
 
