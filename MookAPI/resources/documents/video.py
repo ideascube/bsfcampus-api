@@ -12,11 +12,30 @@ class VideoResourceContent(DownloadableFileResourceContent):
 
     ##FIXME: Override content_file to specify accepted extensions/mimetypes.
 
-    pass
+    _SOURCES = (
+        '',
+        'youtube',
+    )
+    source = db.StringField(choices=_SOURCES)
+    """The website where the video is hosted."""
+
+    ## Video unique id on the source website
+    video_id = db.StringField()
+    """A unique identifier of the video on the `source` website."""
 
 
 class VideoResourceJsonSerializer(DownloadableFileResourceJsonSerializer):
-    pass
+
+    def encode_mongo(self, fields=None):
+        rv = super(VideoResourceJsonSerializer, self).encode_mongo(fields)
+
+        # FIXME: uncomment this when there is a way to know if the server is local or central
+        # if is_local():
+        #     content = rv['resource_content']
+        #     del content['source']
+        #     del content['video_id']
+
+        return rv
 
 class VideoResource(DownloadableFileResource):
     """Stores a video file in the database."""
