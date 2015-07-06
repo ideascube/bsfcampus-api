@@ -11,7 +11,7 @@ from . import route
 
 bp = Blueprint('users', __name__, url_prefix="/users")
 
-@route(bp, "/current", methods=['GET', 'PUT'])
+@route(bp, "/current", methods=['GET', 'PATCH'])
 @jwt_required()
 def current_user_info():
     user = current_user._get_current_object()
@@ -19,10 +19,11 @@ def current_user_info():
     if request.method == 'GET':
         return jsonify(dict(data=user))
 
-    elif request.method == 'PUT':
+    elif request.method == 'PATCH':
 
-        user.full_name = request.form['full_name']
-        user.email= request.form['email']
+        data = request.get_json()
+        user.full_name = data['full_name']
+        user.email = data['email']
         try:
             user.save()
         except ValidationError as e:
