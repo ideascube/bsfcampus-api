@@ -13,7 +13,6 @@ if hasattr(os, 'fork'):
 else:
     processes = 1
 
-
 def launch_central_server():
     manager = Manager(create_app(settings_override=settings_central.Config))
 
@@ -49,6 +48,8 @@ def launch_local_server():
 if __name__ == "__main__":
     if len(sys.argv) > 2:
         if sys.argv[2] == 'local':
+            # FIXME: if we do not remove the second argument, the runserver command crashes because it has too many arguments
+            sys.argv.pop(2)
             launch_local_server()
         else:
             launch_central_server()

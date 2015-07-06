@@ -1,4 +1,5 @@
 from MookAPI.core import db
+from MookAPI import utils
 from .downloadable_file import DownloadableFileResourceContentJsonSerializer, \
     DownloadableFileResourceContent, \
     DownloadableFileResourceJsonSerializer, \
@@ -27,17 +28,17 @@ class VideoResourceContent(DownloadableFileResourceContent):
 class VideoResourceJsonSerializer(DownloadableFileResourceJsonSerializer):
 
     def encode_mongo(self, fields=None):
+        print ("VideoResourceJsonSerializer.encode_mongo")
         rv = super(VideoResourceJsonSerializer, self).encode_mongo(fields)
 
-        # FIXME: uncomment this when there is a way to know if the server is local or central
-        # if is_local():
-        #     content = rv['resource_content']
-        #     del content['source']
-        #     del content['video_id']
+        if utils.is_local():
+            content = rv['resource_content']
+            del content['source']
+            del content['video_id']
 
         return rv
 
-class VideoResource(DownloadableFileResource):
+class VideoResource(VideoResourceJsonSerializer, DownloadableFileResource):
     """Stores a video file in the database."""
 
     resource_content = db.EmbeddedDocumentField(VideoResourceContent)
