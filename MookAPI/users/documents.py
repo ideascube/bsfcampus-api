@@ -16,7 +16,7 @@ class Role(SyncableDocument):
 
 class User(SyncableDocument):
 
-    full_name = db.StringField()
+    full_name = db.StringField(unique=False, required=True)
 
     username = db.StringField(unique=True, required=True)
 
@@ -26,7 +26,7 @@ class User(SyncableDocument):
 
     active = db.BooleanField(default=True)
 
-    accept_cgu = db.BooleanField(default=False)
+    accept_cgu = db.BooleanField(required=True, default=False)
 
     roles = db.ListField(db.ReferenceField(Role))
 
@@ -45,7 +45,6 @@ class User(SyncableDocument):
     unlocked_track_tests = db.ListField(db.ReferenceField('Track'), default=[], required=False)
 
     completed_tracks = db.ListField(db.ReferenceField('Track'), default=[], required=False)
-
 
     def add_exercise_attempt(self, attempt):
         if attempt not in self.exercises_attempts:

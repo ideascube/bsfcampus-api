@@ -35,7 +35,7 @@ def route(bp, *args, **kwargs):
             if isinstance(rv, tuple):
                 sc = rv[1]
                 rv = rv[0]
-            return rv
+            return rv, sc
             # return jsonify(dict(data=rv)), sc
         return f
 

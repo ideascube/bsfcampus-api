@@ -79,18 +79,39 @@ def register_user():
         """Registers a new user"""
 
         data = request.get_json()
-        if data['password'] != data['password_confirm']:
+        password = data['password']
+        if password is None or password == "":
             response = {
-                "error": "Passwords don't match"
+                "error": "The password cannot be empty",
+                "code": 4
             }
             return jsonify(response), 400
 
+        if password != data['password_confirm']:
+            response = {
+                "error": "Passwords don't match",
+                "code": 5
+            }
+            return jsonify(response), 400
+
+        if 'accept_cgu' not in data:
+            response = {
+                "error": "User must accept cgu",
+                "code": 6
+            }
+            return jsonify(response), 400
+
+        username = data['username']
+        full_name = data['full_name']
+        if full_name == "" or full_name is None:
+            full_name = username
+
         new_user = users.new(
-            full_name=data['full_name'],
-            username=data['username'],
+            full_name=full_name,
+            username=username,
             email=data['email'],
-            password=users.__model__.hash_pass(data['password']),
-            accept_cgu=data['accept_cgu'] in ['1', 1, 'on']
+            password=users.__model__.hash_pass(password),
+            accept_cgu='accept_cgu' in data
         )
 
         try:
