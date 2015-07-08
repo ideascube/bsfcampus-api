@@ -39,16 +39,21 @@ def get_skill_resources(skill_id):
 @jwt_required()
 def get_resource(resource_id):
     resource = resources.get_or_404(resource_id)
+    response = jsonify(data=resource)
 
     user = current_user._get_current_object()
-    user.add_started_track(resource.parent.skill.track)
+    user.add_started_track(resource.track)
     if not exercise_resources._isinstance(resource):
         user.add_completed_resource(resource)
+        if user.is_track_test_available_and_never_attempted(resource.track):
+            alert = {"code": "prompt_track_validation", "id": resource.track._data.get("id", None)}
+            response = jsonify(data=resource, alert=alert)
+
     user.save(validate=False)
     # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
     # It should be solved in version 0.10.1
 
-    return jsonify(data=resource)
+    return response
 
 @route(bp, "/<resource_id>/hierarchy")
 @jwt_required()
@@ -76,13 +81,6 @@ def get_resource_content_file(resource_id, filename):
 
     if downloadable_file_resources._isinstance(resource):
         content_file = resource.resource_content.content_file
-
-        user = current_user._get_current_object()
-        if user:
-            user.add_completed_resource(resource)
-            user.save(validate=False)
-            # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
-            # It should be solved in version 0.10.1
 
         return send_file(
             io.BytesIO(content_file.read()),

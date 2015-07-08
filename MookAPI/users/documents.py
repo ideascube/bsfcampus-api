@@ -86,6 +86,12 @@ class User(SyncableDocument):
         if track not in self.completed_tracks:
             self.completed_tracks.append(track)
 
+    def is_track_test_available_and_never_attempted(self, track):
+        if track in self.unlocked_track_tests:
+            return all(attempted_test.exercise.parent != track for attempted_test in self.track_validation_attempts)
+
+        return False
+
     @classmethod
     def get_unique_object_or_404(cls, token):
         """Get the only hierarchy level matching argument 'token', where 'token' can be the id or the slug."""

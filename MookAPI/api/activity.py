@@ -44,7 +44,7 @@ def get_exercise_attempt(attempt_id):
     print "GETTING exercise attempt with id {attempt_id}".format(attempt_id=attempt_id)
 
     exercise_attempt = exercise_attempts.get_or_404(attempt_id)
-    
+
     return jsonify(data=exercise_attempt)
 
 
@@ -62,14 +62,18 @@ def post_exercise_attempt_question_answer(attempt_id):
     attempt.save_answer(question_id, form_data)
     attempt.save()
 
+    response = jsonify(data=attempt)
     if attempt.is_exercise_completed():
         exercise_resource = attempt.exercise
         current_user._get_current_object().add_completed_resource(exercise_resource)
         current_user._get_current_object().save(validate=False)
+        if current_user.is_track_test_available_and_never_attempted(attempt.exercise.track):
+            alert = {"code": "prompt_track_validation", "id": attempt.exercise.track._data.get("id", None)}
+            response = jsonify(data=attempt, alert=alert)
         # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
         # It should be solved in version 0.10.1
 
-    return jsonify(data=attempt)
+    return response
 
 
 ## Skill Validation's attempts
@@ -117,12 +121,17 @@ def post_skill_validation_attempt_question_answer(attempt_id):
     attempt.save_answer(question_id, form_data)
     attempt.save()
 
+    response = jsonify(data=attempt)
+
     if attempt.is_skill_validation_completed():
         skill = attempt.skill
         current_user._get_current_object().add_completed_skill(skill)
         current_user._get_current_object().save()
+        if current_user.is_track_test_available_and_never_attempted(skill.track):
+            alert = {"code": "prompt_track_validation", "id": skill.track._data.get("id", None)}
+            response = jsonify(data=attempt, alert=alert)
 
-    return jsonify(data=attempt)
+    return response
 
 
 ## Track Validation's attempts
@@ -131,7 +140,7 @@ def post_skill_validation_attempt_question_answer(attempt_id):
 @jwt_required()
 def post_track_validation_attempt():
     exercise_id = request.get_json()['exercise']
-    exercise =  track_validation_resources.get_or_404(id=exercise_id)
+    exercise = track_validation_resources.get_or_404(id=exercise_id)
 
     print "CREATING track validation attempt for exercise {exercise}".format(exercise=exercise.id)
 
