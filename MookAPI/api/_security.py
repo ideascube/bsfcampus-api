@@ -1,3 +1,8 @@
+from functools import wraps
+from werkzeug.local import LocalProxy
+
+from flask import jsonify, request, Response, _request_ctx_stack
+
 from flask_cors import CORS
 from flask_jwt import JWT
 
@@ -31,3 +36,22 @@ def load_user(payload):
         return None
     else:
         return user
+
+def basic_auth_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth:
+            return jsonify(error="Basic Authorization required"),\
+                   401,\
+                   {'WWW-Authenticate': 'Basic realm="Login required"'}
+        user = authenticate(auth.username, auth.password)
+        if not user:
+            return jsonify(error="Invalid credentials"), \
+                   401, \
+                   {'WWW-Authenticate': 'Basic realm="Login required"'}
+        _request_ctx_stack.top.basic_auth_user = user
+        return f(*args, **kwargs)
+    return decorated
+
+basic_auth_user = LocalProxy(lambda: getattr(_request_ctx_stack.top, 'basic_auth_user', None))
