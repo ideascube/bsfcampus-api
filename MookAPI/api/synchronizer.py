@@ -26,12 +26,12 @@ def import_module(module_name):
 document_modules = map(import_module, document_module_names)
 
 @route(bp, "/reset")
-def reset_sync(self):
-    url = current_app.config['CENTRAL_SERVER_HOST'] + 'local_servers/reset'
-    email = current_app.config['CENTRAL_SERVER_KEY']
-    password = current_app.config['CENTRAL_SERVER_SECRET']
+def reset_sync():
+    url = current_app.config['CENTRAL_SERVER_HOST'] + '/local_servers/reset'
+    key = current_app.config['CENTRAL_SERVER_KEY']
+    secret = current_app.config['CENTRAL_SERVER_SECRET']
 
-    r = requests.get(url, auth=(email, password))
+    r = requests.get(url, auth=(key, secret))
 
     if r.status_code == 200:
         return jsonify(error=0)
@@ -64,11 +64,11 @@ def fetch_sync_list():
         _pile_delete_items(items['delete'])
         return len(items['update']), len(items['delete'])
 
-    url = current_app.config['CENTRAL_SERVER_HOST'] + 'local_servers/sync'
-    email = current_app.config['CENTRAL_SERVER_KEY']
-    password = current_app.config['CENTRAL_SERVER_SECRET']
+    url = current_app.config['CENTRAL_SERVER_HOST'] + '/local_servers/sync'
+    key = current_app.config['CENTRAL_SERVER_KEY']
+    secret = current_app.config['CENTRAL_SERVER_SECRET']
 
-    r = requests.get(url, auth=(email, password))
+    r = requests.get(url, auth=(key, secret))
     ## Synchronous!
 
     if r.status_code == 200:
