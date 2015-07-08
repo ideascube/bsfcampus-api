@@ -35,6 +35,49 @@ def current_user_info():
 
         return jsonify(dict(data=user))
 
+@route(bp, "/current/password", methods=['PATCH'])
+@jwt_required()
+def current_user_change_password():
+    user = current_user._get_current_object()
+
+    if request.method == 'PATCH':
+
+        data = request.get_json()
+        if not user.verify_pass(data['current_password']):
+            response = {
+                "error": "Current password is wrong",
+                "code": 1
+            }
+            return jsonify(response), 400
+
+        new_password = data['new_password']
+        if new_password is None or new_password == "":
+            response = {
+                "error": "The new password cannot be empty",
+                "code": 2
+            }
+            return jsonify(response), 400
+
+        confirm_password = data['confirm_new_password']
+        if new_password != confirm_password:
+            response = {
+                "error": "Passwords don't match",
+                "code": 3
+            }
+            return jsonify(response), 400
+
+        user.password = users.__model__.hash_pass(new_password)
+        try:
+            user.save()
+        except ValidationError as e:
+            response = {
+                "error": "Could not update user",
+                "message": e.message
+            }
+            return response, 400
+
+        return jsonify(dict(data=user))
+
 
 @route(bp, "/current/dashboard")
 @jwt_required()
