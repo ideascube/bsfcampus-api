@@ -2,7 +2,8 @@ from bson import ObjectId
 
 from MookAPI.core import db
 from MookAPI.helpers import JsonSerializer
-from . import ExerciseQuestionJsonSerializer,\
+from . import \
+    ExerciseQuestionJsonSerializer,\
     ExerciseQuestion, \
     ExerciseQuestionAnswerJsonSerializer, \
     ExerciseQuestionAnswer

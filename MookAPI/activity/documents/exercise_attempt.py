@@ -9,6 +9,7 @@ from MookAPI.resources.documents.exercise_question import ExerciseQuestionAnswer
 class ExerciseAttemptQuestionAnswerJsonSerializer(JsonSerializer):
     pass
 
+
 class ExerciseAttemptQuestionAnswer(ExerciseAttemptQuestionAnswerJsonSerializer, db.EmbeddedDocument):
     """
     Stores the data relative to one answer in an attempt to an exercise, including the answer given.
@@ -44,7 +45,6 @@ class ExerciseAttemptQuestionAnswer(ExerciseAttemptQuestionAnswerJsonSerializer,
 
 
 class ExerciseAttemptJsonSerializer(ActivityJsonSerializer):
-
     @staticmethod
     def question_answers_modifier(son, exercise_attempt):
         for (index, qa) in enumerate(exercise_attempt.question_answers):
@@ -57,10 +57,18 @@ class ExerciseAttemptJsonSerializer(ActivityJsonSerializer):
 
         return son
 
-    __json_additional__ = ['max_mistakes', 'fail_linked_resource']
-    __json_modifiers__ = dict(
-        question_answers=question_answers_modifier.__func__
+    __json_additional__ = []
+    __json_additional__.extend(ActivityJsonSerializer.__json_additional__ or [])
+    __json_additional__.extend(['max_mistakes', 'fail_linked_resource'])
+
+    __json_modifiers__ = dict()
+    __json_modifiers__.update(ActivityJsonSerializer.__json_modifiers__ or dict())
+    __json_modifiers__.update(
+        dict(
+            question_answers=question_answers_modifier.__func__
+        )
     )
+
 
 class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     """
@@ -130,7 +138,7 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
         attempt_question_answer.is_answered_correctly = question_answer.is_correct(
             question,
             attempt_question_answer.parameters
-            )
+        )
         self.set_question_answer(question_id, attempt_question_answer)
 
     # def encode_mongo(self):
@@ -158,7 +166,7 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
         answered_questions = filter(lambda a: a.given_answer is not None, self.question_answers)
         if len(answered_questions) >= nb_total_questions:
             right_answers = filter(lambda a: a.is_answered_correctly, answered_questions)
-            if len(right_answers) >= nb_total_questions-nb_max_mistakes:
+            if len(right_answers) >= nb_total_questions - nb_max_mistakes:
                 return True
 
         return False
