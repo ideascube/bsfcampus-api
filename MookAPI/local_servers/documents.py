@@ -53,7 +53,3 @@ class LocalServer(LocalServerJsonSerializer, db.Document):
     ## List of items to synchronize
     syncable_items = db.ListField(db.EmbeddedDocumentField(SyncableItem))
     """A list of SyncableItem_ embedded documents describing the items to synchronize on the local server."""
-
-    @classmethod
-    def json_key(cls):
-        return 'local_server'  # At some point we should have the parent class do the underscoring automatically.

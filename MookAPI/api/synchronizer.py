@@ -46,7 +46,7 @@ def fetch_sync_list():
             items_to_sync.create(
                 action='update',
                 url=item['url'],
-                distant_id=item['_ref']['$id']['$oid'],
+                distant_id=item['_id']['$oid'],
                 class_name=item['_cls'],
                 )
 

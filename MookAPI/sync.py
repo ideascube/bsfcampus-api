@@ -159,3 +159,8 @@ class SyncableDocument(JsonSerializer, db.Document):
         obj.distant_id = mongo['_id']
 
         return obj
+
+    def reference(self):
+        son = self.to_json_dbref()
+        son['url'] = self.url
+        return son
