@@ -89,12 +89,15 @@ def depile_sync_item():
 
     def _update_object(document_class, url, existing_object):
 
-        r = requests.get(url)
-        
+        key = current_app.config['CENTRAL_SERVER_KEY']
+        secret = current_app.config['CENTRAL_SERVER_SECRET']
+
+        r = requests.get(url, auth=(key, secret))
+
         if r.status_code == 200:
             try:
                 bson_object = bson.json_util.loads(r.text)
-                obj = document_class.decode_json_result(bson_object)
+                obj = document_class.from_json(bson_object['data'], distant=True)
                 if existing_object:
                     obj.id = existing_object.id
             except:
@@ -108,7 +111,6 @@ def depile_sync_item():
 
     def _update_item(item):
         item_class_name = item.class_name.split('.')[-1]
-        print (item_class_name)
         for module in document_modules:
             if hasattr(module, item_class_name):
                 document_class = getattr(module, item_class_name)
@@ -132,7 +134,6 @@ def depile_sync_item():
 
     def _delete_item(item):
         item_class_name = item.class_name.split('.')[-1]
-        print (item_class_name)
         for module in document_modules:
             if hasattr(module, item_class_name):
                 document_class = getattr(module, item_class_name)

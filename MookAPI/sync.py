@@ -152,14 +152,6 @@ class SyncableDocument(JsonSerializer, db.Document):
         ## We should do some cleanup at this point, in particular remove deletable items from 'update' list.
         return items
 
-    @classmethod
-    def decode_mongo(cls, mongo):
-        obj = super(SyncableDocument, cls).decode_mongo(mongo)
-
-        obj.distant_id = mongo['_id']
-
-        return obj
-
     def reference(self):
         son = self.to_json_dbref()
         son['url'] = self.url

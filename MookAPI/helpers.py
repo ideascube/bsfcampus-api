@@ -159,12 +159,15 @@ class JsonSerializer(object):
 
         ## ReferenceField: convert reference to use the local ``id`` instead of the distant one.
         if isinstance(field, ReferenceField):
-            value = field.to_python(value)
-            return field.document_type_obj.objects(distant_id=value.id).first()
+            # FIXME This way of getting the id is not really clean.
+            value = field.to_python(value['_id'])
+            document_id = value.id
+            document = field.document_type_obj.objects(distant_id=document_id).first()
+            return document
 
         ## EmbeddedDocumentField: instantiate MongoCoderEmbeddedDocument from JSON
         elif isinstance(field, EmbeddedDocumentField):
-            return field.document_type_obj._decode_mongo(value)
+            return field.document_type_obj.from_json(value)
 
         ## ListField: recursively convert all elements in the list
         elif isinstance(field, ListField):
@@ -225,11 +228,15 @@ class JsonSerializer(object):
             setattr(self, key, value)
 
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json, distant=False):
         obj = cls()
 
         for key in json.iterkeys():
             obj._set_value_from_json(json, key)
+
+        if distant:
+            obj.distant_id = obj.id
+            obj.id = None
 
         return obj
 
