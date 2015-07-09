@@ -89,7 +89,7 @@ class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
         self.set_question_answer(question_id, attempt_question_answer)
 
     def is_skill_validation_completed(self):
-        nb_total_questions = self.skill.validation_exercise.number_of_questions
+        nb_total_questions = len(self.question_answers)
         nb_max_mistakes = self.skill.validation_exercise.max_mistakes
         answered_questions = filter(lambda a: a.given_answer is not None, self.question_answers)
         if len(answered_questions) >= nb_total_questions:
