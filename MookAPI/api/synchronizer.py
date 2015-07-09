@@ -11,7 +11,9 @@ bp = Blueprint("synchronizer", __name__, url_prefix="/synchronizer")
 
 ##FIXME Do something better here.
 document_module_names = [
-    "MookAPI.hierarchy.documents",
+    "MookAPI.hierarchy.documents.lesson",
+    "MookAPI.hierarchy.documents.skill",
+    "MookAPI.hierarchy.documents.track",
     "MookAPI.resources.documents",
     "MookAPI.resources.documents.audio",
     "MookAPI.resources.documents.downloadable_file",
