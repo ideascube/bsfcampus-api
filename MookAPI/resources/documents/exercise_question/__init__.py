@@ -46,8 +46,8 @@ class ExerciseQuestion(ExerciseQuestionJsonSerializer, db.EmbeddedDocument):
 
         return url_for(
             "resources.get_exercise_question_image",
-            resource_id=self._instance.id,
-            question_id=self._id,
+            resource_id=str(self._instance._instance.id),
+            question_id=str(self._id),
             filename=self.question_image.filename,
             _external=True
         )
