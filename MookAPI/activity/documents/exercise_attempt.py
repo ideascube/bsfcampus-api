@@ -141,25 +141,6 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
         )
         self.set_question_answer(question_id, attempt_question_answer)
 
-    # def encode_mongo(self):
-    #     son = super(ExerciseAttempt, self).encode_mongo()
-    #
-    #     son['max_mistakes'] = self.exercise.resource_content.max_mistakes
-    #     if self.exercise.resource_content.fail_linked_resource:
-    #         son['fail_linked_resource'] = self.exercise.resource_content.fail_linked_resource.to_mongo()
-    #
-    #     ## Answered questions: include full question with correct answer
-    #     ## First unanswered question: include full question without correct answer
-    #     ## Subsequent questions: question id only (default)
-    #     for (index, qa) in enumerate(self.question_answers):
-    #         question = self.exercise.question(qa.question_id)
-    #         if qa.given_answer is not None:
-    #             son['question_answers'][index]['question'] = question.with_computed_correct_answer(qa.parameters)
-    #         else:
-    #             son['question_answers'][index]['question'] = question.without_correct_answer()
-    #             break
-    #     return son
-
     def is_exercise_completed(self):
         nb_total_questions = self.exercise.resource_content.number_of_questions
         nb_max_mistakes = self.exercise.resource_content.max_mistakes

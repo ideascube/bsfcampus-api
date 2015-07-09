@@ -1,5 +1,5 @@
 from MookAPI.core import db
-from MookAPI import utils
+from MookAPI.utils import is_local
 from .downloadable_file import DownloadableFileResourceContentJsonSerializer, \
     DownloadableFileResourceContent, \
     DownloadableFileResourceJsonSerializer, \
@@ -7,9 +7,18 @@ from .downloadable_file import DownloadableFileResourceContentJsonSerializer, \
 
 
 class VideoResourceContentJsonSerializer(DownloadableFileResourceContentJsonSerializer):
-    pass
 
-class VideoResourceContent(DownloadableFileResourceContent):
+    # FIXME we should to this using the __json_*__ properties instead.
+    def encode_mongo(self, fields=None):
+        rv = super(VideoResourceContentJsonSerializer, self).encode_mongo(fields)
+
+        if is_local():
+            del rv['source']
+            del rv['video_id']
+
+        return rv
+
+class VideoResourceContent(VideoResourceContentJsonSerializer, DownloadableFileResourceContent):
 
     ##FIXME: Override content_file to specify accepted extensions/mimetypes.
 
@@ -26,17 +35,7 @@ class VideoResourceContent(DownloadableFileResourceContent):
 
 
 class VideoResourceJsonSerializer(DownloadableFileResourceJsonSerializer):
-
-    def encode_mongo(self, fields=None):
-        print ("VideoResourceJsonSerializer.encode_mongo")
-        rv = super(VideoResourceJsonSerializer, self).encode_mongo(fields)
-
-        if utils.is_local():
-            content = rv['resource_content']
-            del content['source']
-            del content['video_id']
-
-        return rv
+    pass
 
 class VideoResource(VideoResourceJsonSerializer, DownloadableFileResource):
     """Stores a video file in the database."""
