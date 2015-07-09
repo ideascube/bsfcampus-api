@@ -37,12 +37,22 @@ from .activity import \
     ActivitiesService, \
     ExerciseAttemptsService, \
     SkillValidationAttemptsService, \
-    TrackValidationAttemptsService
+    TrackValidationAttemptsService, \
+    CompletedResourcesService, \
+    CompletedSkillsService, \
+    CompletedTracksService, \
+    StartedTracksService, \
+    UnlockedTrackTestsService
 
 activities = ActivitiesService()
 exercise_attempts = ExerciseAttemptsService()
 skill_validation_attempts = SkillValidationAttemptsService()
 track_validation_attempts = TrackValidationAttemptsService()
+completed_resources = CompletedResourcesService()
+completed_skills = CompletedSkillsService()
+completed_tracks = CompletedTracksService()
+started_tracks = StartedTracksService()
+unlocked_track_tests = UnlockedTrackTestsService()
 
 from .local_servers import LocalServersService
 

@@ -1,10 +1,10 @@
 import io
 
 from flask import Blueprint, jsonify, send_file, abort
-from flask_jwt import current_user
+from flask_jwt import current_user, verify_jwt
 from MookAPI.auth import jwt_required
 
-from MookAPI.services import\
+from MookAPI.services import \
     resources, \
     lessons, \
     exercise_resources, \
@@ -22,11 +22,13 @@ def get_resources():
     list = resources.all().order_by('parent', 'order', 'title')
     return jsonify(data=list)
 
+
 @route(bp, "/lesson/<lesson_id>")
 @jwt_required()
 def get_lesson_resources(lesson_id):
     list = resources.find(parent=lesson_id).order_by('order', 'title')
     return jsonify(data=list)
+
 
 @route(bp, "/skill/<skill_id>")
 @jwt_required()
@@ -35,13 +37,18 @@ def get_skill_resources(skill_id):
     list = resources.find(parent__in=lessons_list).order_by('order', 'title')
     return jsonify(data=list)
 
+
 @route(bp, "/<resource_id>")
 # @jwt_required()
 def get_resource(resource_id):
     resource = resources.get_or_404(resource_id)
     response = jsonify(data=resource)
 
-    if current_user:
+    try:
+        verify_jwt()
+    except:
+        pass
+    else:
         user = current_user._get_current_object()
         user.add_started_track(resource.track)
         if not exercise_resources._isinstance(resource):
@@ -54,7 +61,9 @@ def get_resource(resource_id):
         # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
         # It should be solved in version 0.10.1
 
+
     return response
+
 
 @route(bp, "/<resource_id>/hierarchy")
 @jwt_required()
@@ -75,6 +84,7 @@ def get_resource_hierarchy(resource_id):
         cousins=resource.cousins()
     )
 
+
 @route(bp, "/<resource_id>/content-file/<filename>")
 # @jwt_required()
 def get_resource_content_file(resource_id, filename):
@@ -91,6 +101,7 @@ def get_resource_content_file(resource_id, filename):
 
     abort(404)
 
+
 @route(bp, "/<resource_id>/content-image/<filename>")
 # @jwt_required()
 def get_resource_content_image(resource_id, filename):
@@ -106,6 +117,7 @@ def get_resource_content_image(resource_id, filename):
         )
 
     abort(404)
+
 
 @route(bp, "/<resource_id>/question/<question_id>/image/<filename>")
 # @jwt_required()

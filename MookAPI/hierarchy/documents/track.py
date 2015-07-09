@@ -1,7 +1,7 @@
 import random
 
 from flask import url_for
-from flask_jwt import current_user
+from flask_jwt import current_user, verify_jwt
 
 from MookAPI.core import db
 from . import ResourceHierarchyJsonSerializer, ResourceHierarchy
@@ -48,7 +48,8 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
     def is_validated_by_user(self, user):
         """Whether the user validated the hierarchy level based on their activity."""
-        return self in user.completed_tracks
+        from MookAPI.services import completed_tracks
+        return completed_tracks.find(track=self, user=user).count() > 0
 
     def user_progress(self, user):
         current = 0
@@ -58,20 +59,30 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
         return {'current': current, 'max': len(self.skills)}
 
     def is_started_by_user(self, user):
-        return self in user.started_tracks
+        from MookAPI.services import started_tracks
+        return started_tracks.find(track=self, user=user).count() > 0
 
     @property
     def is_started(self):
+        try:
+            verify_jwt()
+        except:
+            pass
         if not current_user:
             return None
         user = current_user._get_current_object()
         return self.is_started_by_user(user)
 
     def test_is_unlocked_by_user(self, user):
-        return self in user.unlocked_track_tests
+        from MookAPI.services import unlocked_track_tests
+        return unlocked_track_tests.find(track=self, user=user).count() > 0
 
     @property
     def test_is_unlocked(self):
+        try:
+            verify_jwt()
+        except:
+            pass
         if not current_user:
             return None
         user = current_user._get_current_object()

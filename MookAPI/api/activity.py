@@ -28,10 +28,8 @@ def post_exercise_attempt():
     print "CREATING exercise attempt for exercise {exercise}".format(exercise=exercise.id)
 
     attempt = exercise_attempts.__model__.init_with_exercise(exercise)
+    attempt.user = current_user._get_current_object()
     attempt.save()
-
-    current_user._get_current_object().add_exercise_attempt(attempt)
-    current_user._get_current_object().save()
 
     return jsonify(data=attempt)
 
@@ -43,9 +41,10 @@ def get_exercise_attempt(attempt_id):
 
     print "GETTING exercise attempt with id {attempt_id}".format(attempt_id=attempt_id)
 
-    exercise_attempt = exercise_attempts.get_or_404(attempt_id)
+    attempt = exercise_attempts.get_or_404(attempt_id)
+    # FIXME Check that attempt.user == current_user
 
-    return jsonify(data=exercise_attempt)
+    return jsonify(data=attempt)
 
 
 @route(bp, "/exercise_attempts/<attempt_id>/answer", methods=['POST'])
@@ -56,6 +55,7 @@ def post_exercise_attempt_question_answer(attempt_id):
     print "POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id)
 
     attempt = exercise_attempts.get_or_404(attempt_id)
+    # FIXME Check that attempt.user == current_user
 
     form_data = json_util.loads(request.form.get('form_data'))
     question_id = form_data['question_id']
@@ -87,10 +87,8 @@ def post_skill_validation_attempt():
     print "CREATING skill validation attempt for skill {skill}".format(skill=skill.id)
 
     attempt = skill_validation_attempts.__model__.init_with_skill(skill)
+    attempt.user = current_user._get_current_object()
     attempt.save()
-
-    current_user._get_current_object().add_skill_validation_attempt(attempt)
-    current_user._get_current_object().save()
 
     return jsonify(data=attempt)
 
@@ -102,9 +100,10 @@ def get_skill_validation_attempt(attempt_id):
 
     print "GETTING skill validation attempt with id {attempt_id}".format(attempt_id=attempt_id)
 
-    skill_validation_attempt = skill_validation_attempts.get_or_404(id=attempt_id)
+    attempt = skill_validation_attempts.get_or_404(id=attempt_id)
+    # FIXME Check that attempt.user == current_user
 
-    return jsonify(data=skill_validation_attempt)
+    return jsonify(data=attempt)
 
 
 @route(bp, "/skill_validation_attempts/<attempt_id>/answer", methods=['POST'])
@@ -115,6 +114,7 @@ def post_skill_validation_attempt_question_answer(attempt_id):
     print "POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id)
 
     attempt = skill_validation_attempts.get_or_404(attempt_id)
+    # FIXME Check that attempt.user == current_user
 
     form_data = json_util.loads(request.form.get('form_data'))
     question_id = form_data['question_id']
@@ -145,10 +145,8 @@ def post_track_validation_attempt():
     print "CREATING track validation attempt for exercise {exercise}".format(exercise=exercise.id)
 
     attempt = track_validation_attempts.__model__.init_with_exercise(exercise)
+    attempt.user = current_user._get_current_object()
     attempt.save()
-
-    current_user._get_current_object().add_track_validation_attempt(attempt)
-    current_user._get_current_object().save()
 
     return jsonify(data=attempt)
 
@@ -160,9 +158,10 @@ def get_track_validation_attempt(attempt_id):
 
     print "GETTING track validation attempt with id {attempt_id}".format(attempt_id=attempt_id)
 
-    track_validation_attempt = track_validation_attempts.get_or_404(attempt_id)
+    attempt = track_validation_attempts.get_or_404(attempt_id)
+    # FIXME Check that attempt.user == current_user
 
-    return jsonify(data=track_validation_attempt)
+    return jsonify(data=attempt)
 
 
 @route(bp, "/track_validation_attempts/<attempt_id>/answer", methods=['POST'])
@@ -173,6 +172,7 @@ def post_track_validation_attempt_question_answer(attempt_id):
     print "POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id)
 
     attempt = track_validation_attempts.get_or_404(id=attempt_id)
+    # FIXME Check that attempt.user == current_user
 
     form_data = json_util.loads(request.form.get('form_data'))
     question_id = form_data['question_id']

@@ -90,7 +90,8 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
 
     def is_validated_by_user(self, user):
         """Whether the current_user validated the hierarchy level based on their activity."""
-        return self in user.completed_skills
+        from MookAPI.services import completed_skills
+        return completed_skills.find(skill=self, user=user).count() > 0
 
     def user_progress(self, user):
         current = 0

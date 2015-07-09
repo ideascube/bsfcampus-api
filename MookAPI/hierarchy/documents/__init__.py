@@ -2,7 +2,7 @@ import datetime
 import bson
 import slugify
 
-from flask_jwt import current_user
+from flask_jwt import current_user, verify_jwt
 
 from MookAPI.sync import SyncableDocument
 from MookAPI.core import db
@@ -48,6 +48,10 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
 
     @property
     def is_validated(self):
+        try:
+            verify_jwt()
+        except:
+            pass
         if not current_user:
             return None
         user = current_user._get_current_object()
@@ -63,6 +67,10 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
 
     @property
     def progress(self):
+        try:
+            verify_jwt()
+        except:
+            pass
         if not current_user:
             return None
         user = current_user._get_current_object()
@@ -96,17 +104,6 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
 
     def __unicode__(self):
         return self.title
-
-    @classmethod
-    def get_unique_object_or_404(cls, token):
-        """Get the only hierarchy level matching argument 'token', where 'token' can be the id or the slug."""
-
-        try:
-            bson.ObjectId(token)
-        except bson.errors.InvalidId:
-            return cls.objects.get_or_404(slug=token)
-        else:
-            return cls.objects.get_or_404(id=token)
 
     @property
     def breadcrumb(self):

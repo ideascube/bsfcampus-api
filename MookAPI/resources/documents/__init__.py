@@ -3,7 +3,7 @@ import bson
 import slugify
 
 from flask import url_for
-from flask_jwt import current_user
+from flask_jwt import current_user, verify_jwt
 
 from MookAPI.core import db
 from MookAPI.helpers import JsonSerializer
@@ -44,7 +44,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     """
 
     meta = {
-        'allow_inheritance': True,
+        'allow_inheritance': True
     }
     
     ### PROPERTIES
@@ -85,10 +85,15 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
 
     def is_validated_by_user(self, user):
         """Whether the current user (if any) has validated this Resource_."""
-        return self in user.completed_resources
+        from MookAPI.services import completed_resources
+        return completed_resources.find(resource=self, user=user).count() > 0
 
     @property
     def is_validated(self):
+        try:
+            verify_jwt()
+        except:
+            pass
         if not current_user:
             return None
         user = current_user._get_current_object()
@@ -183,15 +188,6 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
         
     def __unicode__(self):
         return self.title
-
-    @classmethod
-    def get_unique_object_or_404(cls, token):
-        try:
-            bson.ObjectId(token)
-        except bson.errors.InvalidId:
-            return cls.objects.get_or_404(slug=token)
-        else:
-            return cls.objects.get_or_404(id=token)
 
     def top_level_syncable_document(self):
         return self.track
