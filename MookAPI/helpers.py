@@ -44,6 +44,7 @@ class JsonSerializer(object):
         EmbeddedDocumentField = _import_class('EmbeddedDocumentField')
         ListField = _import_class('ListField')
         ReferenceField = _import_class('ReferenceField')
+        GenericReferenceField = _import_class('GenericReferenceField')
 
         rv = self.to_mongo(fields=fields)
 
@@ -66,7 +67,7 @@ class JsonSerializer(object):
                     except:
                         pass
 
-                elif isinstance(field, ReferenceField):
+                elif isinstance(field, (ReferenceField, GenericReferenceField)):
                     value = getattr(self, key, None)
                     if value:
                         rv[key] = value.to_json_dbref()
@@ -84,7 +85,7 @@ class JsonSerializer(object):
                         if issubclass(field.field.document_type_obj, JsonSerializer):
                             values = getattr(self, key, [])
                             rv[key] = [value.to_json() for value in values]
-                    elif isinstance(field.field, ReferenceField):
+                    elif isinstance(field.field, (ReferenceField, GenericReferenceField)):
                         values = getattr(self, key, [])
                         rv[key] = [value.to_json_dbref() for value in values]
 
