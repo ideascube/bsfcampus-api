@@ -1,6 +1,6 @@
 import datetime
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from MookAPI.services import local_servers
 
@@ -53,3 +53,28 @@ def register_local_server():
     local_server = local_servers.create(user=user)
 
     return jsonify(data=local_server)
+
+@route(bp, "/subscribe", methods=['POST'])
+@basic_auth_required
+def subscribe_item_to_sync():
+
+    user = basic_auth_user._get_current_object()
+    #FIXME: Check if user has role "local_server"
+
+    local_server = local_servers.first(user=user)
+
+    try:
+        data = request.get_json()
+    except:
+        return jsonify(error="Invalid data", code=1), 400
+    service_name = data.get('service', None)
+    document_id = data.get('document_id', None)
+
+    local_server.append_syncable_item(service_name, document_id)
+
+    try:
+        local_server.save()
+    except Exception as e:
+        return jsonify(error=e.message), 400
+    else:
+        return jsonify(data=local_server)
