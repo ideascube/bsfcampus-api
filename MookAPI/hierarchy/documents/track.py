@@ -62,6 +62,8 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
     @property
     def is_started(self):
+        if not current_user:
+            return None
         user = current_user._get_current_object()
         return self.is_started_by_user(user)
 
@@ -70,6 +72,8 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
     @property
     def test_is_unlocked(self):
+        if not current_user:
+            return None
         user = current_user._get_current_object()
         return self.test_is_unlocked_by_user(user)
 

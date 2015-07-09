@@ -36,22 +36,23 @@ def get_skill_resources(skill_id):
     return jsonify(data=list)
 
 @route(bp, "/<resource_id>")
-@jwt_required()
+# @jwt_required()
 def get_resource(resource_id):
     resource = resources.get_or_404(resource_id)
     response = jsonify(data=resource)
 
-    user = current_user._get_current_object()
-    user.add_started_track(resource.track)
-    if not exercise_resources._isinstance(resource):
-        user.add_completed_resource(resource)
-        if user.is_track_test_available_and_never_attempted(resource.track):
-            alert = {"code": "prompt_track_validation", "id": resource.track._data.get("id", None)}
-            response = jsonify(data=resource, alert=alert)
+    if current_user:
+        user = current_user._get_current_object()
+        user.add_started_track(resource.track)
+        if not exercise_resources._isinstance(resource):
+            user.add_completed_resource(resource)
+            if user.is_track_test_available_and_never_attempted(resource.track):
+                alert = {"code": "prompt_track_validation", "id": resource.track._data.get("id", None)}
+                response = jsonify(data=resource, alert=alert)
 
-    user.save(validate=False)
-    # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
-    # It should be solved in version 0.10.1
+        user.save(validate=False)
+        # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
+        # It should be solved in version 0.10.1
 
     return response
 

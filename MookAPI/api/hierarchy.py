@@ -21,7 +21,7 @@ def get_tracks():
     return jsonify(data=list)
 
 @route(bp, "/tracks/<track_id>")
-@jwt_required()
+# @jwt_required()
 def get_track(track_id):
     """Get the Track_ with id ``track_id`` enveloped in a single-key JSON dictionary."""
 
@@ -60,7 +60,7 @@ def get_track_skills(track_id):
     return jsonify(data=list)
 
 @route(bp, "/skills/<skill_id>")
-@jwt_required()
+# @jwt_required()
 def get_skill(skill_id):
     """Get the Skill_ with id ``skill_id`` enveloped in a single-key JSON dictionary."""
 
@@ -99,7 +99,7 @@ def get_skill_lessons(skill_id):
     return jsonify(data=list)
 
 @route(bp, "/lessons/<lesson_id>")
-@jwt_required()
+# @jwt_required()
 def get_lesson(lesson_id):
     """Get the Lesson_ with id ``lesson_id`` enveloped in a single-key JSON dictionary."""
 

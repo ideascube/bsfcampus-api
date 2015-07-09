@@ -89,6 +89,8 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
 
     @property
     def is_validated(self):
+        if not current_user:
+            return None
         user = current_user._get_current_object()
         return self.is_validated_by_user(user)
     

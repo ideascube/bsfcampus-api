@@ -48,6 +48,8 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
 
     @property
     def is_validated(self):
+        if not current_user:
+            return None
         user = current_user._get_current_object()
         return self.is_validated_by_user(user)
 
@@ -61,6 +63,8 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
 
     @property
     def progress(self):
+        if not current_user:
+            return None
         user = current_user._get_current_object()
         return self.user_progress(user)
     
