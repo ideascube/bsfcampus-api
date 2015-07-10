@@ -87,11 +87,11 @@ class Lesson(LessonJsonSerializer, ResourceHierarchy):
 
         return items
 
-    def items_to_update(self, last_sync):
-        items = super(Lesson, self).items_to_update(last_sync)
+    def items_to_update(self, last_sync, local_server=None):
+        items = super(Lesson, self).items_to_update(last_sync, local_server=local_server)
 
         for resource in self.resources:
-            items.extend(resource.items_to_update(last_sync))
+            items.extend(resource.items_to_update(last_sync, local_server=local_server))
 
         return items
 

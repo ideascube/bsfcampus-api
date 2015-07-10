@@ -129,11 +129,11 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
         return items
 
     # @if_central
-    def items_to_update(self, last_sync):
-        items = super(Track, self).items_to_update(last_sync)
+    def items_to_update(self, last_sync, local_server=None):
+        items = super(Track, self).items_to_update(last_sync, local_server=local_server)
 
         for skill in self.skills:
-            items.extend(skill.items_to_update(last_sync))
+            items.extend(skill.items_to_update(last_sync, local_server=local_server))
 
         for test in self.track_validation_tests:
             items.extend(test.all_syncable_items())

@@ -152,11 +152,11 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
         return items
 
     # @if_central
-    def items_to_update(self, last_sync):
-        items = super(Skill, self).items_to_update(last_sync)
+    def items_to_update(self, last_sync, local_server=None):
+        items = super(Skill, self).items_to_update(last_sync, local_server=local_server)
 
         for lesson in self.lessons:
-            items.extend(lesson.items_to_update(last_sync))
+            items.extend(lesson.items_to_update(last_sync, local_server=local_server))
 
         return items
 
