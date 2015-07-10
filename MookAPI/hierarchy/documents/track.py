@@ -123,6 +123,9 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
         for skill in self.skills:
             items.extend(skill.all_syncable_items())
 
+        for test in self.track_validation_tests:
+            items.extend(test.all_syncable_items())
+
         return items
 
     # @if_central
@@ -131,5 +134,8 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
         for skill in self.skills:
             items.extend(skill.items_to_update(last_sync))
+
+        for test in self.track_validation_tests:
+            items.extend(test.all_syncable_items())
 
         return items
