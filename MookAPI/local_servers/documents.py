@@ -32,7 +32,8 @@ class SyncableItem(SyncableItemJsonSerializer, db.EmbeddedDocument):
         """
         Returns a list of atomic documents whose ``top_level_document()`` is ``item`` and that have changed since ``last_sync``.
         """
-        return self.document.items_to_sync(self.last_sync)
+        local_server = self._instance or None
+        return self.document.items_to_sync(self.last_sync, local_server=local_server)
 
     @classmethod
     def init_with_service_and_id(cls, service_name, document_id):
@@ -93,3 +94,7 @@ class LocalServer(LocalServerJsonSerializer, db.Document):
         syncable_item = SyncableItem.init_with_service_and_id(service_name, document_id)
         if syncable_item.document not in self.synchronized_documents:
             self.syncable_items.append(syncable_item)
+
+    def syncs_document(self, document):
+        top_level_document = document.top_level_syncable_document()
+        return top_level_document in self.synchronized_documents

@@ -88,7 +88,7 @@ class SyncableDocument(JsonSerializer, db.Document):
         reference.save()
         return super(SyncableDocument, self).delete(*args, **kwargs)
 
-    def all_syncable_items(self):
+    def all_syncable_items(self, local_server=None):
         """
         Returns the list of references to atomic documents that should be looked at when syncing this document.
         Defaults to a one-element list containing a reference to self.
@@ -100,7 +100,7 @@ class SyncableDocument(JsonSerializer, db.Document):
 
         return [self.reference()]
 
-    def items_to_update(self, last_sync):
+    def items_to_update(self, last_sync, local_server=None):
         """
         .. _items_to_update:
 
@@ -117,7 +117,7 @@ class SyncableDocument(JsonSerializer, db.Document):
 
         return []
 
-    def items_to_delete(self, last_sync):
+    def items_to_delete(self, last_sync, local_server=None):
         """
         .. _items_to_delete:
 
@@ -134,7 +134,7 @@ class SyncableDocument(JsonSerializer, db.Document):
 
         return items
 
-    def items_to_sync(self, last_sync):
+    def items_to_sync(self, last_sync, local_server=None):
         """
         Returns a dictionary ``dict`` with two keys:
 
@@ -147,8 +147,8 @@ class SyncableDocument(JsonSerializer, db.Document):
         """
 
         items = {}
-        items['update'] = self.items_to_update(last_sync)
-        items['delete'] = self.items_to_delete(last_sync)
+        items['update'] = self.items_to_update(last_sync, local_server=local_server)
+        items['delete'] = self.items_to_delete(last_sync, local_server=local_server)
         ## We should do some cleanup at this point, in particular remove deletable items from 'update' list.
         return items
 

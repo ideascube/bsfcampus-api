@@ -170,47 +170,63 @@ class User(UserJsonSerializer, SyncableDocument):
     def url(self):
         return url_for("users.get_user_info", user_id=self.id, _external=True)
 
-    def all_syncable_items(self):
+    def all_syncable_items(self, local_server=None):
         items = super(User, self).all_syncable_items()
 
         for item in self.exercise_attempts:
-            items.extend(item.all_syncable_items())
+            if local_server.syncs_document(item.exercise):
+                items.extend(item.all_syncable_items(local_server=local_server))
         for item in self.skill_validation_attempts:
-            items.extend(item.all_syncable_items())
+            if local_server.syncs_document(item.skill):
+                items.extend(item.all_syncable_items(local_server=local_server))
         for item in self.track_validation_attempts:
-            items.extend(item.all_syncable_items())
+            if local_server.syncs_document(item.track):
+                items.extend(item.all_syncable_items(local_server=local_server))
         for item in self.completed_resources:
-            items.extend(item.all_syncable_items())
+            if local_server.syncs_document(item.resource):
+                items.extend(item.all_syncable_items(local_server=local_server))
         for item in self.completed_skills:
-            items.extend(item.all_syncable_items())
+            if local_server.syncs_document(item.skill):
+                items.extend(item.all_syncable_items(local_server=local_server))
         for item in self.started_tracks:
-            items.extend(item.all_syncable_items())
+            if local_server.syncs_document(item.track):
+                items.extend(item.all_syncable_items(local_server=local_server))
         for item in self.unlocked_track_tests:
-            items.extend(item.all_syncable_items())
+            if local_server.syncs_document(item.track):
+                items.extend(item.all_syncable_items(local_server=local_server))
         for item in self.completed_tracks:
-            items.extend(item.all_syncable_items())
+            if local_server.syncs_document(item.track):
+                items.extend(item.all_syncable_items(local_server=local_server))
 
         return items
 
-    def items_to_update(self, last_sync):
-        items = super(User, self).items_to_update(last_sync)
+    def items_to_update(self, last_sync, local_server=None):
+        items = super(User, self).items_to_update(last_sync, local_server=local_server)
 
         for item in self.exercise_attempts:
-            items.extend(item.items_to_update(last_sync))
+            if local_server.syncs_document(item.exercise):
+                items.extend(item.items_to_update(last_sync, local_server=local_server))
         for item in self.skill_validation_attempts:
-            items.extend(item.items_to_update(last_sync))
+            if local_server.syncs_document(item.skill):
+                items.extend(item.items_to_update(last_sync, local_server=local_server))
         for item in self.track_validation_attempts:
-            items.extend(item.items_to_update(last_sync))
+            if local_server.syncs_document(item.track):
+                items.extend(item.items_to_update(last_sync, local_server=local_server))
         for item in self.completed_resources:
-            items.extend(item.items_to_update(last_sync))
+            if local_server.syncs_document(item.resource):
+                items.extend(item.items_to_update(last_sync, local_server=local_server))
         for item in self.completed_skills:
-            items.extend(item.items_to_update(last_sync))
+            if local_server.syncs_document(item.skill):
+                items.extend(item.items_to_update(last_sync, local_server=local_server))
         for item in self.started_tracks:
-            items.extend(item.items_to_update(last_sync))
+            if local_server.syncs_document(item.track):
+                items.extend(item.items_to_update(last_sync, local_server=local_server))
         for item in self.unlocked_track_tests:
-            items.extend(item.items_to_update(last_sync))
+            if local_server.syncs_document(item.track):
+                items.extend(item.items_to_update(last_sync, local_server=local_server))
         for item in self.completed_tracks:
-            items.extend(item.items_to_update(last_sync))
+            if local_server.syncs_document(item.track):
+                items.extend(item.items_to_update(last_sync, local_server=local_server))
 
         return items
 
