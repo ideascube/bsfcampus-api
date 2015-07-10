@@ -160,7 +160,7 @@ def depile_sync_item():
     item = items_to_sync.queryset().order_by('queue_position').first()
 
     if item is None:
-        return jsonify(error=1, changes_made=0, error_details="No more items to depile")
+        return jsonify(error=0, changes_made=0, error_details="No more items to depile"), 200
 
     if item.action == 'update':
         result = _update_item(item)
@@ -171,7 +171,7 @@ def depile_sync_item():
         else:
             item.errors.append(str(result[1]))
             item.save()
-            return jsonify(error=1, changes_made=0, error_details=result[1])
+            return jsonify(error=1, changes_made=0, error_details=result[1]), 400
 
     elif item.action == 'delete':
         result = _delete_item(item)
@@ -182,4 +182,7 @@ def depile_sync_item():
         else:
             item.errors.append(str(result[1]))
             item.save()
-            return jsonify(error=1, changes_made=0, error_details=result[1])
+            return jsonify(error=1, changes_made=0, error_details=result[1]), 400
+
+    else:
+        return jsonify(error=1, changes_made=0, error_details="Unrecognized action required"), 400
