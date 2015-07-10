@@ -96,8 +96,8 @@ def current_user_dashboard():
 
 
 @route(bp, "/<user_id>")
-@jwt_required()
-def user_info(user_id):
+# @jwt_required()
+def get_user_info(user_id):
     user = users.get_or_404(user_id)
     return jsonify(dict(data=user))
 

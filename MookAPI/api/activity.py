@@ -5,6 +5,7 @@ from MookAPI.auth import jwt_required
 from flask_jwt import current_user
 
 from MookAPI.services import \
+    activities, \
     exercise_attempts, \
     skill_validation_attempts, \
     track_validation_attempts, \
@@ -16,6 +17,12 @@ from . import route
 
 bp = Blueprint("activity", __name__, url_prefix="/activity")
 
+
+@route(bp, "/<activity_id>")
+def get_activity(activity_id):
+    activity = activities.get_or_404(activity_id)
+
+    return jsonify(data=activity)
 
 ## Exercises (as Resources) attempts
 
@@ -172,7 +179,6 @@ def post_track_validation_attempt_question_answer(attempt_id):
     print "POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id)
 
     attempt = track_validation_attempts.get_or_404(id=attempt_id)
-    # FIXME Check that attempt.user == current_user
 
     form_data = json_util.loads(request.form.get('form_data'))
     question_id = form_data['question_id']

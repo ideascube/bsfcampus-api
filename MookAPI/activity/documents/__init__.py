@@ -1,5 +1,7 @@
 import datetime
 
+from flask import url_for
+
 from MookAPI.core import db
 from MookAPI.helpers import JsonSerializer
 from MookAPI.sync import SyncableDocument
@@ -22,3 +24,10 @@ class Activity(ActivityJsonSerializer, SyncableDocument):
 
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
     """The date at which the activity was performed."""
+
+    @property
+    def url(self):
+        return url_for("activity.get_activity", activity_id=self.id, _external=True)
+
+    def top_level_syncable_document(self):
+        return self.user

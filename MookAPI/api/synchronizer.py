@@ -21,6 +21,16 @@ document_module_names = [
     "MookAPI.resources.documents.external_video",
     "MookAPI.resources.documents.rich_text",
     "MookAPI.resources.documents.video",
+    "MookAPI.users.documents",
+    "MookAPI.activity.documents",
+    "MookAPI.activity.documents.completed_resource",
+    "MookAPI.activity.documents.completed_skill",
+    "MookAPI.activity.documents.completed_track",
+    "MookAPI.activity.documents.exercise_attempt",
+    "MookAPI.activity.documents.skill_validation_attempt",
+    "MookAPI.activity.documents.started_track",
+    "MookAPI.activity.documents.track_validation_attempt",
+    "MookAPI.activity.documents.unlocked_track_test",
     ]
 
 def import_module(module_name):
