@@ -114,48 +114,44 @@ class User(UserJsonSerializer, SyncableDocument):
         return completed_tracks.find(user=self)
 
     def add_completed_resource(self, resource):
-        # FIXME Make more efficient search using Service
-        if resource not in [item.resource for item in self.completed_resources]:
-            from MookAPI.services import completed_resources
+        from MookAPI.services import completed_resources
+        if completed_resources.find(user=self, resource=resource).count() == 0:
             completed_resources.create(user=self, resource=resource)
             skill = resource.parent.skill
             skill_progress = skill.user_progress(self)
-            # FIXME Make more efficient search using Service
-            if skill not in [item.skill for item in self.completed_skills] and skill_progress['current'] >= skill_progress['max']:
+            from MookAPI.services import completed_skills
+            if completed_skills.find(user=self, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
                 self.add_completed_skill(skill)
 
     def add_completed_skill(self, skill):
-        # FIXME Make more efficient search using Service
-        if skill not in [item.skill for item in self.completed_skills]:
-            from MookAPI.services import completed_skills
+        from MookAPI.services import completed_skills
+        if completed_skills.find(user=self, skill=skill).count() == 0:
             completed_skills.create(user=self, skill=skill)
             track = skill.track
             track_progress = track.user_progress(self)
-            # FIXME Make more efficient search using Service
-            if track not in [item.track for item in self.unlocked_track_tests] and track_progress['current'] >= track_progress['max']:
+            from MookAPI.services import unlocked_track_tests
+            if unlocked_track_tests.find(user=self, track=track).count() == 0 and track_progress['current'] >= track_progress['max']:
                 self.unlock_track_validation_test(track)
 
     def add_started_track(self, track):
-        # FIXME Make more efficient search using Service
-        if track not in [item.track for item in self.started_tracks]:
-            from MookAPI.services import started_tracks
+        from MookAPI.services import started_tracks
+        if started_tracks.find(user=self, track=track).count() == 0:
             started_tracks.create(user=self, track=track)
 
     def unlock_track_validation_test(self, track):
-        # FIXME Make more efficient search using Service
-        if track not in [item.track for item in self.unlocked_track_tests]:
-            from MookAPI.services import unlocked_track_tests
+        from MookAPI.services import unlocked_track_tests
+        if unlocked_track_tests.find(user=self, track=track).count() == 0:
             unlocked_track_tests.create(user=self, track=track)
 
     def add_completed_track(self, track):
-        # FIXME Make more efficient search using Service
-        if track not in [item.track for item in self.completed_tracks]:
-            from MookAPI.services import completed_tracks
+        from MookAPI.services import completed_tracks
+        if completed_tracks.find(user=self, track=track).count() == 0:
             completed_tracks.create(user=self, track=track)
 
     def is_track_test_available_and_never_attempted(self, track):
         # FIXME Make more efficient search using Service
-        if track in [item.track for item in self.unlocked_track_tests]:
+        from MookAPI.services import unlocked_track_tests
+        if unlocked_track_tests.find(user=self, track=track).count() > 0:
             return all(attempted_test.exercise.parent != track for attempted_test in self.track_validation_attempts)
 
         return False
@@ -196,7 +192,6 @@ class User(UserJsonSerializer, SyncableDocument):
 
         return items
 
-    # @if_central
     def items_to_update(self, last_sync):
         items = super(User, self).items_to_update(last_sync)
 
