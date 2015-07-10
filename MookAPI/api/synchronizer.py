@@ -20,6 +20,7 @@ document_module_names = [
     "MookAPI.resources.documents.exercise",
     "MookAPI.resources.documents.external_video",
     "MookAPI.resources.documents.rich_text",
+    "MookAPI.resources.documents.track_validation",
     "MookAPI.resources.documents.video",
     "MookAPI.users.documents",
     "MookAPI.activity.documents",
