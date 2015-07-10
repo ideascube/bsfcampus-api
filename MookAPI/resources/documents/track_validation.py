@@ -22,6 +22,6 @@ class TrackValidationResource(ExerciseResource):
         """
 
         return [
-            self.track._breadcrumb_item(),
-            self._breadcrumb_item()
+            self.track.to_json_dbref(),
+            self.to_json_dbref()
         ]
