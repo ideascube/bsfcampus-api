@@ -22,7 +22,7 @@ class Service(object):
 
     def save(self, model):
         self._isinstance(model)
-        model.save()
+        model.save(validate=False) # FIXME Temporary hack due to a bug in MongoEngine.
         return model
 
     def queryset(self):
