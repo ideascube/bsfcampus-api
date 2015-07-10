@@ -113,18 +113,6 @@ class User(UserJsonSerializer, SyncableDocument):
         from MookAPI.services import completed_tracks
         return completed_tracks.find(user=self)
 
-    def add_exercise_attempt(self, attempt):
-        if attempt not in self.exercises_attempts:
-            self.exercises_attempts.append(attempt)
-
-    def add_skill_validation_attempt(self, attempt):
-        if attempt not in self.skill_validation_attempts:
-            self.skill_validation_attempts.append(attempt)
-
-    def add_track_validation_attempt(self, attempt):
-        if attempt not in self.track_validation_attempts:
-            self.track_validation_attempts.append(attempt)
-
     def add_completed_resource(self, resource):
         # FIXME Make more efficient search using Service
         if resource not in [item.resource for item in self.completed_resources]:
