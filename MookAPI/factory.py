@@ -2,7 +2,7 @@ from flask import Flask
 
 def create_app(
         package_name,
-        package_path,
+        package_path=None,
         settings_override=None,
         register_security_blueprint=True):
 
@@ -15,8 +15,9 @@ def create_app(
     from .core import db
     db.init_app(app)
 
-    from .helpers import register_blueprints
-    register_blueprints(app, package_name, package_path)
+    if package_path:
+        from .helpers import register_blueprints
+        register_blueprints(app, package_name, package_path)
 
     from .admin_ui import admin_ui
     admin_ui.init_app(app)
