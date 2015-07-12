@@ -57,7 +57,3 @@ unlocked_track_tests = UnlockedTrackTestsService()
 from .local_servers import LocalServersService
 
 local_servers = LocalServersService()
-
-from .synchronizer import ItemsToSyncService
-
-items_to_sync = ItemsToSyncService()
