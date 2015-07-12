@@ -54,7 +54,7 @@ class SyncableDocument(JsonSerializer, db.Document):
     """The id of the document on the central server."""
 
     @property
-    def path(self):
+    def url(self):
         """
         The URL where a JSON representation of the document based on MongoCoderMixin_'s encode_mongo_ method can be found.
 
@@ -154,5 +154,5 @@ class SyncableDocument(JsonSerializer, db.Document):
 
     def reference(self):
         son = self.to_json_dbref()
-        son['path'] = self.path
+        son['url'] = self.url
         return son

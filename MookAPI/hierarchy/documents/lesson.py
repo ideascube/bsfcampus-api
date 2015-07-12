@@ -32,8 +32,8 @@ class Lesson(LessonJsonSerializer, ResourceHierarchy):
         return self.skill.track
 
     @property
-    def path(self):
-        return url_for("hierarchy.get_lesson", lesson_id=self.id)
+    def url(self):
+        return url_for("hierarchy.get_lesson", lesson_id=self.id, _external=True)
 
     @property
     def resources(self):
