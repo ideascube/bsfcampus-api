@@ -5,7 +5,7 @@ from MookAPI.core import db
 class TrackValidationResourceJsonSerializer(ExerciseResourceJsonSerializer):
     pass
 
-class TrackValidationResource(ExerciseResource):
+class TrackValidationResource(ExerciseResourceJsonSerializer, ExerciseResource):
     """An track validation test with a list of questions."""
 
     parent = db.ReferenceField('Track')

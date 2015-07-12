@@ -136,6 +136,6 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
             items.extend(skill.items_to_update(last_sync, local_server=local_server))
 
         for test in self.track_validation_tests:
-            items.extend(test.all_syncable_items())
+            items.extend(test.items_to_update(last_sync, local_server=local_server))
 
         return items
