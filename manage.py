@@ -46,12 +46,18 @@ def launch_local_server():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 2:
-        if sys.argv[2] == 'local':
-            # FIXME: if we do not remove the second argument, the runserver command crashes because it has too many arguments
-            sys.argv.pop(2)
-            launch_local_server()
+
+    if sys.argv[1] == 'sync':
+        sys.argv.pop(1)
+        from sync import launch_process
+        launch_process(settings_local.Config, *sys.argv)
+
+    elif sys.argv[1] == 'runserver':
+        if len(sys.argv) > 2:
+            if sys.argv.pop(2) == 'local':
+                # FIXME: if we do not remove the second argument, the runserver command crashes because it has too many arguments
+                launch_local_server()
+            else:
+                launch_central_server()
         else:
             launch_central_server()
-    else:
-        launch_central_server()

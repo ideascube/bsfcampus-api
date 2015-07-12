@@ -1,20 +1,17 @@
-import sys
-
-def launch_process(*args):
-    from settings_local import Config
+def launch_process(config, *args):
     from process import SyncProcess
     from MookAPI.core import db
     from MookAPI.factory import create_app
 
-    db.init_app(create_app(__name__, settings_override=Config))
+    db.init_app(create_app(__name__, settings_override=config))
 
     synchronizer = SyncProcess(
-        host=Config.CENTRAL_SERVER_HOST,
-        key=Config.CENTRAL_SERVER_KEY,
-        secret=Config.CENTRAL_SERVER_SECRET
+        host=config.CENTRAL_SERVER_HOST,
+        key=config.CENTRAL_SERVER_KEY,
+        secret=config.CENTRAL_SERVER_SECRET
     )
 
-    interval = getattr(Config, 'SYNC_INTERVAL', None)
+    interval = getattr(config, 'SYNC_INTERVAL', None)
 
     if 'reset' in args:
         synchronizer.reset()
@@ -28,7 +25,3 @@ def launch_process(*args):
             synchronizer.run(interval=interval)
     else:
         synchronizer.run(interval=interval)
-
-
-if __name__ == "__main__":
-    launch_process(*sys.argv)
