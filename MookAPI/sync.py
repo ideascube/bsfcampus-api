@@ -54,7 +54,7 @@ class SyncableDocument(JsonSerializer, db.Document):
     """The id of the document on the central server."""
 
     @property
-    def url(self):
+    def path(self):
         """
         The URL where a JSON representation of the document based on MongoCoderMixin_'s encode_mongo_ method can be found.
 
@@ -129,7 +129,7 @@ class SyncableDocument(JsonSerializer, db.Document):
 
         for obj in DeletedSyncableDocument.objects.filter(top_level_document=self.top_level_syncable_document()):
             if last_sync is None or obj.date is None or last_sync < obj.date:
-                document = obj.encode_mongo()['document']
+                document = obj.to_json()['document']
                 items.append(document)
 
         return items
@@ -154,5 +154,5 @@ class SyncableDocument(JsonSerializer, db.Document):
 
     def reference(self):
         son = self.to_json_dbref()
-        son['url'] = self.url
+        son['path'] = self.path
         return son

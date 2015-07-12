@@ -75,8 +75,8 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
         return url_for("hierarchy.get_skill_icon", skill_id=self.id, _external=True)
 
     @property
-    def url(self):
-        return url_for("hierarchy.get_skill", skill_id=self.id, _external=True)
+    def path(self):
+        return url_for("hierarchy.get_skill", skill_id=self.id)
 
     @property
     def lessons(self):

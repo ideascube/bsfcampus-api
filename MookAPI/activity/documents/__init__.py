@@ -26,8 +26,8 @@ class Activity(ActivityJsonSerializer, SyncableDocument):
     """The date at which the activity was performed."""
 
     @property
-    def url(self):
-        return url_for("activity.get_activity", activity_id=self.id, _external=True)
+    def path(self):
+        return url_for("activity.get_activity", activity_id=self.id)
 
     def top_level_syncable_document(self):
         return self.user

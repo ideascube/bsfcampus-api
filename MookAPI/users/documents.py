@@ -167,8 +167,8 @@ class User(UserJsonSerializer, SyncableDocument):
         return bcrypt.verify(password, self.password)
 
     @property
-    def url(self):
-        return url_for("users.get_user_info", user_id=self.id, _external=True)
+    def path(self):
+        return url_for("users.get_user_info", user_id=self.id)
 
     def all_syncable_items(self, local_server=None):
         items = super(User, self).all_syncable_items()

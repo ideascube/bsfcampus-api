@@ -33,8 +33,8 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
     ### VIRTUAL PROPERTIES
 
     @property
-    def url(self):
-        return url_for("hierarchy.get_track", track_id=self.id, _external=True)
+    def path(self):
+        return url_for("hierarchy.get_track", track_id=self.id)
 
     @property
     def skills(self):
