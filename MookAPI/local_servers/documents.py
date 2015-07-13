@@ -98,3 +98,18 @@ class LocalServer(LocalServerJsonSerializer, db.Document):
     def syncs_document(self, document):
         top_level_document = document.top_level_syncable_document()
         return top_level_document in self.synchronized_documents
+
+    def get_sync_list(self):
+        items = dict(update=[], delete=[])
+        for (index, item) in enumerate(self.syncable_items):
+            items['update'].extend(item.sync_list()['update'])
+            items['delete'].extend(item.sync_list()['delete'])
+
+        return items
+
+    def set_last_sync(self, date):
+        for item in self.syncable_items:
+            item.last_sync = date
+
+    def reset(self):
+        self.set_last_sync(date=None)

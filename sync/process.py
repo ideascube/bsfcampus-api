@@ -29,7 +29,7 @@ class SyncProcess(object):
         r = self._get_request("/local_servers/sync")
 
         if r.status_code == 200:
-            items = json_util.loads(r.text)['items']
+            data = json_util.loads(r.text)['data']
             operations = dict(
                 new_updates=[],
                 new_deletes=[],
@@ -37,7 +37,7 @@ class SyncProcess(object):
                 failed_deletes=[]
             )
 
-            for item in items['update']:
+            for item in data['update']:
                 try:
                     db_item = self.items_to_sync_service.create(
                         action='update',
@@ -50,7 +50,7 @@ class SyncProcess(object):
                 else:
                     operations['new_updates'].append(db_item)
 
-            for item in items['delete']:
+            for item in data['delete']:
                 try:
                     db_item = self.items_to_sync_service.create(
                         action='delete',

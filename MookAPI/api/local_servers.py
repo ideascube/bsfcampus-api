@@ -17,8 +17,7 @@ def reset_local_server():
 
     local_server = local_servers.first(user=user)
 
-    for (index, item) in enumerate(local_server.syncable_items):
-        local_server.syncable_items[index].last_sync = None
+    local_server.reset()
 
     local_server.save()
 
@@ -31,17 +30,13 @@ def get_local_server_sync_list():
     #FIXME: Check if user has role "local_server"
 
     local_server = local_servers.first(user=user)
+    now = datetime.datetime.now
+    sync_list = local_server.get_sync_list()
 
-    items = dict(update=[], delete=[])
-
-    for (index, item) in enumerate(local_server.syncable_items):
-        items['update'].extend(item.sync_list()['update'])
-        items['delete'].extend(item.sync_list()['delete'])
-        local_server.syncable_items[index].last_sync = datetime.datetime.now
-
+    local_server.set_last_sync(now)
     local_server.save()
 
-    return jsonify(items=items)
+    return jsonify(data=sync_list)
 
 @route(bp, "/register", methods=['POST'])
 @basic_auth_required
