@@ -101,7 +101,10 @@ class SyncProcess(object):
 
         while True:
             rv = self.next_action()
-            if rv[0] == 'fetch_list' and rv[1]:
-                details = rv[2]
-                if not details['new_updates'] and not details['new_deletes']:
+            if rv[0] == 'fetch_list':
+                if rv[1]: # Request was successful
+                    details = rv[2]
+                    if not details['new_updates'] and not details['new_deletes']:
+                        time.sleep(interval)
+                else:
                     time.sleep(interval)
