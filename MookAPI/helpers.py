@@ -8,8 +8,16 @@ from mongoengine.common import _import_class
 
 from flask import Blueprint
 from flask.json import JSONEncoder as BaseJSONEncoder
-from .core import db
+from .core import db, Service
 
+def _get_service_for_class(class_name):
+    class_name = class_name.split('.')[-1]
+    import MookAPI.services as s
+    for name, service in s.__dict__.iteritems():
+        if isinstance(service, Service):
+            if service.__model__.__name__ == class_name:
+                return service
+    return None
 
 def register_blueprints(app, package_name, package_path):
     rv = []
@@ -155,6 +163,7 @@ class JsonSerializer(object):
     def _convert_value_from_json(value, field):
 
         ReferenceField = _import_class('ReferenceField')
+        GenericReferenceField = _import_class('GenericReferenceField')
         EmbeddedDocumentField = _import_class('EmbeddedDocumentField')
         ListField = _import_class('ListField')
 
@@ -163,8 +172,16 @@ class JsonSerializer(object):
             # FIXME This way of getting the id is not really clean.
             value = field.to_python(value['_id'])
             document_id = value.id
-            document = field.document_type_obj.objects(distant_id=document_id).first()
+            document = field.document_type_obj.objects.get(distant_id=document_id)
             return document
+
+        ## GenericField: convert reference to use the local ``id`` instead of the distant one.
+        if isinstance(field, GenericReferenceField):
+            # FIXME This way of getting the id is not really clean.
+            service = _get_service_for_class(value['_cls'])
+            if service:
+                document = service.get(distant_id=value['_id'])
+                return document
 
         ## EmbeddedDocumentField: instantiate MongoCoderEmbeddedDocument from JSON
         elif isinstance(field, EmbeddedDocumentField):
