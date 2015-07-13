@@ -127,3 +127,10 @@ class ExerciseResource(ExerciseResourceJsonSerializer, Resource):
 
         questions = self.resource_content.random_questions(number)
         return self._add_instance(questions)
+
+    def all_syncable_items(self, local_server=None):
+        items = []
+        if self.resource_content.fail_linked_resource:
+            items.append(self.resource_content.fail_linked_resource)
+        items.extend(super(ExerciseResource, self).all_syncable_items(local_server=local_server))
+        return items
