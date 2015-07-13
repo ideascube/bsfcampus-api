@@ -31,8 +31,11 @@ class Service(object):
     def all(self):
         return self.queryset().all()
 
-    def get(self, id):
-        return self.queryset().get(id=id)
+    def get(self, id=None, **kwargs):
+        if id:
+            return self.queryset().get(id=id)
+        else:
+            return self.queryset().get(**kwargs)
 
     def get_all(self, *ids):
         return self.queryset().filter(id__in=ids).all()
@@ -43,8 +46,11 @@ class Service(object):
     def first(self, **kwargs):
         return self.find(**kwargs).first()
 
-    def get_or_404(self, id):
-        return self.queryset().get_or_404(id=id)
+    def get_or_404(self, id=None, **kwargs):
+        if id:
+            return self.queryset().get_or_404(id=id)
+        else:
+            return self.queryset().get_or_404(**kwargs)
 
     def new(self, **kwargs):
         return self.__model__(**self._preprocess_params(kwargs))
