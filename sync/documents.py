@@ -27,7 +27,7 @@ class ItemToSync(db.Document):
     """The list of the errors that occurred while trying to perform the operation."""
 
     def __unicode__(self):
-        return "%s object with class %s and distant id %s" % (self.action, self.class_name, self.distant_id)
+        return "%s %s document with distant id %s" % (self.action, self.class_name, self.distant_id)
 
     def raw_class_name(self):
         return self.class_name.split('.')[-1]

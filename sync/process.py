@@ -30,41 +30,42 @@ class SyncProcess(object):
 
         if r.status_code == 200:
             data = json_util.loads(r.text)['data']
-            operations = dict(
-                new_updates=[],
-                new_deletes=[],
-                failed_updates=[],
-                failed_deletes=[]
-            )
+
+            updates = []
+            deletes = []
 
             for item in data['update']:
-                try:
-                    db_item = self.items_to_sync_service.create(
-                        action='update',
-                        url=item['url'],
-                        distant_id=item['_id'],
-                        class_name=item['_cls'],
-                    )
-                except:
-                    operations['failed_updates'].append(item)
-                else:
-                    operations['new_updates'].append(db_item)
+                db_item = self.items_to_sync_service.create(
+                    action='update',
+                    url=item['url'],
+                    distant_id=item['_id'],
+                    class_name=item['_cls'],
+                )
+                updates.append(db_item)
 
             for item in data['delete']:
-                try:
-                    db_item = self.items_to_sync_service.create(
-                        action='delete',
-                        distant_id=item['_id'],
-                        class_name=item['_cls']
-                    )
-                except:
-                    operations['failed_deletes'].append(item)
-                else:
-                    operations['new_deletes'].append(db_item)
+                db_item = self.items_to_sync_service.create(
+                    action='delete',
+                    distant_id=item['_id'],
+                    class_name=item['_cls']
+                )
+                deletes.append(db_item)
 
-            return True, operations
+            print "Got response from server, operations listed:"
+            for item in updates:
+                print "* Created task: %s" % item
+            for item in deletes:
+                print "* Created task: %s" % item
+
+            return True, dict(
+                updates=updates,
+                deletes=deletes
+            )
 
         else:
+
+            print "Could not get response from server, got error %d" % r.status_code
+
             return False, dict(
                 error=r.reason,
                 status_code=r.status_code
@@ -104,7 +105,7 @@ class SyncProcess(object):
             if rv[0] == 'fetch_list':
                 if rv[1]: # Request was successful
                     details = rv[2]
-                    if not details['new_updates'] and not details['new_deletes']:
+                    if not details['updates'] and not details['deletes']:
                         time.sleep(interval)
                 else:
                     time.sleep(interval)
