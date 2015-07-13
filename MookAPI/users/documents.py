@@ -200,35 +200,5 @@ class User(UserJsonSerializer, SyncableDocument):
 
         return items
 
-    def items_to_update(self, last_sync, local_server=None):
-        items = super(User, self).items_to_update(last_sync, local_server=local_server)
-
-        for item in self.exercise_attempts:
-            if local_server.syncs_document(item.exercise):
-                items.extend(item.items_to_update(last_sync, local_server=local_server))
-        for item in self.skill_validation_attempts:
-            if local_server.syncs_document(item.skill):
-                items.extend(item.items_to_update(last_sync, local_server=local_server))
-        for item in self.track_validation_attempts:
-            if local_server.syncs_document(item.track):
-                items.extend(item.items_to_update(last_sync, local_server=local_server))
-        for item in self.completed_resources:
-            if local_server.syncs_document(item.resource):
-                items.extend(item.items_to_update(last_sync, local_server=local_server))
-        for item in self.completed_skills:
-            if local_server.syncs_document(item.skill):
-                items.extend(item.items_to_update(last_sync, local_server=local_server))
-        for item in self.started_tracks:
-            if local_server.syncs_document(item.track):
-                items.extend(item.items_to_update(last_sync, local_server=local_server))
-        for item in self.unlocked_track_tests:
-            if local_server.syncs_document(item.track):
-                items.extend(item.items_to_update(last_sync, local_server=local_server))
-        for item in self.completed_tracks:
-            if local_server.syncs_document(item.track):
-                items.extend(item.items_to_update(last_sync, local_server=local_server))
-
-        return items
-
     def __unicode__(self):
         return self.username or self.email or self.id

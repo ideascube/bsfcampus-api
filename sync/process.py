@@ -51,11 +51,14 @@ class SyncProcess(object):
                 )
                 deletes.append(db_item)
 
-            print "Got response from server, operations listed:"
-            for item in updates:
-                print "* Created task: %s" % item
-            for item in deletes:
-                print "* Created task: %s" % item
+            print "Got response from server."
+            if updates or deletes:
+                for item in updates:
+                    print "* Created task: %s" % item
+                for item in deletes:
+                    print "* Created task: %s" % item
+            else:
+                print "==> No new task to create"
 
             return True, dict(
                 updates=updates,

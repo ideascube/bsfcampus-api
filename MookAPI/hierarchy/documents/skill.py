@@ -143,20 +143,11 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
     def top_level_syncable_document(self):
         return self.track
 
-    def all_syncable_items(self):
-        items = super(Skill, self).all_syncable_items()
+    def all_syncable_items(self, local_server=None):
+        items = super(Skill, self).all_syncable_items(local_server=local_server)
 
         for lesson in self.lessons:
-            items.extend(lesson.all_syncable_items())
-
-        return items
-
-    # @if_central
-    def items_to_update(self, last_sync, local_server=None):
-        items = super(Skill, self).items_to_update(last_sync, local_server=local_server)
-
-        for lesson in self.lessons:
-            items.extend(lesson.items_to_update(last_sync, local_server=local_server))
+            items.extend(lesson.all_syncable_items(local_server=local_server))
 
         return items
 

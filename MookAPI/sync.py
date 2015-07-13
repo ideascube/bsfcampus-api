@@ -111,10 +111,9 @@ class SyncableDocument(JsonSerializer, db.Document):
             Override this method if this document has children documents.
         """
 
-        if last_sync is None or self.last_modification is None or last_sync < self.last_modification:
-            return [self]
-
-        return []
+        for item in self.all_syncable_items(local_server=local_server):
+            if last_sync is None or item.last_modification is None or last_sync < item.last_modification:
+                yield item
 
     def items_to_delete(self, last_sync, local_server=None):
         """

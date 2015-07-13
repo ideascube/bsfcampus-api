@@ -79,19 +79,11 @@ class Lesson(LessonJsonSerializer, ResourceHierarchy):
     def top_level_syncable_document(self):
         return self.track
 
-    def all_syncable_items(self):
-        items = super(Lesson, self).all_syncable_items()
+    def all_syncable_items(self, local_server=None):
+        items = super(Lesson, self).all_syncable_items(local_server=local_server)
 
         for resource in self.resources:
-            items.extend(resource.all_syncable_items())
-
-        return items
-
-    def items_to_update(self, last_sync, local_server=None):
-        items = super(Lesson, self).items_to_update(last_sync, local_server=local_server)
-
-        for resource in self.resources:
-            items.extend(resource.items_to_update(last_sync, local_server=local_server))
+            items.extend(resource.all_syncable_items(local_server=local_server))
 
         return items
 
