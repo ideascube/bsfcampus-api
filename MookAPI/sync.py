@@ -65,7 +65,6 @@ class SyncableDocument(JsonSerializer, db.Document):
 
         raise exceptions.NotImplementedError("The single-object URL of this document class is not defined.")
 
-
     def top_level_syncable_document(self):
         """
         If a ``SyncableDocument`` has child documents, this function returns the top-level parent document.

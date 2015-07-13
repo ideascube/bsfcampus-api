@@ -22,8 +22,23 @@ class Activity(ActivityJsonSerializer, SyncableDocument):
     user = db.ReferenceField('User')
     """The user performing the activity."""
 
+    user_username = db.StringField()
+    """The username (= unique id) of the user who has performed the activity"""
+
+    user_name = db.StringField()
+    """The full name of the user who has performed the activity"""
+
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
     """The date at which the activity was performed."""
+
+    local_server_username = db.StringField()
+    """The username (= unique id) of the local server on which the activity has been performed"""
+
+    local_server_name = db.StringField()
+    """The full name of the local server on which the activity has been performed"""
+
+    type = db.StringField()
+    """ The type of the activity, so we can group the activities by type to better analyse them. This is supposed to be defaulted/initialized in each subclass"""
 
     @property
     def url(self):
