@@ -98,7 +98,7 @@ class SyncableDocument(JsonSerializer, db.Document):
             Override this method if this document has children documents.
         """
 
-        return [self.reference()]
+        return [self]
 
     def items_to_update(self, last_sync, local_server=None):
         """
@@ -113,7 +113,7 @@ class SyncableDocument(JsonSerializer, db.Document):
         """
 
         if last_sync is None or self.last_modification is None or last_sync < self.last_modification:
-            return [self.reference()]
+            return [self]
 
         return []
 
@@ -152,7 +152,7 @@ class SyncableDocument(JsonSerializer, db.Document):
         ## We should do some cleanup at this point, in particular remove deletable items from 'update' list.
         return items
 
-    def reference(self):
-        son = self.to_json_dbref()
+    def to_json_dbref(self):
+        son = super(SyncableDocument, self).to_json_dbref()
         son['url'] = self.url
         return son

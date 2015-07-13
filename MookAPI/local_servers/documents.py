@@ -1,7 +1,12 @@
 from mongoengine import ValidationError
+import datetime
+
+from flask import url_for
 
 from MookAPI.core import db
 from MookAPI.helpers import JsonSerializer
+from MookAPI.sync import SyncableDocument
+
 
 class SyncableItemJsonSerializer(JsonSerializer):
     pass
@@ -67,7 +72,7 @@ class SyncableItem(SyncableItemJsonSerializer, db.EmbeddedDocument):
 class LocalServerJsonSerializer(JsonSerializer):
     pass
 
-class LocalServer(LocalServerJsonSerializer, db.Document):
+class LocalServer(LocalServerJsonSerializer, SyncableDocument):
     """
     .. _LocalServer:
 
@@ -86,6 +91,12 @@ class LocalServer(LocalServerJsonSerializer, db.Document):
     syncable_items = db.ListField(db.EmbeddedDocumentField(SyncableItem))
     """A list of SyncableItem_ embedded documents describing the items to synchronize on the local server."""
 
+    last_sync = db.DateTimeField()
+
+    @property
+    def url(self):
+        return url_for("local_servers.get_local_server", local_server_id=self.id, _external=True)
+
     @property
     def synchronized_documents(self):
         return [item.document for item in self.syncable_items]
@@ -100,16 +111,21 @@ class LocalServer(LocalServerJsonSerializer, db.Document):
         return top_level_document in self.synchronized_documents
 
     def get_sync_list(self):
-        items = dict(update=[], delete=[])
-        for (index, item) in enumerate(self.syncable_items):
-            items['update'].extend(item.sync_list()['update'])
-            items['delete'].extend(item.sync_list()['delete'])
+        updates = []
+        deletes = []
 
-        return items
+        updates.extend(self.items_to_update(self.last_sync, self))
+
+        for (index, item) in enumerate(self.syncable_items):
+            updates.extend(item.sync_list()['update'])
+            deletes.extend(item.sync_list()['delete'])
+
+        return updates, deletes
 
     def set_last_sync(self, date):
         for item in self.syncable_items:
             item.last_sync = date
+        self.last_sync = date
 
     def reset(self):
         self.set_last_sync(date=None)
