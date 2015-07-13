@@ -110,9 +110,9 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
         top_level_document = document.top_level_syncable_document()
         return top_level_document in self.synchronized_documents
 
-    def items_to_update(self, last_sync, local_server=None):
-        items = self.user.items_to_update(last_sync=last_sync, local_server=local_server)
-        items.extend(super(LocalServer, self).items_to_update(last_sync=last_sync, local_server=local_server))
+    def all_syncable_items(self, local_server=None):
+        items = self.user.all_syncable_items(local_server=local_server)
+        items.extend(super(LocalServer, self).all_syncable_items(local_server=local_server))
         return items
 
     def get_sync_list(self):

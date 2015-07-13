@@ -117,25 +117,13 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
         return response
 
-    def all_syncable_items(self):
-        items = super(Track, self).all_syncable_items()
+    def all_syncable_items(self, local_server=None):
+        items = super(Track, self).all_syncable_items(local_server=local_server)
 
         for skill in self.skills:
-            items.extend(skill.all_syncable_items())
+            items.extend(skill.all_syncable_items(local_server=local_server))
 
         for test in self.track_validation_tests:
-            items.extend(test.all_syncable_items())
-
-        return items
-
-    # @if_central
-    def items_to_update(self, last_sync, local_server=None):
-        items = super(Track, self).items_to_update(last_sync, local_server=local_server)
-
-        for skill in self.skills:
-            items.extend(skill.items_to_update(last_sync, local_server=local_server))
-
-        for test in self.track_validation_tests:
-            items.extend(test.items_to_update(last_sync, local_server=local_server))
+            items.extend(test.all_syncable_items(local_server=local_server))
 
         return items
