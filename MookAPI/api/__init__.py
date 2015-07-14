@@ -25,6 +25,7 @@ def create_app(settings_override=None, register_security_blueprint=False):
 def route(bp, *args, **kwargs):
 
     kwargs.setdefault('strict_slashes', False)
+    jsonify_wrap = kwargs.pop('jsonify_wrap', True)
 
     def decorator(f):
         @bp.route(*args, **kwargs)
@@ -35,8 +36,10 @@ def route(bp, *args, **kwargs):
             if isinstance(rv, tuple):
                 sc = rv[1]
                 rv = rv[0]
-            return rv, sc
-            # return jsonify(dict(data=rv)), sc
+            if jsonify_wrap:
+                return jsonify(dict(data=rv)), sc
+            else:
+                return rv, sc
         return f
 
     return decorator

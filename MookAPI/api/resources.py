@@ -19,26 +19,23 @@ bp = Blueprint('resources', __name__, url_prefix="/resources")
 @route(bp, "/")
 @jwt_required()
 def get_resources():
-    list = resources.all().order_by('parent', 'order', 'title')
-    return jsonify(data=list)
+    return resources.all().order_by('parent', 'order', 'title')
 
 
 @route(bp, "/lesson/<lesson_id>")
 @jwt_required()
 def get_lesson_resources(lesson_id):
-    list = resources.find(parent=lesson_id).order_by('order', 'title')
-    return jsonify(data=list)
+    return resources.find(parent=lesson_id).order_by('order', 'title')
 
 
 @route(bp, "/skill/<skill_id>")
 @jwt_required()
 def get_skill_resources(skill_id):
     lessons_list = lessons.find(skill=skill_id)
-    list = resources.find(parent__in=lessons_list).order_by('order', 'title')
-    return jsonify(data=list)
+    return resources.find(parent__in=lessons_list).order_by('order', 'title')
 
 
-@route(bp, "/<resource_id>")
+@route(bp, "/<resource_id>", jsonify_wrap=False)
 # @jwt_required()
 def get_resource(resource_id):
     resource = resources.get_or_404(resource_id)
@@ -65,7 +62,7 @@ def get_resource(resource_id):
     return response
 
 
-@route(bp, "/<resource_id>/hierarchy")
+@route(bp, "/<resource_id>/hierarchy", jsonify_wrap=False)
 @jwt_required()
 def get_resource_hierarchy(resource_id):
     resource = resources.get_or_404(resource_id)
@@ -85,7 +82,7 @@ def get_resource_hierarchy(resource_id):
     )
 
 
-@route(bp, "/<resource_id>/content-file/<filename>")
+@route(bp, "/<resource_id>/content-file/<filename>", jsonify_wrap=False)
 # @jwt_required()
 def get_resource_content_file(resource_id, filename):
     resource = resources.get_or_404(resource_id)
@@ -102,7 +99,7 @@ def get_resource_content_file(resource_id, filename):
     abort(404)
 
 
-@route(bp, "/<resource_id>/content-image/<filename>")
+@route(bp, "/<resource_id>/content-image/<filename>", jsonify_wrap=False)
 # @jwt_required()
 def get_resource_content_image(resource_id, filename):
     resource = resources.get_or_404(resource_id)
@@ -119,7 +116,7 @@ def get_resource_content_image(resource_id, filename):
     abort(404)
 
 
-@route(bp, "/<resource_id>/question/<question_id>/image/<filename>")
+@route(bp, "/<resource_id>/question/<question_id>/image/<filename>", jsonify_wrap=False)
 # @jwt_required()
 def get_exercise_question_image(resource_id, question_id, filename):
     resource = exercise_resources.get_or_404(resource_id)

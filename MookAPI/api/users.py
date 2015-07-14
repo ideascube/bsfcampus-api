@@ -11,13 +11,13 @@ from . import route
 
 bp = Blueprint('users', __name__, url_prefix="/users")
 
-@route(bp, "/current", methods=['GET', 'PATCH'])
+@route(bp, "/current", methods=['GET', 'PATCH'], jsonify_wrap=False)
 @jwt_required()
 def current_user_info():
     user = current_user._get_current_object()
 
     if request.method == 'GET':
-        return jsonify(dict(data=user))
+        return jsonify(data=user)
 
     elif request.method == 'PATCH':
 
@@ -33,9 +33,9 @@ def current_user_info():
             }
             return response, 400
 
-        return jsonify(dict(data=user))
+        return jsonify(data=user)
 
-@route(bp, "/current/password", methods=['PATCH'])
+@route(bp, "/current/password", methods=['PATCH'], jsonify_wrap=False)
 @jwt_required()
 def current_user_change_password():
     user = current_user._get_current_object()
@@ -92,14 +92,13 @@ def current_user_dashboard():
         dashboard['tracks'].append(track.encode_mongo_for_dashboard(user))
     dashboard['tracks'].sort(key=lambda t: t['order'])
 
-    return jsonify(data=dashboard)
+    return dashboard
 
 
 @route(bp, "/<user_id>")
 # @jwt_required()
 def get_user_info(user_id):
-    user = users.get_or_404(user_id)
-    return jsonify(dict(data=user))
+    return users.get_or_404(user_id)
 
 @route(bp, "/<user_id>/dashboard")
 @jwt_required()
@@ -114,10 +113,10 @@ def user_dashboard(user_id):
         dashboard['tracks'].append(track.encode_mongo_for_dashboard(user))
     dashboard['tracks'].sort(key=lambda t: t['order'])
 
-    return jsonify(data=dashboard)
+    return dashboard
 
 
-@route(bp, "/register", methods=['POST'])
+@route(bp, "/register", methods=['POST'], jsonify_wrap=False)
 def register_user():
         """Registers a new user"""
 
