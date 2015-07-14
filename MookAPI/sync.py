@@ -54,6 +54,14 @@ class UnresolvedReference(JsonSerializer, db.Document):
             print "==> Failed!"
             return False
 
+    def __unicode__(self):
+        try:
+            return "Reference to %s document %s in document %s at field path %s" \
+                   % (self.class_name, str(self.distant_id), self.document, self.field_path)
+        except:
+            return "Reference to %s document %s in %s document at field path %s" \
+                   % (self.class_name, str(self.distant_id), self.document.__class__.__name__, self.field_path)
+
 
 class SyncableDocument(JsonSerializer, db.Document):
     """

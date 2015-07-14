@@ -11,7 +11,7 @@ class SyncProcess(object):
         self.key = key
         self.secret = secret
         self.items_to_sync_service = ItemsToSyncService()
-        self.should_try_to_resolve_reference = False
+        self.should_try_to_resolve_reference = True
 
     def _get_request(self, path):
         url = self.host + path
@@ -94,6 +94,7 @@ class SyncProcess(object):
 
     def resolve_references(self):
         if self.should_try_to_resolve_reference:
+            print "Checking if there are references to resolve"
             from MookAPI.sync import UnresolvedReference
             for unresolved_ref in UnresolvedReference.objects.all():
                 unresolved_ref.resolve()
@@ -106,7 +107,7 @@ class SyncProcess(object):
             result = self.depile_item(item)
             return 'depile', result
         else:
-            print "No item to depile"
+            print "No more item to depile"
             self.resolve_references()
             print "Fetching new list of operations"
             result, details = self.fetch_sync_list()
