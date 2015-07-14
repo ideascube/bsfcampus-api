@@ -29,7 +29,32 @@ class DeletedSyncableDocument(JsonSerializer, db.Document):
         return super(DeletedSyncableDocument, self).save(*args, **kwargs)
 
 
-## All documents that need to be synced must inherit from this class.
+class UnresolvedReference(JsonSerializer, db.Document):
+
+    document = db.GenericReferenceField()
+
+    field_path = db.StringField()
+
+    class_name = db.StringField()
+
+    distant_id = db.ObjectIdField()
+
+    def resolve(self):
+        print "Trying to resolve %s" % self
+        try:
+            from MookAPI.helpers import _get_service_for_class
+            service = _get_service_for_class(self.class_name)
+            local_document = service.get(distant_id=self.distant_id)
+            self.document.set_value_for_field_path(local_document, self.field_path)
+            self.document.save()
+            self.delete()
+            print "==> Success!"
+            return True
+        except:
+            print "==> Failed!"
+            return False
+
+
 class SyncableDocument(JsonSerializer, db.Document):
     """
     .. _SyncableDocument:
@@ -111,9 +136,13 @@ class SyncableDocument(JsonSerializer, db.Document):
             Override this method if this document has children documents.
         """
 
+        items = []
+
         for item in self.all_syncable_items(local_server=local_server):
             if last_sync is None or item.last_modification is None or last_sync < item.last_modification:
-                yield item
+                items.append(item)
+
+        return items
 
     def items_to_delete(self, last_sync, local_server=None):
         """

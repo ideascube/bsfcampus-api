@@ -55,10 +55,13 @@ class ItemToSync(db.Document):
 
         if r.status_code == 200:
             son = json_util.loads(r.text)
-            document = service.__model__.from_json(son['data'], distant=True)
-            if local_document:
-                document.id = local_document.id
-            return document.save()
+            document = service.__model__.from_json(
+                son['data'],
+                save=True,
+                from_distant=True,
+                overwrite_document=local_document
+            )
+            return document
 
         else:
             raise Exception("Could not fetch info, got status code %d" % r.status_code)
