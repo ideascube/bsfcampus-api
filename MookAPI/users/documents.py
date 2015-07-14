@@ -173,10 +173,30 @@ class User(UserJsonSerializer, SyncableDocument):
     def all_syncable_items(self, local_server=None):
         items = super(User, self).all_syncable_items()
 
-        from MookAPI.services import activities
-        for activity in activities.find(user=self):
-            activity_items = activity.all_syncable_items(local_server=local_server)
-            items.extend(activity_items)
+        for activity in self.exercise_attempts:
+            if local_server.syncs_document(activity.exercise):
+                items.extend(activity.all_syncable_items(local_server=local_server))
+        for activity in self.skill_validation_attempts:
+            if local_server.syncs_document(activity.skill):
+                items.extend(activity.all_syncable_items(local_server=local_server))
+        for activity in self.track_validation_attempts:
+            if local_server.syncs_document(activity.exercise):
+                items.extend(activity.all_syncable_items(local_server=local_server))
+        for activity in self.completed_resources:
+            if local_server.syncs_document(activity.resource):
+                items.extend(activity.all_syncable_items(local_server=local_server))
+        for activity in self.completed_skills:
+            if local_server.syncs_document(activity.skill):
+                items.extend(activity.all_syncable_items(local_server=local_server))
+        for activity in self.started_tracks:
+            if local_server.syncs_document(activity.track):
+                items.extend(activity.all_syncable_items(local_server=local_server))
+        for activity in self.unlocked_track_tests:
+            if local_server.syncs_document(activity.track):
+                items.extend(activity.all_syncable_items(local_server=local_server))
+        for activity in self.completed_tracks:
+            if local_server.syncs_document(activity.track):
+                items.extend(activity.all_syncable_items(local_server=local_server))
 
         return items
 

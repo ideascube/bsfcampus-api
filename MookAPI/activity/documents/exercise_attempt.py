@@ -151,10 +151,3 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
                 return True
 
         return False
-
-    def all_syncable_items(self, local_server=None):
-        top_level_syncable_document = self.exercise.top_level_syncable_document()
-        if local_server:
-            if local_server.syncs_document(top_level_syncable_document):
-                return super(ExerciseAttempt, self).all_syncable_items(local_server=local_server)
-        return []
