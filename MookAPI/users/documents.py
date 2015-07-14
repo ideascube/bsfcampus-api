@@ -174,8 +174,9 @@ class User(UserJsonSerializer, SyncableDocument):
         items = super(User, self).all_syncable_items()
 
         from MookAPI.services import activities
-        for item in activities.find(user=self):
-            items.extend(item.all_syncable_items(local_server=local_server))
+        for activity in activities.find(user=self):
+            activity_items = activity.all_syncable_items(local_server=local_server)
+            items.extend(activity_items)
 
         return items
 
