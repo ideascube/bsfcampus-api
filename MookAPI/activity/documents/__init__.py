@@ -5,10 +5,12 @@ from flask import url_for
 from MookAPI.core import db
 from MookAPI.helpers import JsonSerializer
 from MookAPI.sync import SyncableDocument
+from flask_jwt import current_user
 
 
 class ActivityJsonSerializer(JsonSerializer):
     pass
+
 
 class Activity(ActivityJsonSerializer, SyncableDocument):
     """Describes any kind of user activity."""
@@ -22,10 +24,10 @@ class Activity(ActivityJsonSerializer, SyncableDocument):
     user = db.ReferenceField('User')
     """The user performing the activity."""
 
-    user_username = db.StringField()
+    user_username = db.StringField(default="")
     """The username (= unique id) of the user who has performed the activity"""
 
-    user_name = db.StringField()
+    user_name = db.StringField(default="")
     """The full name of the user who has performed the activity"""
 
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
@@ -38,7 +40,26 @@ class Activity(ActivityJsonSerializer, SyncableDocument):
     """The full name of the local server on which the activity has been performed"""
 
     type = db.StringField()
-    """ The type of the activity, so we can group the activities by type to better analyse them. This is supposed to be defaulted/initialized in each subclass"""
+    """ The type of the activity, so we can group the activities by type to better analyse them.
+    This is supposed to be defaulted/initialized in each subclass"""
+
+    activity_id = db.ObjectIdField()
+    """ The object id of the object associated to this activity (Resource, Track, Skill, Exercise, or something else).
+    This is supposed to be defaulted/initialized in each subclass """
+
+    activity_title = db.StringField()
+    """ The title of the object associated to this activity. It allows a better comprehension of the activity than the activity_id.
+    This is supposed to be defaulted/initialized in each subclass """
+
+    def __init__(self, **kwargs):
+        super(Activity, self).__init__()
+        self.user = kwargs.pop('user', None)
+
+    def clean(self):
+        super(Activity, self).clean()
+        if self.user:
+            self.user_username = self.user.username
+            self.user_name = self.user.full_name
 
     @property
     def url(self):

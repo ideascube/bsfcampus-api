@@ -13,3 +13,8 @@ class StartedTrack(StartedTrackJsonSerializer, Activity):
     """
 
     track = db.ReferenceField('Track')
+
+    def __init__(self, **kwargs):
+        super(StartedTrack, self).__init__(**kwargs)
+        self.type = "started_track"
+        self.resource = kwargs.pop('track', None)

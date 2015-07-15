@@ -83,6 +83,9 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     ## Question answers
     question_answers = db.ListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
 
+    ## Is exercise validated
+    is_validated = db.BooleanField(default=False)
+
     @property
     def max_mistakes(self):
         return self.exercise.resource_content.max_mistakes

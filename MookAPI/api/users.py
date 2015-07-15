@@ -7,6 +7,8 @@ from flask_mongoengine import ValidationError
 from MookAPI.services import tracks, users
 from MookAPI.auth import jwt_required
 
+import activity
+
 from . import route
 
 bp = Blueprint('users', __name__, url_prefix="/users")
@@ -104,14 +106,17 @@ def get_user_info(user_id):
 @route(bp, "/<user_id>/dashboard")
 @jwt_required()
 def user_dashboard(user_id):
-    user = users.get_or_404(user_id)
+    requested_user = users.get_or_404(user_id)
+    from MookAPI.services import visited_user_dashboards
+    user = current_user._get_current_object()
+    visited_user_dashboards.create(user=user, dashboard_user=requested_user)
 
     dashboard = dict(
-        user=user,
+        user=requested_user,
         tracks=[]
     )
     for track in tracks.all():
-        dashboard['tracks'].append(track.encode_mongo_for_dashboard(user))
+        dashboard['tracks'].append(track.encode_mongo_for_dashboard(requested_user))
     dashboard['tracks'].sort(key=lambda t: t['order'])
 
     return jsonify(data=dashboard)
@@ -120,6 +125,7 @@ def user_dashboard(user_id):
 @route(bp, "/register", methods=['POST'])
 def register_user():
         """Registers a new user"""
+        activity.record_simple_misc_analytic("register_user_attempt")
 
         data = request.get_json()
         password = data['password']
@@ -185,4 +191,5 @@ def register_user():
             return jsonify(response), 400
 
         else:
+            activity.record_misc_analytic("register_user_attempt", "success")
             return jsonify(data=new_user)

@@ -1,3 +1,4 @@
+import datetime
 import exceptions
 import bson
 
@@ -86,7 +87,8 @@ class ExerciseQuestionAnswer(ExerciseQuestionAnswerJsonSerializer, db.EmbeddedDo
 
     ### PROPERTIES
 
-    ## There is no property common to all types.
+    date = db.DateTimeField(default=datetime.datetime.now, required=True)
+    """ the date at which the answer has been given """
 
     ### METHODS
 

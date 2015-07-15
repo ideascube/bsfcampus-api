@@ -42,7 +42,12 @@ from .activity import \
     CompletedSkillsService, \
     CompletedTracksService, \
     StartedTracksService, \
-    UnlockedTrackTestsService
+    UnlockedTrackTestsService, \
+    VisitedTrackService, \
+    VisitedSkillService, \
+    VisitedResourceService, \
+    VisitedDashboardService, \
+    MiscActivityService
 
 activities = ActivitiesService()
 exercise_attempts = ExerciseAttemptsService()
@@ -53,6 +58,11 @@ completed_skills = CompletedSkillsService()
 completed_tracks = CompletedTracksService()
 started_tracks = StartedTracksService()
 unlocked_track_tests = UnlockedTrackTestsService()
+visited_tracks = VisitedTrackService()
+visited_skills = VisitedSkillService()
+visited_resources = VisitedResourceService()
+visited_user_dashboards = VisitedDashboardService()
+misc_activities = MiscActivityService()
 
 from .local_servers import LocalServersService
 

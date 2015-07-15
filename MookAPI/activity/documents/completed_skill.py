@@ -13,3 +13,8 @@ class CompletedSkill(CompletedSkillJsonSerializer, Activity):
     """
 
     skill = db.ReferenceField('Skill')
+
+    def __init__(self, **kwargs):
+        super(CompletedSkill, self).__init__(**kwargs)
+        self.type = "completed_skill"
+        self.resource = kwargs.pop('skill', None)

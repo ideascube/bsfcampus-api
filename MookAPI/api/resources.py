@@ -42,7 +42,7 @@ def get_skill_resources(skill_id):
 # @jwt_required()
 def get_resource(resource_id):
     resource = resources.get_or_404(resource_id)
-    response = jsonify(data=resource)
+    response = None
 
     try:
         verify_jwt()
@@ -50,6 +50,8 @@ def get_resource(resource_id):
         pass
     else:
         user = current_user._get_current_object()
+        from MookAPI.services import visited_resources
+        visited_resources.create(user=user, resource=resource)
         user.add_started_track(resource.track)
         if not exercise_resources._isinstance(resource):
             user.add_completed_resource(resource)
@@ -61,6 +63,8 @@ def get_resource(resource_id):
         # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
         # It should be solved in version 0.10.1
 
+    if not response:
+        response = jsonify(data=resource)
 
     return response
 

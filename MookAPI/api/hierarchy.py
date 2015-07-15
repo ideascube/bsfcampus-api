@@ -1,10 +1,11 @@
 import io
 
 from flask import Blueprint, jsonify, send_file
-from flask_jwt import current_user
+from flask_jwt import current_user, verify_jwt
 
 from MookAPI.auth import jwt_required
 from MookAPI.services import tracks, skills, lessons
+import activity
 
 from . import route
 
@@ -18,6 +19,7 @@ bp = Blueprint("hierarchy", __name__, url_prefix="/hierarchy")
 def get_tracks():
     """Get the list of all Track_ objects, ordered by ``order`` and ``title``, enveloped in a single-key JSON dictionary."""
 
+    activity.record_simple_misc_analytic("all_tracks")
     list = tracks.all().order_by('order', 'title')
     return jsonify(data=list)
 
@@ -25,9 +27,19 @@ def get_tracks():
 # @jwt_required()
 def get_track(track_id):
     """Get the Track_ with id ``track_id`` enveloped in a single-key JSON dictionary."""
-
     track = tracks.get_or_404(track_id)
-    return jsonify(data=track)
+    response = jsonify(data=track)
+
+    try:
+        verify_jwt()
+    except:
+        pass
+    else:
+        user = current_user._get_current_object()
+        from MookAPI.services import visited_tracks
+        visited_tracks.create(user=user, track=track)
+
+    return response
 
 @route(bp, "/tracks/<track_id>/icon")
 # @jwt_required()
@@ -66,7 +78,18 @@ def get_skill(skill_id):
     """Get the Skill_ with id ``skill_id`` enveloped in a single-key JSON dictionary."""
 
     skill = skills.get_or_404(skill_id)
-    return jsonify(data=skill)
+    response = jsonify(data=skill)
+
+    try:
+        verify_jwt()
+    except:
+        pass
+    else:
+        user = current_user._get_current_object()
+        from MookAPI.services import visited_skills
+        visited_skills.create(user=user, skill=skill)
+
+    return response
 
 @route(bp, "/skills/<skill_id>/icon")
 # @jwt_required()

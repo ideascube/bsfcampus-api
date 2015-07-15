@@ -6,20 +6,26 @@ from flask import jsonify, request, Response, _request_ctx_stack
 from flask_cors import CORS
 from flask_jwt import JWT
 
+import activity
+
 cors = CORS()
 
 jwt = JWT()
 
 @jwt.authentication_handler
 def authenticate(username, password):
+    activity.record_misc_analytic("auth_attempt", username)
     try:
         from MookAPI.services import users
         user = users.first(username=username)
         if user.verify_pass(password):
+            activity.record_misc_analytic("auth_success", username)
             return user
         else:
+            activity.record_misc_analytic("auth_fail", username)
             return None
     except:
+        activity.record_misc_analytic("auth_fail", username)
         return None
 
 @jwt.payload_handler

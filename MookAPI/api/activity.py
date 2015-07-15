@@ -71,6 +71,7 @@ def post_exercise_attempt_question_answer(attempt_id):
 
     response = jsonify(data=attempt)
     if attempt.is_exercise_completed():
+        attempt.is_validated = True
         exercise_resource = attempt.exercise
         current_user._get_current_object().add_completed_resource(exercise_resource)
         current_user._get_current_object().save(validate=False)
@@ -131,6 +132,7 @@ def post_skill_validation_attempt_question_answer(attempt_id):
     response = jsonify(data=attempt)
 
     if attempt.is_skill_validation_completed():
+        attempt.is_validated = True
         skill = attempt.skill
         current_user._get_current_object().add_completed_skill(skill)
         current_user._get_current_object().save()
@@ -186,8 +188,38 @@ def post_track_validation_attempt_question_answer(attempt_id):
     attempt.save()
 
     if attempt.is_exercise_completed():
+        attempt.is_validated = True
         track = attempt.exercise.parent
         current_user._get_current_object().add_completed_track(track)
         current_user._get_current_object().save()
 
     return jsonify(data=attempt)
+
+@route(bp, "/misc_analytics/<misc_type>", methods=['POST'])
+def record_simple_misc_analytic(misc_type):
+    """ Creates a new MiscActivity object which is used to track analytics on the platform
+    :param misc_type: the type of the analytic
+    """
+
+    from MookAPI.services import misc_activities
+    user = None
+    if current_user:
+        user = current_user._get_current_object()
+    response = jsonify(data=misc_activities.create(user=user, misc_type=misc_type, misc_title=""))
+
+    return response
+
+@route(bp, "/misc_analytics/<misc_type>/<misc_title>", methods=['POST'])
+def record_misc_analytic(misc_type, misc_title):
+    """ Creates a new MiscActivity object which is used to track analytics on the platform
+    :param misc_type: the type of the analytic
+    :param misc_title: the title of the analytic (to further differentiate misc analytics of the same type)
+    """
+
+    from MookAPI.services import misc_activities
+    user = None
+    if current_user:
+        user = current_user._get_current_object()
+    response = jsonify(data=misc_activities.create(user=user, misc_type=misc_type, misc_title=misc_title))
+
+    return response
