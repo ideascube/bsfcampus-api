@@ -160,7 +160,10 @@ class JsonSerializer(object):
         return rv
 
     @staticmethod
-    def _convert_value_from_json(value, field):
+    def _convert_value_from_json(value, field, instance, path_in_instance, unresolved_references):
+
+        if field is None:
+            return field.to_python(value)
 
         ReferenceField = _import_class('ReferenceField')
         GenericReferenceField = _import_class('GenericReferenceField')
@@ -172,38 +175,66 @@ class JsonSerializer(object):
             # FIXME This way of getting the id is not really clean.
             value = field.to_python(value['_id'])
             document_id = value.id
-            document = field.document_type_obj.objects.get(distant_id=document_id)
-            return document
+            try:
+                document = field.document_type_obj.objects.get(distant_id=document_id)
+                return document
+            except:
+                from MookAPI.sync import UnresolvedReference
+                ref = UnresolvedReference()
+                ref.field_path = field.name
+                ref.class_name=field.document_type_obj.__name__
+                ref.distant_id=document_id
+                unresolved_references.append(ref)
+                return None
 
         ## GenericField: convert reference to use the local ``id`` instead of the distant one.
-        if isinstance(field, GenericReferenceField):
+        elif isinstance(field, GenericReferenceField):
             # FIXME This way of getting the id is not really clean.
-            service = _get_service_for_class(value['_cls'])
-            if service:
+            try:
+                service = _get_service_for_class(value['_cls'])
                 document = service.get(distant_id=value['_id'])
                 return document
+            except:
+                from MookAPI.sync import UnresolvedReference
+                ref = UnresolvedReference()
+                ref.field_path = field.name
+                ref.class_name=field.document_type_obj.__name__
+                ref.distant_id=value['_id']
+                unresolved_references.append(ref)
+                return None
 
         ## EmbeddedDocumentField: instantiate MongoCoderEmbeddedDocument from JSON
         elif isinstance(field, EmbeddedDocumentField):
-            return field.document_type_obj.from_json(value)
+            next_path_in_instance = ("%s.%s" % (path_in_instance, field.name)).lstrip('.')
+            return field.document_type_obj.from_json(
+                value,
+                path_in_instance=next_path_in_instance,
+                instance=instance,
+                unresolved_references=unresolved_references
+            )
 
         ## ListField: recursively convert all elements in the list
         elif isinstance(field, ListField):
             ## field.field is the type of elements in the listfield
-            if field.field is None:
-                return field.to_python(value)
-
             converted_value = []
-            for element in value:
-                converted_element = JsonSerializer._convert_value_from_json(element, field.field)
-                converted_value.append(converted_element)
+            missing_refs = []
+            for index, element in enumerate(value):
+                next_path_in_instance = ("%s.%s[%d]" % (path_in_instance, field.name, index)).lstrip('.')
+                value = JsonSerializer._convert_value_from_json(
+                    value=element,
+                    field=field.field,
+                    instance=instance,
+                    path_in_instance=next_path_in_instance,
+                    unresolved_references=unresolved_references
+                )
+                converted_value.append(value)
 
             return converted_value
 
         else:
             return field.to_python(value)
 
-    def _set_value_from_json(self, json, key):
+    def _set_value_from_json(self, json, key, instance, path_in_instance, unresolved_references):
 
         ## Get value from json
         value = json[key]
@@ -219,8 +250,8 @@ class JsonSerializer(object):
         else:
             return
 
-        ## Special case: FileField requires special method to set value
         FileField = _import_class('FileField')
+
         if isinstance(field, FileField):
             url_key = key + '_url'
             filename_key = key + '_filename'
@@ -240,23 +271,60 @@ class JsonSerializer(object):
             self[key].put(value, content_type=r.headers['content-type'], filename=filename)
             # FIXME: fix Windows specific error when deleting file
             os.remove(filename)
-        ## Any other type: convert value before setting using setattr
+
         else:
-            value = self._convert_value_from_json(value, field)
+            value = self._convert_value_from_json(
+                value=value,
+                field=field,
+                instance=instance,
+                path_in_instance=path_in_instance,
+                unresolved_references=unresolved_references
+            )
             setattr(self, key, value)
 
     @classmethod
-    def from_json(cls, json, distant=False):
+    def from_json(cls, json, **kwargs):
+
+        save = kwargs.get('save', False)
+        from_distant = kwargs.get('from_distant', False)
+        overwrite_document = kwargs.get('overwrite_document', None)
+        instance = kwargs.get('instance', None)
+        path_in_instance = kwargs.get('path_in_instance', '')
+        unresolved_references = kwargs.get('unresolved_references', [])
+
         obj = cls()
 
-        for key in json.iterkeys():
-            obj._set_value_from_json(json, key)
+        if not instance:
+            instance = obj
 
-        if distant:
+        for key in json.iterkeys():
+            obj._set_value_from_json(
+                json,
+                key,
+                instance=instance,
+                path_in_instance=path_in_instance,
+                unresolved_references=unresolved_references
+            )
+
+        if from_distant:
             obj.distant_id = obj.id
             obj.id = None
 
+        if overwrite_document:
+            obj.id = overwrite_document.id
+
+        if save:
+            Document = _import_class('Document')
+            if isinstance(obj, Document):
+                obj.save()
+                for ref in unresolved_references:
+                    ref.document = instance
+                    ref.save()
+
         return obj
+
+    def set_value_for_field_path(self, value, field_path):
+        setattr(self, field_path, value) # FIXME handle field path recursively
 
 
 class JSONEncoder(BaseJSONEncoder):

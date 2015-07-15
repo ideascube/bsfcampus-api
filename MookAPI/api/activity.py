@@ -20,9 +20,7 @@ bp = Blueprint("activity", __name__, url_prefix="/activity")
 
 @route(bp, "/<activity_id>")
 def get_activity(activity_id):
-    activity = activities.get_or_404(activity_id)
-
-    return jsonify(data=activity)
+    return activities.get_or_404(activity_id)
 
 ## Exercises (as Resources) attempts
 
@@ -32,13 +30,11 @@ def post_exercise_attempt():
     exercise_id = request.get_json()['exercise']
     exercise = exercise_resources.get_or_404(exercise_id)
 
-    print "CREATING exercise attempt for exercise {exercise}".format(exercise=exercise.id)
-
     attempt = exercise_attempts.__model__.init_with_exercise(exercise)
     attempt.user = current_user._get_current_object()
     attempt.save()
 
-    return jsonify(data=attempt)
+    return attempt
 
 
 @route(bp, "/exercise_attempts/<attempt_id>")
@@ -46,20 +42,14 @@ def post_exercise_attempt():
 def get_exercise_attempt(attempt_id):
     """GET one exercise attempt"""
 
-    print "GETTING exercise attempt with id {attempt_id}".format(attempt_id=attempt_id)
-
-    attempt = exercise_attempts.get_or_404(attempt_id)
     # FIXME Check that attempt.user == current_user
+    return exercise_attempts.get_or_404(attempt_id)
 
-    return jsonify(data=attempt)
 
-
-@route(bp, "/exercise_attempts/<attempt_id>/answer", methods=['POST'])
+@route(bp, "/exercise_attempts/<attempt_id>/answer", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def post_exercise_attempt_question_answer(attempt_id):
     """POST answer to current question of an exercise attempt"""
-
-    print "POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id)
 
     attempt = exercise_attempts.get_or_404(attempt_id)
     # FIXME Check that attempt.user == current_user
@@ -98,7 +88,7 @@ def post_skill_validation_attempt():
     attempt.user = current_user._get_current_object()
     attempt.save()
 
-    return jsonify(data=attempt)
+    return attempt
 
 
 @route(bp, "/skill_validation_attempts/<attempt_id>")
@@ -106,20 +96,14 @@ def post_skill_validation_attempt():
 def get_skill_validation_attempt(attempt_id):
     """GET one skill validation attempt"""
 
-    print "GETTING skill validation attempt with id {attempt_id}".format(attempt_id=attempt_id)
-
-    attempt = skill_validation_attempts.get_or_404(id=attempt_id)
     # FIXME Check that attempt.user == current_user
+    return skill_validation_attempts.get_or_404(id=attempt_id)
 
-    return jsonify(data=attempt)
 
-
-@route(bp, "/skill_validation_attempts/<attempt_id>/answer", methods=['POST'])
+@route(bp, "/skill_validation_attempts/<attempt_id>/answer", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def post_skill_validation_attempt_question_answer(attempt_id):
     """POST answer to current question of a skill validation attempt"""
-
-    print "POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id)
 
     attempt = skill_validation_attempts.get_or_404(attempt_id)
     # FIXME Check that attempt.user == current_user
@@ -151,13 +135,11 @@ def post_track_validation_attempt():
     exercise_id = request.get_json()['exercise']
     exercise = track_validation_resources.get_or_404(id=exercise_id)
 
-    print "CREATING track validation attempt for exercise {exercise}".format(exercise=exercise.id)
-
     attempt = track_validation_attempts.__model__.init_with_exercise(exercise)
     attempt.user = current_user._get_current_object()
     attempt.save()
 
-    return jsonify(data=attempt)
+    return attempt
 
 
 @route(bp, "/track_validation_attempts/<attempt_id>")
@@ -165,20 +147,14 @@ def post_track_validation_attempt():
 def get_track_validation_attempt(attempt_id):
     """GET one track validation attempt"""
 
-    print "GETTING track validation attempt with id {attempt_id}".format(attempt_id=attempt_id)
-
-    attempt = track_validation_attempts.get_or_404(attempt_id)
     # FIXME Check that attempt.user == current_user
-
-    return jsonify(data=attempt)
+    return track_validation_attempts.get_or_404(attempt_id)
 
 
 @route(bp, "/track_validation_attempts/<attempt_id>/answer", methods=['POST'])
 @jwt_required()
 def post_track_validation_attempt_question_answer(attempt_id):
     """POST answer to current question of a track validation attempt"""
-
-    print "POSTING answer to current question of attempt {attempt_id}".format(attempt_id=attempt_id)
 
     attempt = track_validation_attempts.get_or_404(id=attempt_id)
 
@@ -193,7 +169,7 @@ def post_track_validation_attempt_question_answer(attempt_id):
         current_user._get_current_object().add_completed_track(track)
         current_user._get_current_object().save()
 
-    return jsonify(data=attempt)
+    return attempt
 
 @route(bp, "/misc_analytics/<misc_type>", methods=['POST'])
 def record_simple_misc_analytic(misc_type):
@@ -223,3 +199,4 @@ def record_misc_analytic(misc_type, misc_title):
     response = jsonify(data=misc_activities.create(user=user, misc_type=misc_type, misc_title=misc_title))
 
     return response
+

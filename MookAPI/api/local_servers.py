@@ -15,9 +15,7 @@ def get_current_local_server():
     user = basic_auth_user._get_current_object()
     # FIXME: Check if user has role "local_server"
 
-    local_server = local_servers.get_or_404(user=user)
-
-    return jsonify(data=local_server)
+    return local_servers.get_or_404(user=user)
 
 @route(bp, "/<local_server_id>")
 @basic_auth_required
@@ -29,7 +27,7 @@ def get_local_server(local_server_id):
     if local_server.user != user:
         abort(401)
 
-    return jsonify(data=local_server)
+    return local_server
 
 @route(bp, "/reset")
 @basic_auth_required
@@ -43,7 +41,7 @@ def reset_local_server():
 
     local_server.save()
 
-    return jsonify(data=local_server)
+    return local_server
 
 @route(bp, "/sync")
 @basic_auth_required
@@ -63,7 +61,7 @@ def get_local_server_sync_list():
     local_server.set_last_sync(now)
     local_server.save()
 
-    return jsonify(data=references)
+    return references
 
 @route(bp, "/register", methods=['POST'])
 @basic_auth_required
@@ -74,9 +72,9 @@ def register_local_server():
 
     local_server = local_servers.create(user=user)
 
-    return jsonify(data=local_server)
+    return local_server
 
-@route(bp, "/subscribe", methods=['POST'])
+@route(bp, "/subscribe", methods=['POST'], jsonify_wrap=False)
 @basic_auth_required
 def subscribe_item_to_sync():
 

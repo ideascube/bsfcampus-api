@@ -115,26 +115,10 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
         return items
 
     @staticmethod
-    def _prepare_list(list):
-        def _unique(l):
-            seen = set()
-            seen_add = seen.add
-            return [x for x in l if not(x in seen or seen_add(x))]
-
-        def _prioritize(l):
-            def get_rank(item):
-                    PRIORITIES = [
-                        'Track',
-                        'User',
-                        'LocalServer',
-                    ]
-                    try:
-                        return PRIORITIES.index(item.document.__class__.__name__)
-                    except:
-                        return float('inf')
-            return sorted(l, key=get_rank)
-
-        return _prioritize(_unique(list))
+    def _unique(list):
+        seen = set()
+        seen_add = seen.add
+        return [x for x in list if not(x in seen or seen_add(x))]
 
     def get_sync_list(self):
         updates = []
@@ -146,7 +130,7 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
 
         updates.extend(self.items_to_update(last_sync=self.last_sync, local_server=self))
 
-        return self._prepare_list(updates), self._prepare_list(deletes)
+        return self._unique(updates), self._unique(deletes)
 
     def set_last_sync(self, date):
         for item in self.syncable_items:

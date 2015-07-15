@@ -67,3 +67,6 @@ class Activity(ActivityJsonSerializer, SyncableDocument):
 
     def top_level_syncable_document(self):
         return self.user
+
+    def __unicode__(self):
+        return "Activity with type %s for user %s" % (self.type, self.user)
