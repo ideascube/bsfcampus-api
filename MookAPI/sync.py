@@ -112,6 +112,11 @@ class SyncableDocument(JsonSerializer, db.Document):
 
     def save(self, *args, **kwargs):
         self.last_modification = datetime.datetime.now()
+
+        # FIXME : since we cannot validate MongoEngine documents, the clean method is never called. So we call it manually
+        if kwargs.get('clean', False):
+            self.clean()
+            
         return super(SyncableDocument, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
