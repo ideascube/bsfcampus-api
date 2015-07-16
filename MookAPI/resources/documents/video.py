@@ -1,12 +1,12 @@
 from MookAPI.core import db
 from MookAPI.utils import is_local
-from .downloadable_file import DownloadableFileResourceContentJsonSerializer, \
-    DownloadableFileResourceContent, \
-    DownloadableFileResourceJsonSerializer, \
-    DownloadableFileResource
+from .linked_file import LinkedFileResourceContentJsonSerializer, \
+    LinkedFileResourceContent, \
+    LinkedFileResourceJsonSerializer, \
+    LinkedFileResource
 
 
-class VideoResourceContentJsonSerializer(DownloadableFileResourceContentJsonSerializer):
+class VideoResourceContentJsonSerializer(LinkedFileResourceContentJsonSerializer):
 
     # FIXME we should to this using the __json_*__ properties instead.
     def encode_mongo(self, fields=None):
@@ -18,7 +18,7 @@ class VideoResourceContentJsonSerializer(DownloadableFileResourceContentJsonSeri
 
         return rv
 
-class VideoResourceContent(VideoResourceContentJsonSerializer, DownloadableFileResourceContent):
+class VideoResourceContent(VideoResourceContentJsonSerializer, LinkedFileResourceContent):
 
     ##FIXME: Override content_file to specify accepted extensions/mimetypes.
 
@@ -34,10 +34,10 @@ class VideoResourceContent(VideoResourceContentJsonSerializer, DownloadableFileR
     """A unique identifier of the video on the `source` website."""
 
 
-class VideoResourceJsonSerializer(DownloadableFileResourceJsonSerializer):
+class VideoResourceJsonSerializer(LinkedFileResourceJsonSerializer):
     pass
 
-class VideoResource(VideoResourceJsonSerializer, DownloadableFileResource):
+class VideoResource(VideoResourceJsonSerializer, LinkedFileResource):
     """Stores a video file in the database."""
 
     resource_content = db.EmbeddedDocumentField(VideoResourceContent)

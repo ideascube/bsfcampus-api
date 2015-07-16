@@ -1,16 +1,16 @@
 from flask import url_for
 
 from MookAPI.core import db
-from .downloadable_file import DownloadableFileResourceContentJsonSerializer, \
-    DownloadableFileResourceContent, \
-    DownloadableFileResourceJsonSerializer, \
-    DownloadableFileResource
+from .linked_file import LinkedFileResourceContentJsonSerializer, \
+    LinkedFileResourceContent, \
+    LinkedFileResourceJsonSerializer, \
+    LinkedFileResource
 
 
-class AudioResourceContentJsonSerializer(DownloadableFileResourceContentJsonSerializer):
+class AudioResourceContentJsonSerializer(LinkedFileResourceContentJsonSerializer):
     pass
 
-class AudioResourceContent(AudioResourceContentJsonSerializer, DownloadableFileResourceContent):
+class AudioResourceContent(AudioResourceContentJsonSerializer, LinkedFileResourceContent):
 
     ##FIXME: Override content_file to specify accepted extensions/mimetypes.
 
@@ -36,10 +36,10 @@ class AudioResourceContent(AudioResourceContentJsonSerializer, DownloadableFileR
         )
 
 
-class AudioResourceJsonSerializer(DownloadableFileResourceJsonSerializer):
+class AudioResourceJsonSerializer(LinkedFileResourceJsonSerializer):
     pass
 
-class AudioResource(AudioResourceJsonSerializer, DownloadableFileResource):
+class AudioResource(AudioResourceJsonSerializer, LinkedFileResource):
     """Stores an audio file in the database."""
     
     resource_content = db.EmbeddedDocumentField(AudioResourceContent)
