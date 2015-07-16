@@ -156,6 +156,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
         self.slug = alternate_slug(slug, k) if k <= kmax else None
 
     def clean(self):
+        super(Resource, self).clean()
         self._set_slug()
 
     @property
