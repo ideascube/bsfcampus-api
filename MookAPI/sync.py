@@ -40,7 +40,7 @@ class UnresolvedReference(JsonSerializer, db.Document):
     distant_id = db.ObjectIdField()
 
     def resolve(self):
-        print "Trying to resolve %s" % self
+        print "Trying to resolve %s" % unicode(self)
         try:
             from MookAPI.helpers import _get_service_for_class
             service = _get_service_for_class(self.class_name)

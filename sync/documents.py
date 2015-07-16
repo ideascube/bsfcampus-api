@@ -88,7 +88,7 @@ class ItemToSync(db.Document):
                 self.save()
                 return False
         except Exception as e:
-            self.errors.append(e.message)
+            self.errors.append(e.message or e.strerror)
             self.save()
             rv = False
         else:

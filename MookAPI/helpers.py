@@ -270,7 +270,10 @@ class JsonSerializer(object):
 
             self[key].put(value, content_type=r.headers['content-type'], filename=filename)
             # FIXME: fix Windows specific error when deleting file
-            os.remove(filename)
+            try:
+                os.remove(filename)
+            except:
+                pass
 
         else:
             value = self._convert_value_from_json(
