@@ -1,3 +1,4 @@
+import datetime
 from bson import ObjectId
 
 from MookAPI.core import db
@@ -28,6 +29,12 @@ class ExerciseAttemptQuestionAnswer(ExerciseAttemptQuestionAnswerJsonSerializer,
 
     is_answered_correctly = db.BooleanField()
     """Whether the `given_answer` is correct."""
+
+    asked_date = db.DateTimeField()
+    """ The date when the question is asked """
+
+    answered_date = db.DateTimeField()
+    """ The date when the question is answered """
 
     ### METHODS
 
@@ -148,7 +155,16 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
             question,
             attempt_question_answer.parameters
         )
+        attempt_question_answer.answered_date = datetime.datetime.now
         self.set_question_answer(question_id, attempt_question_answer)
+
+    def start_question(self, question_id):
+        """
+        Records the datetime at which the given question has been started
+        :param question_id: the id of the question which has just been started
+        """
+        attempt_question_answer = self.question_answer(question_id)
+        attempt_question_answer.asked_date = datetime.datetime.now
 
     def is_exercise_completed(self):
         nb_total_questions = self.exercise.resource_content.number_of_questions
