@@ -53,6 +53,12 @@ class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
 
         return obj
 
+    def clean(self):
+        super(SkillValidationAttempt, self).clean()
+        self.type = "exercise_attempt"
+        self.activity_id = self.exercise.id
+        self.activity_title = str(self.exercise)
+
     def __unicode__(self):
         if self.skill is not None:
             return self.skill.title

@@ -21,13 +21,9 @@ class VisitedDashboard(VisitedDashboardJsonSerializer, Activity):
     dashboard_user_full_name = db.StringField()
     """ The full name of the dashboard_user """
 
-    def __init__(self, *args, **kwargs):
-        super(VisitedDashboard, self).__init__(*args, **kwargs)
-        self.type = "visited_profile"
-        self.dashboard_user = kwargs.pop('dashboard_user', None)
-
     def clean(self):
         super(VisitedDashboard, self).clean()
+        self.type = "visited_profile"
         if self.dashboard_user:
             self.dashboard_user_username = self.dashboard_user.username
             self.dashboard_user_full_name = self.dashboard_user.full_name

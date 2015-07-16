@@ -14,7 +14,6 @@ class CompletedTrack(CompletedTrackJsonSerializer, Activity):
 
     track = db.ReferenceField('Track')
 
-    def __init__(self, *args, **kwargs):
-        super(CompletedTrack, self).__init__(*args, **kwargs)
+    def clean(self):
+        super(CompletedTrack, self).clean()
         self.type = "completed_track"
-        self.track = kwargs.pop('track', None)

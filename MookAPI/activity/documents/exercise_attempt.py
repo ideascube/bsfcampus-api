@@ -102,15 +102,18 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     def init_with_exercise(cls, exercise):
         """Initiate an attempt for a given exercise."""
         obj = cls()
-        obj.type = "exercise_attempt"
-        obj.activity_id = exercise.id
-        obj.activity_title = str(exercise)
         obj.exercise = exercise
 
         questions = exercise.random_questions()
         obj.question_answers = [ExerciseAttemptQuestionAnswer.init_with_question(q) for q in questions]
 
         return obj
+
+    def clean(self):
+        super(ExerciseAttempt, self).clean()
+        self.type = "exercise_attempt"
+        self.activity_id = self.exercise.id
+        self.activity_title = str(self.exercise)
 
     def __unicode__(self):
         if self.exercise is not None:

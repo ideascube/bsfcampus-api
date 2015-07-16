@@ -51,10 +51,6 @@ class Activity(ActivityJsonSerializer, SyncableDocument):
     """ The title of the object associated to this activity. It allows a better comprehension of the activity than the activity_id.
     This is supposed to be defaulted/initialized in each subclass """
 
-    def __init__(self, *args, **kwargs):
-        super(Activity, self).__init__(*args, **kwargs)
-        self.user = kwargs.pop('user', None)
-
     def clean(self):
         super(Activity, self).clean()
         if self.user:
