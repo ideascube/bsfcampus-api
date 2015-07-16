@@ -86,6 +86,13 @@ class ExerciseResourceContent(ExerciseResourceContentJsonSerializer, ResourceCon
     fail_linked_resource = db.ReferenceField(Resource)
     """A resource to look again when failing the exercise."""
 
+    def clean(self):
+        super(ExerciseResourceContent, self).clean()
+        # FIXME This should be done in validate and raise an error. Do that when MongoEngine is fixed.
+        if self.fail_linked_resource:
+            if self.fail_linked_resource.track != self._instance.track:
+                self.fail_linked_resource = None
+
 class ExerciseResourceJsonSerializer(ResourceJsonSerializer):
     pass
 
