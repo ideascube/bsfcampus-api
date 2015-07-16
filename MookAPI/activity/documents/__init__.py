@@ -63,6 +63,7 @@ class Activity(ActivityJsonSerializer, SyncableDocument):
 
     @property
     def url(self):
+        print("Activity (%s) url: %s" % (self._cls, self.id))
         return url_for("activity.get_activity", activity_id=self.id, _external=True)
 
     def top_level_syncable_document(self):

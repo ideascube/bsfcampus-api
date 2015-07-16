@@ -17,4 +17,4 @@ class CompletedSkill(CompletedSkillJsonSerializer, Activity):
     def __init__(self, **kwargs):
         super(CompletedSkill, self).__init__(**kwargs)
         self.type = "completed_skill"
-        self.resource = kwargs.pop('skill', None)
+        self.skill = kwargs.pop('skill', None)

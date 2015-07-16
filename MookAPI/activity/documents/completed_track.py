@@ -17,4 +17,4 @@ class CompletedTrack(CompletedTrackJsonSerializer, Activity):
     def __init__(self, **kwargs):
         super(CompletedTrack, self).__init__(**kwargs)
         self.type = "completed_track"
-        self.resource = kwargs.pop('track', None)
+        self.track = kwargs.pop('track', None)

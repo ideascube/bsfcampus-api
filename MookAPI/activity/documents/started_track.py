@@ -17,4 +17,4 @@ class StartedTrack(StartedTrackJsonSerializer, Activity):
     def __init__(self, **kwargs):
         super(StartedTrack, self).__init__(**kwargs)
         self.type = "started_track"
-        self.resource = kwargs.pop('track', None)
+        self.track = kwargs.pop('track', None)

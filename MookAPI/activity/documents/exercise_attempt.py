@@ -102,6 +102,9 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     def init_with_exercise(cls, exercise):
         """Initiate an attempt for a given exercise."""
         obj = cls()
+        obj.type = "exercise_attempt"
+        obj.activity_id = exercise.id
+        obj.activity_title = str(exercise)
         obj.exercise = exercise
 
         questions = exercise.random_questions()

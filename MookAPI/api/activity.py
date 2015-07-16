@@ -181,9 +181,8 @@ def record_simple_misc_analytic(misc_type):
     user = None
     if current_user:
         user = current_user._get_current_object()
-    response = jsonify(data=misc_activities.create(user=user, misc_type=misc_type, misc_title=""))
 
-    return response
+    return misc_activities.create(user=user, misc_type=misc_type, misc_title="")
 
 @route(bp, "/misc_analytics/<misc_type>/<misc_title>", methods=['POST'])
 def record_misc_analytic(misc_type, misc_title):
@@ -196,7 +195,6 @@ def record_misc_analytic(misc_type, misc_title):
     user = None
     if current_user:
         user = current_user._get_current_object()
-    response = jsonify(data=misc_activities.create(user=user, misc_type=misc_type, misc_title=misc_title))
 
-    return response
+    return misc_activities.create(user=user, misc_type=misc_type, misc_title=misc_title)
 

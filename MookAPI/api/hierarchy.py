@@ -1,6 +1,6 @@
 import io
 
-from flask import Blueprint, jsonify, send_file
+from flask import Blueprint, send_file
 from flask_jwt import current_user, verify_jwt
 
 from MookAPI.auth import jwt_required
