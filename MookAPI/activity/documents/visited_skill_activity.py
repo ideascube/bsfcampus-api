@@ -14,8 +14,8 @@ class VisitedSkill(VisitedSkillJsonSerializer, Activity):
 
     skill = db.ReferenceField('Skill')
 
-    def __init__(self, **kwargs):
-        super(VisitedSkill, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(VisitedSkill, self).__init__(*args, **kwargs)
         self.type = "visited_skill"
         self.skill = kwargs.pop('skill', None)
 

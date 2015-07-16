@@ -14,7 +14,7 @@ class UnlockedTrackTest(UnlockedTrackTestJsonSerializer, Activity):
 
     track = db.ReferenceField('Track')
 
-    def __init__(self, **kwargs):
-        super(UnlockedTrackTest, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(UnlockedTrackTest, self).__init__(*args, **kwargs)
         self.type = "unlocked_track_test"
         self.track = kwargs.pop('track', None)

@@ -14,7 +14,7 @@ class CompletedResource(CompletedResourceJsonSerializer, Activity):
 
     resource = db.ReferenceField('Resource')
 
-    def __init__(self, **kwargs):
-        super(CompletedResource, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(CompletedResource, self).__init__(*args, **kwargs)
         self.type = "completed_resource"
         self.resource = kwargs.pop('resource', None)

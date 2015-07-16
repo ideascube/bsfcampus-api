@@ -14,7 +14,7 @@ class CompletedSkill(CompletedSkillJsonSerializer, Activity):
 
     skill = db.ReferenceField('Skill')
 
-    def __init__(self, **kwargs):
-        super(CompletedSkill, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(CompletedSkill, self).__init__(*args, **kwargs)
         self.type = "completed_skill"
         self.skill = kwargs.pop('skill', None)

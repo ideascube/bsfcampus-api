@@ -14,8 +14,8 @@ class VisitedResource(VisitedResourceJsonSerializer, Activity):
 
     resource = db.ReferenceField('Resource')
 
-    def __init__(self, **kwargs):
-        super(VisitedResource, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(VisitedResource, self).__init__(*args, **kwargs)
         self.type = "visited_resource"
         self.resource = kwargs.pop('resource', None)
 

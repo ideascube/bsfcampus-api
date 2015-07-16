@@ -14,8 +14,8 @@ class VisitedTrack(VisitedTrackJsonSerializer, Activity):
 
     track = db.ReferenceField('Track')
 
-    def __init__(self, **kwargs):
-        super(VisitedTrack, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(VisitedTrack, self).__init__(*args, **kwargs)
         self.type = "visited_track"
         self.track = kwargs.pop('track')
 
