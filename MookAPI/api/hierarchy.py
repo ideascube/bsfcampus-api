@@ -1,6 +1,6 @@
 import io
 
-from flask import Blueprint, send_file
+from flask import Blueprint, send_file, abort
 from flask_jwt import current_user, verify_jwt
 
 from MookAPI.auth import jwt_required
@@ -92,6 +92,8 @@ def get_skill_icon(skill_id):
     """Download the icon of the Skill_ with id ``skill_id``."""
 
     skill = skills.get_or_404(skill_id)
+    if not skill.icon:
+        abort(404)
     return send_file(
             io.BytesIO(skill.icon.read()),
             attachment_filename=skill.icon.filename,
