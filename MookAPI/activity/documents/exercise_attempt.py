@@ -176,3 +176,26 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
                 return True
 
         return False
+
+    def to_csv_rows(self):
+        """ this method all the exercise_attempts data as a list of csv rows """
+
+        rv = []
+        for question_answer in self.question_answers:
+            csv_fields = self.get_field_names_for_csv()
+            question_answer_csv_row_data = self.to_csv_from_field_names(csv_fields)
+            question_answer_csv_row_data.append(str(question_answer.question_id))
+            question = self.exercise.question(question_answer.question_id)
+            question_answer_csv_row_data.append(question.question_heading)
+            question_answer_csv_row_data.append(question_answer.asked_date.strftime("%Y-%m-%d %H:%M:%S"))
+            question_answer_csv_row_data.append(question_answer.answered_date.strftime("%Y-%m-%d %H:%M:%S"))
+            question_answer_csv_row_data.append(str(question_answer.is_answered_correctly))
+            rv.append(question_answer_csv_row_data)
+
+        return rv
+
+    def get_field_names_for_csv(self):
+        """ this method gives the fields to export as csv row, in a chosen order """
+        rv = super(ExerciseAttempt, self).get_field_names_for_csv()
+        rv.extend(['is_validated', 'max_mistakes'])
+        return rv

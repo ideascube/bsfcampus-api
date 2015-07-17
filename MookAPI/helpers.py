@@ -1,7 +1,9 @@
+import csv, codecs, cStringIO
 import os
 import pkgutil
 import importlib
 import requests
+import datetime
 from bson import json_util
 
 from mongoengine.common import _import_class
@@ -340,3 +342,95 @@ class JSONEncoder(BaseJSONEncoder):
             return json_util.default(o)
         except:
             return super(JSONEncoder, self).default(o)
+
+
+class CsvSerializer(object):
+    def to_csv(self):
+        is_list = False
+        if self.to_csv_rows():
+            is_list = True
+            rv = self.to_csv_rows()
+        elif self.to_csv_row():
+            rv = self.to_csv_row()
+        else:
+            field_names = self.get_field_names_for_csv() or self.get_field_names()
+            rv = self.to_csv_from_field_names(field_names)
+
+        return rv, is_list
+
+    def to_csv_from_field_names(self, field_names):
+        rv = []
+        Document = _import_class('Document')
+        ObjectIdField = _import_class('ObjectIdField')
+        DateTimeField = _import_class('DateTimeField')
+        for key in field_names:
+            field = getattr(self, key)
+            csv_value = ""
+            if field is not None:
+                if isinstance(field, Document):
+                    csv_value = unicode(field.id)
+                elif isinstance(field, DateTimeField):
+                    csv_value = field.strftime("%Y-%m-%d %H:%M:%S")
+                else:
+                    csv_value = unicode(field)
+            rv.append(csv_value)
+        return rv
+
+    def get_field_names(self):
+        Document = _import_class('Document')
+        EmbeddedDocument = _import_class('EmbeddedDocument')
+        if isinstance(self, (Document, EmbeddedDocument)):
+            return self._fields.keys()
+        elif self.__dict__:
+            return self.__dict__.keys()
+        return []
+
+    def to_csv_row(self):
+        """ this method returns None as it should be overridden if necessary """
+        return None
+
+    def to_csv_rows(self):
+        """ this method returns None as it should be overridden if necessary """
+        return None
+
+    def get_field_names_for_csv(self):
+        """ this method returns None as it should be overridden if necessary """
+        return None
+
+
+class UnicodeCSVWriter:
+    """
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+        # Redirect output to a queue
+        self.queue = cStringIO.StringIO()
+        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writeactivity(self, o):
+        if isinstance(o, CsvSerializer):
+            csv_data, is_list = o.to_csv()
+            if is_list:
+                self.writerows(csv_data)
+            else:
+                self.writerow(csv_data)
+
+    def writerow(self, row):
+        self.writer.writerow([s.encode("utf-8") for s in row])
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
+        data = data.decode("utf-8")
+        # ... and reencode it into the target encoding
+        data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)

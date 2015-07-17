@@ -17,3 +17,6 @@ class CompletedTrack(CompletedTrackJsonSerializer, Activity):
     def clean(self):
         super(CompletedTrack, self).clean()
         self.type = "completed_track"
+        if self.track:
+            self.activity_id = self.track.id
+            self.activity_title = self.track.title

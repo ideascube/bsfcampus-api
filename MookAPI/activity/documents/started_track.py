@@ -17,3 +17,6 @@ class StartedTrack(StartedTrackJsonSerializer, Activity):
     def clean(self):
         super(StartedTrack, self).clean()
         self.type = "started_track"
+        if self.track:
+            self.activity_id = self.track.id
+            self.activity_title = self.track.title

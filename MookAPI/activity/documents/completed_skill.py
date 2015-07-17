@@ -17,3 +17,6 @@ class CompletedSkill(CompletedSkillJsonSerializer, Activity):
     def clean(self):
         super(CompletedSkill, self).clean()
         self.type = "completed_skill"
+        if self.skill:
+            self.activity_id = self.skill.id
+            self.activity_title = self.skill.title

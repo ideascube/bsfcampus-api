@@ -17,3 +17,6 @@ class UnlockedTrackTest(UnlockedTrackTestJsonSerializer, Activity):
     def clean(self):
         super(UnlockedTrackTest, self).clean()
         self.type = "unlocked_track_test"
+        if self.track:
+            self.activity_id = self.track.id
+            self.activity_title = self.track.title

@@ -1,6 +1,8 @@
+import datetime
+import io
 from bson import json_util
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, send_file, jsonify, abort
 from MookAPI.auth import jwt_required
 from flask_jwt import current_user
 
@@ -13,6 +15,8 @@ from MookAPI.services import \
     track_validation_resources, \
     skills
 
+from MookAPI.helpers import UnicodeCSVWriter
+
 from . import route
 
 bp = Blueprint("activity", __name__, url_prefix="/activity")
@@ -21,6 +25,7 @@ bp = Blueprint("activity", __name__, url_prefix="/activity")
 @route(bp, "/<activity_id>")
 def get_activity(activity_id):
     return activities.get_or_404(activity_id)
+
 
 ## Exercises (as Resources) attempts
 
@@ -84,8 +89,8 @@ def post_exercise_attempt_question_answer(attempt_id):
         if current_user.is_track_test_available_and_never_attempted(attempt.exercise.track):
             alert = {"code": "prompt_track_validation", "id": attempt.exercise.track._data.get("id", None)}
             response = jsonify(data=attempt, alert=alert)
-        # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
-        # It should be solved in version 0.10.1
+            # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
+            # It should be solved in version 0.10.1
 
     return response
 
@@ -187,6 +192,7 @@ def post_track_validation_attempt_question_answer(attempt_id):
 
     return attempt
 
+
 @route(bp, "/misc_analytics/<misc_type>", methods=['POST'])
 def record_simple_misc_analytic(misc_type):
     """ Creates a new MiscActivity object which is used to track analytics on the platform
@@ -194,11 +200,13 @@ def record_simple_misc_analytic(misc_type):
     """
 
     from MookAPI.services import misc_activities
+
     user = None
     if current_user:
         user = current_user._get_current_object()
 
     return misc_activities.create(user=user, type=misc_type, activity_title="")
+
 
 @route(bp, "/misc_analytics/<misc_type>/<misc_title>", methods=['POST'])
 def record_misc_analytic(misc_type, misc_title):
@@ -208,9 +216,49 @@ def record_misc_analytic(misc_type, misc_title):
     """
 
     from MookAPI.services import misc_activities
+
     user = None
     if current_user:
         user = current_user._get_current_object()
 
     return misc_activities.create(user=user, type=misc_type, activity_title=misc_title)
 
+
+@route(bp, "/analytics.csv", methods=['GET'], jsonify_wrap=False)
+def get_general_analytics():
+    """
+    Returns a .csv file with all the activities which took place between the start_date and the end_date
+    """
+
+    start_date_arg = request.args.get('start_date', None)
+    if start_date_arg is None:
+        start_date = datetime.datetime.fromtimestamp(0)
+    else:
+        start_date = datetime.datetime.strptime(start_date_arg, "%Y%m%d").date()
+
+    end_date_arg = request.args.get('end_date', None)
+    if end_date_arg is None:
+        end_date = datetime.datetime.now
+    else:
+        end_date = datetime.datetime.strptime(end_date_arg, "%Y%m%d").date() + datetime.timedelta(days=1)
+
+    all_analytics = activities.__model__.objects(date__gte=start_date)(date__lte=end_date)
+
+    file_name = "analytics_"
+    file_name += start_date_arg + "_" + end_date_arg
+    file_name += ".csv"
+    csv_file = open(file_name, 'wb')
+    analytics_writer = UnicodeCSVWriter(csv_file)
+    analytics_writer.writerow(activities.__model__.field_names_header_for_csv())
+    for activity in all_analytics:
+        analytics_writer.writeactivity(activity)
+    csv_file.close()
+    csv_file = open(file_name, 'rb')
+    file_bytes = io.BytesIO(csv_file.read())
+    csv_file.close()
+
+    return send_file(
+        file_bytes,
+        attachment_filename=file_name,
+        mimetype='text/csv'
+    )
