@@ -101,7 +101,15 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     def fail_linked_resource(self):
         if self.exercise.resource_content.fail_linked_resource:
             return self.exercise.resource_content.fail_linked_resource
-        return None
+        return
+
+    @property
+    def nb_right_answers(self):
+        return len(filter(lambda qa: qa.is_answered_correctly, self.question_answers))
+
+    @property
+    def nb_questions(self):
+        return len(self.question_answers)
 
     ### METHODS
 

@@ -121,12 +121,12 @@ class User(UserJsonSerializer, SyncableDocument):
             skill_progress = skill.user_progress(self)
             from MookAPI.services import completed_skills
             if completed_skills.find(user=self, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
-                self.add_completed_skill(skill)
+                self.add_completed_skill(skill, False)
 
-    def add_completed_skill(self, skill):
+    def add_completed_skill(self, skill, is_validated_through_test):
         from MookAPI.services import completed_skills
         if completed_skills.find(user=self, skill=skill).count() == 0:
-            completed_skills.create(user=self, skill=skill)
+            completed_skills.create(user=self, skill=skill, is_validated_through_test=is_validated_through_test)
             track = skill.track
             track_progress = track.user_progress(self)
             from MookAPI.services import unlocked_track_tests

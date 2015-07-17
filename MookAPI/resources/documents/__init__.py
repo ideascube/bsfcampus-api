@@ -9,8 +9,10 @@ from MookAPI.core import db
 from MookAPI.helpers import JsonSerializer
 from MookAPI.sync import SyncableDocument
 
+
 class ResourceContentJsonSerializer(JsonSerializer):
     pass
+
 
 class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
     """
@@ -18,7 +20,7 @@ class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
     
     An embedded document for the actual content of the Resource_.
     """
-    
+
     meta = {
         'allow_inheritance': True,
         'abstract': True
@@ -34,6 +36,7 @@ class ResourceJsonSerializer(JsonSerializer):
     __json_additional__ = ['url', 'breadcrumb', 'is_validated', 'bg_color']
     __json_dbref__ = ['title', 'slug']
 
+
 class Resource(ResourceJsonSerializer, SyncableDocument):
     """
     .. _Resource:
@@ -46,7 +49,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     meta = {
         'allow_inheritance': True
     }
-    
+
     ### PROPERTIES
 
     title = db.StringField(required=True)
@@ -57,7 +60,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
 
     ## Will be implemented later
     # creator = db.ReferenceField('User')
-        # """The user who created the resource."""
+    # """The user who created the resource."""
 
     description = db.StringField()
     """A text describing the Resource_."""
@@ -86,6 +89,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     def is_validated_by_user(self, user):
         """Whether the current user (if any) has validated this Resource_."""
         from MookAPI.services import completed_resources
+
         return completed_resources.find(resource=self, user=user).count() > 0
 
     @property
@@ -98,7 +102,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
             return None
         user = current_user._get_current_object()
         return self.is_validated_by_user(user)
-    
+
     @property
     def skill(self):
         """Shorthand virtual property to the parent Skill_ of the parent Lesson_."""
@@ -108,17 +112,17 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     def track(self):
         """Shorthand virtual property to the parent Track_ of the parent Skill_ of the parent Lesson_."""
         return self.parent.skill.track
-    
+
     ### METHODS
 
     def siblings(self):
         """A queryset of Resource_ objects in the same Lesson_, including the current Resource_."""
         return Resource.objects.order_by('order', 'title').filter(parent=self.parent)
-        
+
     def siblings_strict(self):
         """A queryset of Resource_ objects in the same Lesson_, excluding the current Resource_."""
         return Resource.objects.order_by('order', 'title').filter(parent=self.parent, id__ne=self.id)
-        
+
     def aunts(self):
         """A queryset of Lesson_ objects in the same Skill_, including the current Lesson_."""
         return self.parent.siblings()
@@ -130,19 +134,21 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     def cousins(self):
         """A queryset of Resource_ objects in the same Skill_, including the current Resource_."""
         return Resource.objects.order_by('parent', 'order', 'title').filter(parent__in=self.aunts())
-    
+
     def cousins_strict(self):
         """A queryset of Resource_ objects in the same Skill_, excluding the current Resource_."""
         return Resource.objects.order_by('parent', 'order', 'title').filter(parent__in=self.aunts_strict())
-    
+
     def _set_slug(self):
         """Sets a slug for the hierarchy level based on the title."""
 
         slug = slugify.slugify(self.title) if self.slug is None else slugify.slugify(self.slug)
+
         def alternate_slug(text, k=1):
             return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
+
         k = 0
-        kmax = 10**4
+        kmax = 10 ** 4
         while k < kmax:
             if self.id is None:
                 req = self.__class__.objects(slug=alternate_slug(slug, k))
@@ -172,6 +178,12 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
             'resource_content': self.resource_content.encode_mongo_for_dashboard(user)
         }
 
+        from MookAPI.services import visited_resources
+
+        if 'analytics' not in response:
+            response['analytics'] = {}
+        response['analytics']['nb_visit'] = len(visited_resources.queryset()(user=user)(resource=self))
+
         return response
 
     @property
@@ -186,7 +198,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
             self.parent.to_json_dbref(),
             self.to_json_dbref()
         ]
-        
+
     def __unicode__(self):
         return self.title
 

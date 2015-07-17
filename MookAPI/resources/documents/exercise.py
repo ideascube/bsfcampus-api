@@ -19,8 +19,8 @@ from exercise_question.categorize import CategorizeExerciseQuestion
 class ExerciseResourceContentJsonSerializer(ResourceContentJsonSerializer):
     pass
 
-class ExerciseResourceContent(ExerciseResourceContentJsonSerializer, ResourceContent):
 
+class ExerciseResourceContent(ExerciseResourceContentJsonSerializer, ResourceContent):
     unique_answer_mcq_questions = db.ListField(db.EmbeddedDocumentField(UniqueAnswerMCQExerciseQuestion))
     """A (possibly empty) list of unique-answer multiple-choice questions (`UniqueAnswerMCQExerciseQuestion`)."""
 
@@ -50,7 +50,7 @@ class ExerciseResourceContent(ExerciseResourceContentJsonSerializer, ResourceCon
         questions.extend(self.dropdown_questions)
         questions.extend(self.ordering_questions)
         questions.extend(self.categorize_questions)
-        
+
         return questions
 
     def question(self, question_id):
@@ -60,7 +60,7 @@ class ExerciseResourceContent(ExerciseResourceContentJsonSerializer, ResourceCon
         for question in self.questions:
             if question._id == oid:
                 return question
-        
+
         raise exceptions.KeyError("Question not found.")
 
     def random_questions(self, number=None):
@@ -93,8 +93,10 @@ class ExerciseResourceContent(ExerciseResourceContentJsonSerializer, ResourceCon
             if self.fail_linked_resource.track != self._instance.track:
                 self.fail_linked_resource = None
 
+
 class ExerciseResourceJsonSerializer(ResourceJsonSerializer):
     pass
+
 
 class ExerciseResource(ExerciseResourceJsonSerializer, Resource):
     """An exercise with a list of questions."""
@@ -107,7 +109,7 @@ class ExerciseResource(ExerciseResourceJsonSerializer, Resource):
         def _add_instance_single_object(obj):
             obj._instance = self
             return obj
-        
+
         if isinstance(obj, list):
             return map(_add_instance_single_object, obj)
         else:
@@ -141,3 +143,17 @@ class ExerciseResource(ExerciseResourceJsonSerializer, Resource):
             items.append(self.resource_content.fail_linked_resource)
         items.extend(super(ExerciseResource, self).all_syncable_items(local_server=local_server))
         return items
+
+    def encode_mongo_for_dashboard(self, user):
+        response = super(ExerciseResource, self).encode_mongo_for_dashboard(user)
+
+        if 'analytics' not in response:
+            response['analytics'] = {}
+        from MookAPI.services import exercise_attempts
+        exercise_attempts = exercise_attempts.queryset()(user=user)(exercise=self).order_by('-date')
+        response['analytics']['last_attempts_scores'] = map(
+            lambda a: {"date": a.date, "nb_questions": a.nb_questions, "score": a.nb_right_answers},
+            exercise_attempts[:5])
+        response['analytics']['nb_attempts'] = len(exercise_attempts)
+
+        return response

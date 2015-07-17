@@ -11,8 +11,8 @@ from . import ResourceHierarchyJsonSerializer, ResourceHierarchy
 class SkillValidationExerciseJsonSerializer(JsonSerializer):
     pass
 
-class SkillValidationExercise(SkillValidationExerciseJsonSerializer, db.EmbeddedDocument):
 
+class SkillValidationExercise(SkillValidationExerciseJsonSerializer, db.EmbeddedDocument):
     number_of_questions = db.IntField()
     """The number of questions to ask from this exercise."""
 
@@ -39,6 +39,7 @@ class SkillJsonSerializer(ResourceHierarchyJsonSerializer):
     __json_additional__.extend(ResourceHierarchyJsonSerializer.__json_additional__)
     __json_additional__.extend(['bg_color', 'lessons_refs'])
     __json_rename__ = dict(lessons_refs='lessons')
+
 
 class Skill(SkillJsonSerializer, ResourceHierarchy):
     """
@@ -82,6 +83,7 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
     def lessons(self):
         """A queryset of the Lesson_ objects that belong to the current Skill_."""
         from MookAPI.services import lessons
+
         return lessons.find(skill=self).order_by('order', 'title')
 
     @property
@@ -91,6 +93,7 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
     def is_validated_by_user(self, user):
         """Whether the current_user validated the hierarchy level based on their activity."""
         from MookAPI.services import completed_skills
+
         return completed_skills.find(skill=self, user=user).count() > 0
 
     def user_progress(self, user):
@@ -112,8 +115,7 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
         return [
             self.track.to_json_dbref(),
             self.to_json_dbref()
-            ]
-
+        ]
 
     ### METHODS
 
@@ -137,6 +139,21 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
         for lesson in self.lessons:
             response['lessons'].append(lesson.encode_mongo_for_dashboard(user))
         response['lessons'].sort(key=lambda l: l['order'])
+
+        from MookAPI.services import skill_validation_attempts, completed_skills, visited_skills
+
+        if 'analytics' not in response:
+            response['analytics'] = {}
+        response['analytics']['progress'] = self.user_progress(user)
+        skill_validation_attempts = skill_validation_attempts.queryset()(user=user).order_by('-date')
+        response['analytics']['last_attempts_scores'] = map(
+            lambda a: {"date": a.date, "nb_questions": a.nb_questions, "score": a.nb_right_answers},
+            skill_validation_attempts[:5])
+        response['analytics']['nb_attempts'] = len(skill_validation_attempts)
+        completed_skill = completed_skills.queryset()(user=user)(skill=self)
+        if completed_skill:
+            response['analytics']['is_completed_through_test'] = completed_skill.is_validated_through_test
+        response['analytics']['nb_visit'] = len(visited_skills.queryset()(user=user)(skill=self))
 
         return response
 

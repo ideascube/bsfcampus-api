@@ -115,6 +115,18 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
         response['skills'] = [skill.encode_mongo_for_dashboard(user) for skill in self.skills]
         response['skills'].sort(key=lambda s: s['order'])
 
+        from MookAPI.services import track_validation_attempts, visited_tracks
+
+        if 'analytics' not in response:
+            response['analytics'] = {}
+        response['analytics']['progress'] = self.user_progress(user)
+        track_validation_attempts = track_validation_attempts.queryset()(user=user).order_by('-date')
+        response['analytics']['last_attempts_scores'] = map(
+            lambda a: {"date": a.date, "nb_questions": a.nb_questions, "score": a.nb_right_answers},
+            track_validation_attempts[:5])
+        response['analytics']['nb_attempts'] = len(track_validation_attempts)
+        response['analytics']['nb_visit'] = len(visited_tracks.queryset()(user=user)(track=self))
+
         return response
 
     def all_syncable_items(self, local_server=None):

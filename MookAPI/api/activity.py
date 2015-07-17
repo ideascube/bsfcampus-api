@@ -121,6 +121,22 @@ def get_skill_validation_attempt(attempt_id):
     return skill_validation_attempts.get_or_404(id=attempt_id)
 
 
+@route(bp, "/skill_validation_attempts/<attempt_id>/start_next_question", methods=['POST'])
+@jwt_required()
+def start_skill_validation_attempt_next_question(attempt_id):
+    """ records the fact that the user has started the next question """
+
+    attempt = skill_validation_attempts.get_or_404(attempt_id)
+    # FIXME Check that attempt.user == current_user
+
+    form_data = json_util.loads(request.form.get('form_data'))
+    question_id = form_data['question_id']
+    attempt.start_question(question_id)
+    attempt.save()
+
+    return attempt
+
+
 @route(bp, "/skill_validation_attempts/<attempt_id>/answer", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def post_skill_validation_attempt_question_answer(attempt_id):
@@ -139,7 +155,7 @@ def post_skill_validation_attempt_question_answer(attempt_id):
     if attempt.is_skill_validation_completed():
         attempt.is_validated = True
         skill = attempt.skill
-        current_user._get_current_object().add_completed_skill(skill)
+        current_user._get_current_object().add_completed_skill(skill, True)
         current_user._get_current_object().save()
         if current_user.is_track_test_available_and_never_attempted(skill.track):
             alert = {"code": "prompt_track_validation", "id": skill.track._data.get("id", None)}
@@ -170,6 +186,22 @@ def get_track_validation_attempt(attempt_id):
 
     # FIXME Check that attempt.user == current_user
     return track_validation_attempts.get_or_404(attempt_id)
+
+
+@route(bp, "/track_validation_attempts/<attempt_id>/start_next_question", methods=['POST'])
+@jwt_required()
+def start_track_validation_attempt_next_question(attempt_id):
+    """ records the fact that the user has started the next question """
+
+    attempt = track_validation_attempts.get_or_404(attempt_id)
+    # FIXME Check that attempt.user == current_user
+
+    form_data = json_util.loads(request.form.get('form_data'))
+    question_id = form_data['question_id']
+    attempt.start_question(question_id)
+    attempt.save()
+
+    return attempt
 
 
 @route(bp, "/track_validation_attempts/<attempt_id>/answer", methods=['POST'])

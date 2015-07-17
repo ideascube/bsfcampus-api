@@ -1,3 +1,4 @@
+import datetime
 from bson import ObjectId
 
 from MookAPI.core import db
@@ -39,6 +40,14 @@ class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
     @property
     def max_mistakes(self):
         return self.skill.validation_exercise.max_mistakes
+
+    @property
+    def nb_right_answers(self):
+        return len(filter(lambda qa: qa.is_answered_correctly, self.question_answers))
+
+    @property
+    def nb_questions(self):
+        return len(self.question_answers)
 
     ### METHODS
 
@@ -93,6 +102,14 @@ class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
             attempt_question_answer.parameters
         )
         self.set_question_answer(question_id, attempt_question_answer)
+
+    def start_question(self, question_id):
+        """
+        Records the datetime at which the given question has been started
+        :param question_id: the id of the question which has just been started
+        """
+        attempt_question_answer = self.question_answer(question_id)
+        attempt_question_answer.asked_date = datetime.datetime.now
 
     def is_skill_validation_completed(self):
         nb_total_questions = len(self.question_answers)
