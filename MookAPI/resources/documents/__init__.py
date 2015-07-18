@@ -33,7 +33,7 @@ class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
 
 
 class ResourceJsonSerializer(JsonSerializer):
-    __json_additional__ = ['url', 'breadcrumb', 'is_validated', 'bg_color']
+    __json_additional__ = ['breadcrumb', 'is_validated', 'bg_color']
     __json_dbref__ = ['title', 'slug']
 
 
