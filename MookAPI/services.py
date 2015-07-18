@@ -20,6 +20,7 @@ from .resources import \
     DownloadableFileResourcesService, \
     ExerciseResourcesService, \
     ExternalVideoResourcesService, \
+    LinkedFileResourcesService, \
     RichTextResourcesService, \
     TrackValidationResourcesService, \
     VideoResourcesService
@@ -29,6 +30,7 @@ audio_resources = AudioResourcesService()
 downloadable_file_resources = DownloadableFileResourcesService()
 exercise_resources = ExerciseResourcesService()
 external_video_resources = ExternalVideoResourcesService()
+linked_file_resources = LinkedFileResourcesService()
 rich_text_resources = RichTextResourcesService()
 track_validation_resources = TrackValidationResourcesService()
 video_resources = VideoResourcesService()

@@ -9,7 +9,8 @@ from MookAPI.services import \
     lessons, \
     exercise_resources, \
     downloadable_file_resources, \
-    audio_resources
+    audio_resources, \
+    linked_file_resources
 
 from . import route
 
@@ -91,7 +92,7 @@ def get_resource_hierarchy(resource_id):
 def get_resource_content_file(resource_id, filename):
     resource = resources.get_or_404(resource_id)
 
-    if downloadable_file_resources._isinstance(resource):
+    if linked_file_resources._isinstance(resource):
         content_file = resource.resource_content.content_file
 
         return send_file(

@@ -4,6 +4,7 @@ from .documents.audio import AudioResource
 from .documents.downloadable_file import DownloadableFileResource
 from .documents.exercise import ExerciseResource
 from .documents.external_video import ExternalVideoResource
+from .documents.linked_file import LinkedFileResource
 from .documents.rich_text import RichTextResource
 from .documents.track_validation import TrackValidationResource
 from .documents.video import VideoResource
@@ -23,6 +24,9 @@ class ExerciseResourcesService(Service):
 
 class ExternalVideoResourcesService(Service):
     __model__ = ExternalVideoResource
+
+class LinkedFileResourcesService(Service):
+    __model__ = LinkedFileResource
 
 class RichTextResourcesService(Service):
     __model__ = RichTextResource
