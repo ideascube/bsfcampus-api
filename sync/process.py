@@ -20,6 +20,11 @@ class SyncProcess(object):
     def reset(self):
         r = self._get_request("/local_servers/reset")
         if r.status_code == 200:
+            from settings_local import Config
+            db_name = Config.MONGODB_DB
+            # FIXME Get the MongoDB database name from current_app (requires between in app context)
+            db = self.database.connect(db_name)
+            db.drop_database(db_name)
             print "Reset successful"
             return True
         else:
