@@ -145,15 +145,15 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
         if 'analytics' not in response:
             response['analytics'] = {}
         response['analytics']['progress'] = self.user_progress(user)
-        skill_validation_attempts = skill_validation_attempts.queryset()(user=user).order_by('-date')
+        skill_validation_attempts = skill_validation_attempts.find(user=user).order_by('-date')
         response['analytics']['last_attempts_scores'] = map(
             lambda a: {"date": a.date, "nb_questions": a.nb_questions, "score": a.nb_right_answers},
             skill_validation_attempts[:5])
         response['analytics']['nb_attempts'] = len(skill_validation_attempts)
-        completed_skill = completed_skills.queryset()(user=user)(skill=self)
+        completed_skill = completed_skills.first(user=user, skill=self)
         if completed_skill:
             response['analytics']['is_completed_through_test'] = completed_skill.is_validated_through_test
-        response['analytics']['nb_visit'] = len(visited_skills.queryset()(user=user)(skill=self))
+        response['analytics']['nb_visit'] = visited_skills.find(user=user, skill=self).count()
 
         return response
 
