@@ -190,5 +190,9 @@ class SyncableDocument(JsonSerializer, db.Document):
 
     def to_json_dbref(self):
         son = super(SyncableDocument, self).to_json_dbref()
-        son['url'] = self.url
+        try:
+            # FIXME Check if server is central instead (which means we need to be in application context)
+            son['url'] = self.url
+        except:
+            pass
         return son
