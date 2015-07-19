@@ -192,3 +192,9 @@ def register_user():
         else:
             activity.record_misc_analytic("register_user_attempt", "success")
             return jsonify(data=new_user)
+
+@route(bp, "/search/<username>", methods=['GET'])
+def search_users(username):
+    results = users.queryset()(username=username)
+
+    return results
