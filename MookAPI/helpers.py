@@ -239,6 +239,7 @@ class JsonSerializer(object):
                     value=element,
                     field=field.field,
                     instance=instance,
+                    from_distant=from_distant,
                     path_in_instance=next_path_in_instance,
                     unresolved_references=unresolved_references
                 )
