@@ -14,9 +14,10 @@ class StartedTrack(StartedTrackJsonSerializer, Activity):
 
     track = db.ReferenceField('Track')
 
+    @property
+    def object(self):
+        return self.track
+
     def clean(self):
         super(StartedTrack, self).clean()
         self.type = "started_track"
-        if self.track:
-            self.activity_id = self.track.id
-            self.activity_title = self.track.title

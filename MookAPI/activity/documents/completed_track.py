@@ -14,9 +14,10 @@ class CompletedTrack(CompletedTrackJsonSerializer, Activity):
 
     track = db.ReferenceField('Track')
 
+    @property
+    def object(self):
+        return self.track
+
     def clean(self):
         super(CompletedTrack, self).clean()
         self.type = "completed_track"
-        if self.track:
-            self.activity_id = self.track.id
-            self.activity_title = self.track.title

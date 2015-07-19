@@ -14,14 +14,15 @@ class CompletedSkill(CompletedSkillJsonSerializer, Activity):
 
     skill = db.ReferenceField('Skill')
 
+    @property
+    def object(self):
+        return self.skill
+
     is_validated_through_test = db.BooleanField(default=False)
 
     def clean(self):
         super(CompletedSkill, self).clean()
         self.type = "completed_skill"
-        if self.skill:
-            self.activity_id = self.skill.id
-            self.activity_title = self.skill.title
 
     def get_field_names_for_csv(self):
         """ this method gives the fields to export as csv row, in a chosen order """

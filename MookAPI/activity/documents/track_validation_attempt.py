@@ -15,10 +15,3 @@ class TrackValidationAttempt(TrackValidationAttemptJsonSerializer, ExerciseAttem
     def clean(self):
         super(TrackValidationAttempt, self).clean()
         self.type = "track_validation_attempt"
-        self.activity_id = self.track.id
-        self.activity_title = str(self.track)
-
-    def __unicode__(self):
-        if self.exercise is not None:
-            return self.exercise.title
-        return self.id

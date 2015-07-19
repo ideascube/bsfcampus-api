@@ -237,7 +237,7 @@ def record_simple_misc_analytic(misc_type):
     if current_user:
         user = current_user._get_current_object()
 
-    return misc_activities.create(user=user, type=misc_type, activity_title="")
+    return misc_activities.create(user=user, type=misc_type, object_title="")
 
 
 @route(bp, "/misc_analytics/<misc_type>/<misc_title>", methods=['POST'])
@@ -253,7 +253,7 @@ def record_misc_analytic(misc_type, misc_title):
     if current_user:
         user = current_user._get_current_object()
 
-    return misc_activities.create(user=user, type=misc_type, activity_title=misc_title)
+    return misc_activities.create(user=user, type=misc_type, object_title=misc_title)
 
 
 @route(bp, "/analytics.csv", methods=['GET'], jsonify_wrap=False)

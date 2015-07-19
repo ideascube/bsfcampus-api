@@ -11,3 +11,4 @@ class MiscActivity(MiscActivityJsonSerializer, Activity):
     """
     Records any other activity (which doesn't have a specific object linked to it)
     """
+    pass

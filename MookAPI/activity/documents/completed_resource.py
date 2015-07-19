@@ -14,9 +14,10 @@ class CompletedResource(CompletedResourceJsonSerializer, Activity):
 
     resource = db.ReferenceField('Resource')
 
+    @property
+    def object(self):
+        return self.resource
+
     def clean(self):
         super(CompletedResource, self).clean()
         self.type = "completed_resource"
-        if self.resource:
-            self.activity_id = self.resource.id
-            self.activity_title = self.resource.title

@@ -87,6 +87,10 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     ## Exercise
     exercise = db.ReferenceField('ExerciseResource')
 
+    @property
+    def object(self):
+        return self.exercise
+
     ## Question answers
     question_answers = db.ListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
 
@@ -127,8 +131,6 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     def clean(self):
         super(ExerciseAttempt, self).clean()
         self.type = "exercise_attempt"
-        self.activity_id = self.exercise.id
-        self.activity_title = str(self.exercise)
 
     def __unicode__(self):
         if self.exercise is not None:

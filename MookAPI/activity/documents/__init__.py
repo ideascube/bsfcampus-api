@@ -43,11 +43,11 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
     """ The type of the activity, so we can group the activities by type to better analyse them.
     This is supposed to be defaulted/initialized in each subclass"""
 
-    activity_id = db.ObjectIdField()
-    """ The object id of the object associated to this activity (Resource, Track, Skill, Exercise, or something else).
-    This is supposed to be defaulted/initialized in each subclass """
+    @property
+    def object(self):
+        return None
 
-    activity_title = db.StringField()
+    object_title = db.StringField()
     """ The title of the object associated to this activity. It allows a better comprehension of the activity than the activity_id.
     This is supposed to be defaulted/initialized in each subclass """
 
@@ -56,11 +56,13 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
         if self.user:
             self.user_username = self.user.username
             self.user_name = self.user.full_name
+        if self.object:
+            self.object_title = getattr(self.object, 'title', None)
 
     @classmethod
     def field_names_header_for_csv(cls):
         return ['Koombook id', 'Koombook name', 'User id', 'User username', 'User full name', 'Date - Time',
-                'Action type', 'Action id', 'Action title', 'Action specific data']
+                'Action type', 'Object id', 'Object title', 'Object-specific data']
 
     @property
     def url(self):
@@ -76,4 +78,4 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
     def get_field_names_for_csv(self):
         """ this method gives the fields to export as csv row, in a chosen order """
         return ['local_server_username', 'local_server_name', 'user', 'user_username', 'user_name', 'date', 'type',
-                'activity_id', 'activity_title']
+                'object', 'object_title']

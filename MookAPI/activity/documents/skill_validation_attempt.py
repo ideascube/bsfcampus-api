@@ -34,6 +34,10 @@ class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
     ## Skill
     skill = db.ReferenceField('Skill')
 
+    @property
+    def object(self):
+        return self.skill
+
     ## Question answers
     question_answers = db.ListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
 
@@ -65,8 +69,6 @@ class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
     def clean(self):
         super(SkillValidationAttempt, self).clean()
         self.type = "exercise_attempt"
-        self.activity_id = self.skill.id
-        self.activity_title = str(self.skill)
 
     def __unicode__(self):
         if self.skill is not None:
