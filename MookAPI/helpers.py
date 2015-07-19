@@ -42,7 +42,7 @@ class JsonSerializer(object):
     __json_rename__ = None
     __json_dbref__ = None
 
-    def encode_mongo(self, fields=None):
+    def encode_mongo(self, fields=None, for_distant=False):
 
         Document = _import_class('Document')
         EmbeddedDocument = _import_class('EmbeddedDocument')
@@ -80,24 +80,24 @@ class JsonSerializer(object):
                 elif isinstance(field, (ReferenceField, GenericReferenceField)):
                     value = getattr(self, key, None)
                     if value:
-                        rv[key] = value.to_json_dbref()
+                        rv[key] = value.to_json_dbref(for_distant=for_distant)
 
                 ## Recursively encode embedded documents....
                 elif isinstance(field, EmbeddedDocumentField):
                     if issubclass(field.document_type_obj, JsonSerializer):
                         value = getattr(self, key, None)
                         if value:
-                            rv[key] = value.to_json()
+                            rv[key] = value.to_json(for_distant=for_distant)
 
                 ## ...or lists thereof.
                 elif isinstance(field, ListField):
                     if isinstance(field.field, EmbeddedDocumentField):
                         if issubclass(field.field.document_type_obj, JsonSerializer):
                             values = getattr(self, key, [])
-                            rv[key] = [value.to_json() for value in values]
+                            rv[key] = [value.to_json(for_distant=for_distant) for value in values]
                     elif isinstance(field.field, (ReferenceField, GenericReferenceField)):
                         values = getattr(self, key, [])
-                        rv[key] = [value.to_json_dbref() for value in values]
+                        rv[key] = [value.to_json_dbref(for_distant=for_distant) for value in values]
 
         return rv
 
@@ -110,7 +110,7 @@ class JsonSerializer(object):
             return self.__dict__.keys()
         return []
 
-    def to_json(self):
+    def to_json(self, for_distant=False):
         field_names = self.get_field_names()
 
         public = self.__json_public__ or field_names
@@ -122,7 +122,7 @@ class JsonSerializer(object):
         Document = _import_class('Document')
         EmbeddedDocument = _import_class('EmbeddedDocument')
         if isinstance(self, (Document, EmbeddedDocument)):
-            rv = self.encode_mongo(fields=public)
+            rv = self.encode_mongo(fields=public, for_distant=for_distant)
         else:
             rv = dict()
             for key in public:
@@ -141,14 +141,20 @@ class JsonSerializer(object):
             except:
                 pass
 
+        if for_distant:
+            rv['_id'] = rv.pop('distant_id', None)
+
         return rv
 
-    def to_json_dbref(self):
+    def to_json_dbref(self, for_distant=False):
         fields = self.__json_dbref__ or []
         renames = self.__json_rename__ or dict()
 
         rv = dict()
-        rv['_id'] = self.id
+        if for_distant and hasattr(self, 'distant_id'):
+            rv['_id'] = self.distant_id
+        else:
+            rv['_id'] = self.id
         rv['_cls'] = self.__class__.__name__
         for key in fields:
             rv[key] = getattr(self, key)
