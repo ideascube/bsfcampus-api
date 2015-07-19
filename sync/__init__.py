@@ -25,8 +25,8 @@ def launch_process(config, *args):
 
     interval = getattr(config, 'SYNC_INTERVAL', None)
 
-    if 'post_next' in args:
-        synchronizer.post_next_document()
+    if 'post' in args:
+        synchronizer.post_all_documents()
 
     else:
         if 'reset' in args:

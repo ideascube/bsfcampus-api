@@ -120,7 +120,7 @@ class SyncProcess(object):
             overwrite_document=document
         )
 
-    def post_next_document(self):
+    def _post_next_document(self):
         if self.local_server:
             from MookAPI.services import users, activities
             for item in self.local_server.syncable_items:
@@ -131,6 +131,11 @@ class SyncProcess(object):
                                 self._post_document(sub_item)
                                 return True
         return False
+
+    def post_all_documents(self):
+        succeeded = True
+        while succeeded:
+            succeeded = self._post_next_document()
 
     def resolve_references(self):
         if self.should_try_to_resolve_reference:
