@@ -2,26 +2,39 @@ def launch_process(config, *args):
     from process import SyncProcess
     from MookAPI.core import db
     from MookAPI.factory import create_app
+    from MookAPI.services import local_servers, users
 
     db.init_app(create_app(__name__, settings_override=config))
+
+    try:
+        user = users.get(username=config.CENTRAL_SERVER_KEY)
+        if user.verify_pass(config.CENTRAL_SERVER_SECRET):
+            local_server = local_servers.get(user=user)
+        else:
+            local_server = None
+    except:
+        local_server = None
 
     synchronizer = SyncProcess(
         host=config.CENTRAL_SERVER_HOST,
         key=config.CENTRAL_SERVER_KEY,
-        secret=config.CENTRAL_SERVER_SECRET
+        secret=config.CENTRAL_SERVER_SECRET,
+        database=db,
+        local_server=local_server
     )
 
     interval = getattr(config, 'SYNC_INTERVAL', None)
 
-    if 'reset' in args:
-        synchronizer.reset()
-    elif 'fetch_list' in args:
-        synchronizer.fetch_sync_list()
-    elif 'next_action' in args:
-        synchronizer.next_action()
-    elif '-D' in args:
-        import daemon
-        with daemon.DaemonContext():
-            synchronizer.run(interval=interval)
+    if 'post_next' in args:
+        synchronizer.post_next_document()
+
     else:
-        synchronizer.run(interval=interval)
+        if 'reset' in args:
+            synchronizer.reset()
+
+        if '-D' in args:
+            import daemon
+            with daemon.DaemonContext():
+                synchronizer.run(interval=interval)
+        else:
+            synchronizer.run(interval=interval)

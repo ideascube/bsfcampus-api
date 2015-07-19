@@ -6,16 +6,22 @@ from documents import ItemsToSyncService
 
 
 class SyncProcess(object):
-    def __init__(self, host, key, secret):
+    def __init__(self, host, key, secret, database, local_server=None):
         self.host = host
         self.key = key
         self.secret = secret
+        self.database = database
+        self.local_server = local_server
         self.items_to_sync_service = ItemsToSyncService()
         self.should_try_to_resolve_reference = True
 
     def _get_request(self, path):
         url = self.host + path
         return requests.get(url, auth=(self.key, self.secret))
+
+    def _post_request(self, path, data=None, json=None):
+        url = self.host + path
+        return requests.post(url, data=data, json=json, auth=(self.key, self.secret))
 
     def reset(self):
         r = self._get_request("/local_servers/reset")
@@ -96,6 +102,36 @@ class SyncProcess(object):
             item = self.items_to_sync_service.queryset().order_by('queue_position').first()
 
         return item
+
+    def _post_document(self, document):
+        path = "/local_servers/add_item"
+        from bson.json_util import dumps
+        json = dumps(document.to_json(for_distant=True))
+        r = self._post_request(path, json=json)
+        response = r.json() # TODO Re-save the item locally, in order to set its distant ID.
+        data = response['data']
+
+        from MookAPI.helpers import _get_service_for_class
+        service = _get_service_for_class(data['_cls'])
+        updated_document = service.__model__.from_json(
+            data,
+            save=True,
+            from_distant=True,
+            overwrite_document=document
+        )
+        return True
+
+    def post_next_document(self):
+        if self.local_server:
+            from MookAPI.services import users, activities
+            for item in self.local_server.syncable_items:
+                if users._isinstance(item.document):
+                    for sub_item in item.document.all_syncable_items(local_server=self.local_server):
+                        if activities._isinstance(sub_item):
+                            if not sub_item.distant_id:
+                                self._post_document(sub_item)
+                                return True
+        return False
 
     def resolve_references(self):
         if self.should_try_to_resolve_reference:
