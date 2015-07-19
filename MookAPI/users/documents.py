@@ -85,7 +85,7 @@ class User(UserJsonSerializer, SyncableDocument):
         from MookAPI.services import unlocked_track_tests
         if unlocked_track_tests.find(user=self, track=track).count() > 0:
             from MookAPI.services import track_validation_attempts
-            attempts = track_validation_attempts.find(user=self, track=track)
+            attempts = track_validation_attempts.find(user=self)
             return all(attempt.track != track for attempt in attempts)
 
         return False
