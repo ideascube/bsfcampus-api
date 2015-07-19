@@ -37,6 +37,14 @@ class User(UserJsonSerializer, SyncableDocument):
 
     roles = db.ListField(db.ReferenceField(Role))
 
+    tutors = db.ListField(db.ReferenceField('self'))
+
+    tutored_students = db.ListField(db.ReferenceField('self'))
+
+    awaiting_tutor_requests = db.ListField(db.ReferenceField('self'))
+
+    awaiting_student_requests = db.ListField(db.ReferenceField('self'))
+
     def add_completed_resource(self, resource):
         from MookAPI.services import completed_resources
         if completed_resources.find(user=self, resource=resource).count() == 0:

@@ -18,7 +18,10 @@ from MookAPI.services import \
 
 class UserView(ModelView):
     column_list = ('full_name', 'username', 'email', 'password', 'accept_cgu', 'roles')
-    form_columns = ('full_name', 'username', 'email', 'password', 'accept_cgu', 'roles')
+    # FIXME: adds tutoring related fields to user admin panel for debugging or test purposes
+    # form_columns = ('full_name', 'username', 'email', 'password', 'accept_cgu', 'roles')
+    form_columns = ('full_name', 'username', 'email', 'password', 'accept_cgu', 'roles', 'tutors', 'tutored_students',
+                    'awaiting_tutor_requests', 'awaiting_student_requests')
 
     def on_model_change(self, form, model, is_created):
         model.password = users.__model__.hash_pass(model.password)
@@ -45,7 +48,8 @@ class HierarchyTrackView(ModelView):
 
 class HierarchySkillView(ModelView):
     column_list = ('title', 'slug', 'description', 'short_description', 'track', 'order', 'icon')
-    form_columns = ('title', 'slug', 'description', 'short_description', 'track', 'order', 'icon', 'validation_exercise')
+    form_columns = (
+    'title', 'slug', 'description', 'short_description', 'track', 'order', 'icon', 'validation_exercise')
 
     def on_model_change(self, form, model, is_created):
         # TODO: create slug automatically
@@ -62,7 +66,6 @@ class HierarchyLessonView(ModelView):
 
 
 admin_ui = Admin()
-
 
 admin_ui.add_view(ResourceView(
     exercise_resources.__model__,
@@ -99,7 +102,6 @@ admin_ui.add_view(ResourceView(
     name='Downloadable File',
     category='Resources'))
 
-
 admin_ui.add_view(HierarchyTrackView(
     tracks.__model__,
     name='Track',
@@ -114,7 +116,6 @@ admin_ui.add_view(HierarchyLessonView(
     lessons.__model__,
     name='Lesson',
     category='Hierarchy'))
-
 
 admin_ui.add_view(UserView(
     users.__model__,
