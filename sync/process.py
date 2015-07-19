@@ -105,21 +105,20 @@ class SyncProcess(object):
 
     def _post_document(self, document):
         path = "/local_servers/add_item"
-        from bson.json_util import dumps
+        from bson.json_util import dumps, loads
         json = dumps(document.to_json(for_distant=True))
         r = self._post_request(path, json=json)
-        response = r.json() # TODO Re-save the item locally, in order to set its distant ID.
+        response = loads(r.text)
         data = response['data']
 
         from MookAPI.helpers import _get_service_for_class
         service = _get_service_for_class(data['_cls'])
-        updated_document = service.__model__.from_json(
+        return service.__model__.from_json(
             data,
             save=True,
             from_distant=True,
             overwrite_document=document
         )
-        return True
 
     def post_next_document(self):
         if self.local_server:

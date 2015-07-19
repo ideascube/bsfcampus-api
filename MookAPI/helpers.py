@@ -168,7 +168,7 @@ class JsonSerializer(object):
         return rv
 
     @staticmethod
-    def _convert_value_from_json(value, field, instance, path_in_instance, unresolved_references):
+    def _convert_value_from_json(value, field, instance, from_distant, path_in_instance, unresolved_references):
 
         if field is None:
             return field.to_python(value)
@@ -183,17 +183,24 @@ class JsonSerializer(object):
             # FIXME This way of getting the id is not really clean.
             value = field.to_python(value['_id'])
             document_id = value.id
-            try:
-                document = field.document_type_obj.objects.get(distant_id=document_id)
-                return document
-            except:
-                from MookAPI.sync import UnresolvedReference
-                ref = UnresolvedReference()
-                ref.field_path = field.name
-                ref.class_name=field.document_type_obj.__name__
-                ref.distant_id=document_id
-                unresolved_references.append(ref)
-                return None
+            if from_distant:
+                try:
+                    document = field.document_type_obj.objects.get(distant_id=document_id)
+                    return document
+                except Exception as e:
+                    from MookAPI.sync import UnresolvedReference
+                    ref = UnresolvedReference()
+                    ref.field_path = field.name
+                    ref.class_name=field.document_type_obj.__name__
+                    ref.distant_id=document_id
+                    unresolved_references.append(ref)
+                    return None
+            else:
+                try:
+                    document = field.document_type_obj.objects.get(id=document_id)
+                    return document
+                except Exception as e:
+                    return None
 
         ## GenericField: convert reference to use the local ``id`` instead of the distant one.
         elif isinstance(field, GenericReferenceField):
@@ -242,7 +249,11 @@ class JsonSerializer(object):
         else:
             return field.to_python(value)
 
-    def _set_value_from_json(self, json, key, instance, path_in_instance, unresolved_references):
+    def _set_value_from_json(self, json, key, instance, **kwargs):
+
+        from_distant = kwargs.get('from_distant', False)
+        path_in_instance = kwargs.get('path_in_instance', '')
+        unresolved_references = kwargs.get('unresolved_references', [])
 
         ## Get value from json
         value = json[key]
@@ -288,6 +299,7 @@ class JsonSerializer(object):
                 value=value,
                 field=field,
                 instance=instance,
+                from_distant=from_distant,
                 path_in_instance=path_in_instance,
                 unresolved_references=unresolved_references
             )
@@ -312,6 +324,7 @@ class JsonSerializer(object):
             obj._set_value_from_json(
                 json,
                 key,
+                from_distant=from_distant,
                 instance=instance,
                 path_in_instance=path_in_instance,
                 unresolved_references=unresolved_references

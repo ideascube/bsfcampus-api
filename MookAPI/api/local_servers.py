@@ -82,7 +82,7 @@ def add_item_from_local_server():
     if not service:
         return jsonify(error="Unrecognized class name", code=2), 400
 
-    obj = service.__model__.from_json(data)
+    obj = service.__model__.from_json(data, from_distant=False)
     obj.save()
 
     return jsonify(data=obj)
