@@ -7,7 +7,7 @@ from flask_jwt import current_user, verify_jwt
 
 from MookAPI.core import db
 from MookAPI.helpers import JsonSerializer
-from MookAPI.sync import SyncableDocument
+from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 
 
 class ResourceContentJsonSerializer(JsonSerializer):
@@ -32,7 +32,7 @@ class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
         return response
 
 
-class ResourceJsonSerializer(JsonSerializer):
+class ResourceJsonSerializer(SyncableDocumentJsonSerializer):
     __json_additional__ = ['breadcrumb', 'is_validated', 'bg_color']
     __json_dbref__ = ['title', 'slug']
 

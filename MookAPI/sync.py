@@ -63,7 +63,19 @@ class UnresolvedReference(JsonSerializer, db.Document):
                    % (self.class_name, str(self.distant_id), self.document.__class__.__name__, self.field_path)
 
 
-class SyncableDocument(JsonSerializer, db.Document):
+class SyncableDocumentJsonSerializer(JsonSerializer):
+
+    def to_json_dbref(self, for_distant=False):
+        son = super(SyncableDocumentJsonSerializer, self).to_json_dbref(for_distant=for_distant)
+        try:
+            # FIXME Check if server is central instead (which means we need to be in application context)
+            son['url'] = self.url
+        except:
+            pass
+        return son
+
+
+class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
     """
     .. _SyncableDocument:
 
@@ -187,12 +199,3 @@ class SyncableDocument(JsonSerializer, db.Document):
         items['delete'] = self.items_to_delete(last_sync, local_server=local_server)
         ## We should do some cleanup at this point, in particular remove deletable items from 'update' list.
         return items
-
-    def to_json_dbref(self):
-        son = super(SyncableDocument, self).to_json_dbref()
-        try:
-            # FIXME Check if server is central instead (which means we need to be in application context)
-            son['url'] = self.url
-        except:
-            pass
-        return son

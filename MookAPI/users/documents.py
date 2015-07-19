@@ -5,9 +5,9 @@ from flask import url_for
 
 from MookAPI.core import db
 from MookAPI.helpers import JsonSerializer
-from MookAPI.sync import SyncableDocument
+from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 
-class RoleJsonSerializer(JsonSerializer):
+class RoleJsonSerializer(SyncableDocumentJsonSerializer):
     pass
 
 class Role(RoleJsonSerializer, SyncableDocument):

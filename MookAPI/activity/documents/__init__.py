@@ -4,11 +4,11 @@ from flask import url_for
 
 from MookAPI.core import db
 from MookAPI.helpers import JsonSerializer, CsvSerializer
-from MookAPI.sync import SyncableDocument
+from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 from flask_jwt import current_user
 
 
-class ActivityJsonSerializer(JsonSerializer):
+class ActivityJsonSerializer(SyncableDocumentJsonSerializer):
     pass
 
 
