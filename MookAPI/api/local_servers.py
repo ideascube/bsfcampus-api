@@ -63,6 +63,30 @@ def get_local_server_sync_list():
 
     return references
 
+@route(bp, "/add_item", methods=['POST'], jsonify_wrap=False)
+@basic_auth_required
+def add_item_from_local_server():
+    user = basic_auth_user._get_current_object()
+    #FIXME: Check if user has role "local_server"
+
+    local_server = local_servers.get_or_404(user=user)
+
+    try:
+        from bson.json_util import loads
+        data = loads(request.get_json())
+    except:
+        return jsonify(error="Invalid data", code=1), 400
+
+    from MookAPI.helpers import _get_service_for_class
+    service = _get_service_for_class(data['_cls'])
+    if not service:
+        return jsonify(error="Unrecognized class name", code=2), 400
+
+    obj = service.__model__.from_json(data)
+    obj.save()
+
+    return jsonify(data=obj)
+
 @route(bp, "/register", methods=['POST'])
 @basic_auth_required
 def register_local_server():
