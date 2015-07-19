@@ -182,7 +182,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
 
         if 'analytics' not in response:
             response['analytics'] = {}
-        response['analytics']['nb_visit'] = len(visited_resources.queryset()(user=user)(resource=self))
+        response['analytics']['nb_visit'] = visited_resources.find(user=user, resource=self).count()
 
         return response
 
