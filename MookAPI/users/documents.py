@@ -84,7 +84,9 @@ class User(UserJsonSerializer, SyncableDocument):
         # FIXME Make more efficient search using Service
         from MookAPI.services import unlocked_track_tests
         if unlocked_track_tests.find(user=self, track=track).count() > 0:
-            return all(attempted_test.exercise.parent != track for attempted_test in self.track_validation_attempts)
+            from MookAPI.services import track_validation_attempts
+            attempts = track_validation_attempts.find(user=self, track=track)
+            return all(attempt.track != track for attempt in attempts)
 
         return False
 
