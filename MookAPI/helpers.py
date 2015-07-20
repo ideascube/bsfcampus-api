@@ -10,7 +10,7 @@ def is_local():
 def is_central():
     return not is_local()
 
-def _get_service_for_class(class_name):
+def get_service_for_class(class_name):
     from .core import Service
     import MookAPI.services as s
     class_name = class_name.split('.')[-1]
@@ -19,6 +19,15 @@ def _get_service_for_class(class_name):
             if service.__model__.__name__ == class_name:
                 return service
     return None
+
+def _get_current_local_server():
+    from MookAPI.services import local_servers
+    try:
+        return local_servers.get_current() if is_local() else None
+    except:
+        return None
+
+current_local_server = _get_current_local_server()
 
 def register_blueprints(app, package_name, package_path):
     rv = []

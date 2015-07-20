@@ -77,8 +77,8 @@ def add_item_from_local_server():
     except:
         return jsonify(error="Invalid data", code=1), 400
 
-    from MookAPI.helpers import _get_service_for_class
-    service = _get_service_for_class(data['_cls'])
+    from MookAPI.helpers import get_service_for_class
+    service = get_service_for_class(data['_cls'])
     if not service:
         return jsonify(error="Unrecognized class name", code=2), 400
 

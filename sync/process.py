@@ -111,8 +111,8 @@ class SyncProcess(object):
         response = loads(r.text)
         data = response['data']
 
-        from MookAPI.helpers import _get_service_for_class
-        service = _get_service_for_class(data['_cls'])
+        from MookAPI.helpers import get_service_for_class
+        service = get_service_for_class(data['_cls'])
         return service.__model__.from_json(
             data,
             save=True,

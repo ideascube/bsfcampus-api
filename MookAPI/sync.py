@@ -42,8 +42,8 @@ class UnresolvedReference(JsonSerializer, db.Document):
     def resolve(self):
         print "Trying to resolve %s" % unicode(self)
         try:
-            from MookAPI.helpers import _get_service_for_class
-            service = _get_service_for_class(self.class_name)
+            from MookAPI.helpers import get_service_for_class
+            service = get_service_for_class(self.class_name)
             local_document = service.get(distant_id=self.distant_id)
             self.document.set_value_for_field_path(local_document, self.field_path)
             self.document.save()

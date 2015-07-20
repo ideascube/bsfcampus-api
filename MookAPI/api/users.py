@@ -78,7 +78,7 @@ def current_user_change_password():
             }
             return response, 400
 
-        return jsonify(dict(data=user))
+        return jsonify(data=user)
 
 
 @route(bp, "/current/dashboard")
@@ -90,9 +90,8 @@ def current_user_dashboard():
         user=user,
         tracks=[]
     )
-    for track in tracks.all():
+    for track in tracks.all().order_by('order'):
         dashboard['tracks'].append(track.encode_mongo_for_dashboard(user))
-    dashboard['tracks'].sort(key=lambda t: t['order'])
 
     return dashboard
 
@@ -151,7 +150,7 @@ def register_user():
 
         username = data['username']
         full_name = data['full_name']
-        if full_name == "" or full_name is None:
+        if not full_name:
             full_name = username
 
         new_user = users.new(
