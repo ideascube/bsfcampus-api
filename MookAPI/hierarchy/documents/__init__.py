@@ -52,8 +52,7 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
             pass
         if not current_user:
             return None
-        user = current_user._get_current_object()
-        return self.is_validated_by_user(user)
+        return self.is_validated_by_user(current_user.user)
 
     def user_progress(self, user):
         """
@@ -71,8 +70,7 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
             pass
         if not current_user:
             return None
-        user = current_user._get_current_object()
-        return self.user_progress(user)
+        return self.user_progress(current_user.user)
     
     
     ### METHODS

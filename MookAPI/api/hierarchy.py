@@ -33,7 +33,7 @@ def get_track(track_id):
     except:
         pass
     else:
-        user = current_user._get_current_object()
+        user = current_user.user
         from MookAPI.services import visited_tracks
         visited_tracks.create(user=user, track=track)
 
@@ -80,7 +80,7 @@ def get_skill(skill_id):
     except:
         pass
     else:
-        user = current_user._get_current_object()
+        user = current_user.user
         from MookAPI.services import visited_skills
         visited_skills.create(user=user, skill=skill)
 

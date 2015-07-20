@@ -70,8 +70,7 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
             pass
         if not current_user:
             return None
-        user = current_user._get_current_object()
-        return self.is_started_by_user(user)
+        return self.is_started_by_user(current_user.user)
 
     def test_is_unlocked_by_user(self, user):
         from MookAPI.services import unlocked_track_tests
@@ -85,8 +84,7 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
             pass
         if not current_user:
             return None
-        user = current_user._get_current_object()
-        return self.test_is_unlocked_by_user(user)
+        return self.test_is_unlocked_by_user(current_user.user)
 
     @property
     def track_validation_tests(self):

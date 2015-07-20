@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt import current_user
 from flask_mongoengine import ValidationError
 
-from MookAPI.services import tracks, users
+from MookAPI.services import tracks, users, user_credentials
 from MookAPI.auth import jwt_required
 
 import activity
@@ -16,7 +16,7 @@ bp = Blueprint('users', __name__, url_prefix="/users")
 @route(bp, "/current", methods=['GET', 'PATCH'], jsonify_wrap=False)
 @jwt_required()
 def current_user_info():
-    user = current_user._get_current_object()
+    user = current_user.user
 
     if request.method == 'GET':
         return jsonify(data=user)
@@ -40,7 +40,7 @@ def current_user_info():
 @route(bp, "/current/password", methods=['PATCH'], jsonify_wrap=False)
 @jwt_required()
 def current_user_change_password():
-    user = current_user._get_current_object()
+    user = current_user.user
 
     if request.method == 'PATCH':
 
@@ -84,7 +84,7 @@ def current_user_change_password():
 @route(bp, "/current/dashboard")
 @jwt_required()
 def current_user_dashboard():
-    user = current_user._get_current_object()
+    user = current_user.user
 
     dashboard = dict(
         user=user,
@@ -106,7 +106,7 @@ def get_user_info(user_id):
 def user_dashboard(user_id):
     requested_user = users.get_or_404(user_id)
     from MookAPI.services import visited_user_dashboards
-    user = current_user._get_current_object()
+    user = current_user.user
     visited_user_dashboards.create(user=user, dashboard_user=requested_user)
 
     dashboard = dict(
@@ -155,9 +155,7 @@ def register_user():
 
     new_user = users.new(
         full_name=full_name,
-        username=username,
         email=data['email'],
-        password=users.__model__.hash_pass(password),
         accept_cgu='accept_cgu' in data
     )
 
@@ -189,6 +187,16 @@ def register_user():
         return jsonify(response), 400
 
     else:
+        from MookAPI.helpers import current_local_server
+        local_server = current_local_server()
+        user_credentials.create(
+            user=new_user,
+            username=username,
+            password=password,
+            local_server=local_server
+        )
+        ## Password is automatically hashed in the Service.
+
         activity.record_misc_analytic("register_user_attempt", "success")
         return jsonify(data=new_user)
 

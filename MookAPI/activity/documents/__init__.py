@@ -28,6 +28,7 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
 
     user_name = db.StringField(default="")
     """The full name of the user who has performed the activity"""
+    # FIXME this has to be set using the credentials provided
 
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
     """The date at which the activity was performed."""
@@ -53,7 +54,6 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
     def clean(self):
         super(Activity, self).clean()
         if self.user:
-            self.user_username = self.user.username
             self.user_name = self.user.full_name
         if self.object:
             self.object_title = getattr(self.object, 'title', None)

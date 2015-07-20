@@ -23,11 +23,7 @@ class User(UserJsonSerializer, SyncableDocument):
 
     full_name = db.StringField(unique=False, required=True)
 
-    username = db.StringField(unique=True, required=True)
-
     email = db.EmailField(unique=False)
-
-    password = db.StringField()
 
     active = db.BooleanField(default=True)
 
@@ -88,6 +84,38 @@ class User(UserJsonSerializer, SyncableDocument):
 
         return False
 
+    @property
+    def url(self):
+        return url_for("users.get_user_info", user_id=self.id, _external=True)
+
+    def all_syncable_items(self, local_server=None):
+        items = super(User, self).all_syncable_items()
+
+        from MookAPI.services import user_credentials, activities
+        for creds in user_credentials.find(user=self):
+            items.extend(creds.all_syncable_items(local_server=local_server))
+        for activity in activities.find(user=self):
+            items.extend(activity.all_syncable_items(local_server=local_server))
+
+        return items
+
+    def __unicode__(self):
+        return self.full_name or self.email or self.id
+
+
+class UserCredentialsJsonSerializer(SyncableDocumentJsonSerializer):
+    pass
+
+class UserCredentials(SyncableDocument):
+
+    user = db.ReferenceField(User, required=True)
+
+    local_server = db.ReferenceField('LocalServer')
+
+    username = db.StringField(unique_with='local_server', required=True)
+
+    password = db.StringField()
+
     @staticmethod
     def hash_pass(password):
         """
@@ -97,19 +125,3 @@ class User(UserJsonSerializer, SyncableDocument):
 
     def verify_pass(self, password):
         return bcrypt.verify(password, self.password)
-
-    @property
-    def url(self):
-        return url_for("users.get_user_info", user_id=self.id, _external=True)
-
-    def all_syncable_items(self, local_server=None):
-        items = super(User, self).all_syncable_items()
-
-        from MookAPI.services import activities
-        for activity in activities.find(user=self):
-            items.extend(activity.all_syncable_items(local_server=local_server))
-
-        return items
-
-    def __unicode__(self):
-        return self.username or self.email or self.id

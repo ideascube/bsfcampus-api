@@ -47,7 +47,7 @@ def get_resource(resource_id):
     except:
         pass
     else:
-        user = current_user._get_current_object()
+        user = current_user.user
         from MookAPI.services import visited_resources
         visited_resources.create(user=user, resource=resource)
         user.add_started_track(resource.track)

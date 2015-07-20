@@ -17,6 +17,7 @@ class VisitedDashboard(VisitedDashboardJsonSerializer, Activity):
 
     dashboard_user_username = db.StringField()
     """ The username of the dashboard_user """
+    # FIXME this has to be set using the credentials provided
 
     dashboard_user_full_name = db.StringField()
     """ The full name of the dashboard_user """
@@ -25,5 +26,4 @@ class VisitedDashboard(VisitedDashboardJsonSerializer, Activity):
         super(VisitedDashboard, self).clean()
         self.type = "visited_profile"
         if self.dashboard_user:
-            self.dashboard_user_username = self.dashboard_user.username
             self.dashboard_user_full_name = self.dashboard_user.full_name

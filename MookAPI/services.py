@@ -1,9 +1,11 @@
 from .users import \
     RolesService, \
-    UsersService
+    UsersService, \
+    UserCredentialsService
 
 roles = RolesService()
 users = UsersService()
+user_credentials = UserCredentialsService()
 
 from .hierarchy import \
     TracksService, \

@@ -14,21 +14,21 @@ bp = Blueprint('tutoring', __name__, url_prefix="/tutoring")
 def post_tutor_request(user_id):
     requested_tutor = users.get_or_404(user_id)
 
-    current_user_object = current_user._get_current_object()
+    user = current_user.user
     error_code = 400
-    if requested_tutor in current_user_object.tutors:
+    if requested_tutor in user.tutors:
         response = {"error_code": 1, "error_message": "The requested user is already a tutor for you"}
-    elif requested_tutor in current_user_object.tutored_students:
+    elif requested_tutor in user.tutored_students:
         response = {"error_code": 2, "error_message": "The requested user is already tutored by you"}
-    elif current_user_object in requested_tutor.awaiting_tutor_requests:
+    elif user in requested_tutor.awaiting_tutor_requests:
         response = {"error_code": 3, "error_message": "A tutor request is already registered for this user"}
     # It should be allowed to be both student and tutor to the same user
-    # elif current_user_object in requested_tutor.awaiting_student_requests:
+    # elif user in requested_tutor.awaiting_student_requests:
     #     response = {"error_code": 4, "error_message": "A tutoring request is already registered for this user"}
     else:
-        requested_tutor.awaiting_tutor_requests.append(current_user_object)
+        requested_tutor.awaiting_tutor_requests.append(user)
         requested_tutor.save()
-        response = current_user_object
+        response = user
         error_code = 200
 
     return response, error_code
@@ -39,21 +39,21 @@ def post_tutor_request(user_id):
 def post_tutored_student_request(user_id):
     requested_student = users.get_or_404(user_id)
 
-    current_user_object = current_user._get_current_object()
+    user = current_user.user
     error_code = 400
-    if requested_student in current_user_object.tutored_students:
+    if requested_student in user.tutored_students:
         response = {"error_code": 5, "error_message": "The requested user is already tutored by you"}
-    elif requested_student in current_user_object.tutors:
+    elif requested_student in user.tutors:
         response = {"error_code": 6, "error_message": "The requested user is already a tutor for you"}
     # It should be allowed to be both student and tutor to the same user
-    # elif current_user_object in requested_student.awaiting_tutor_requests:
+    # elif user in requested_student.awaiting_tutor_requests:
     #     response = {"error_code": 7, "error_message": "A tutor request is already registered for this user"}
-    elif current_user_object in requested_student.awaiting_student_requests:
+    elif user in requested_student.awaiting_student_requests:
         response = {"error_code": 8, "error_message": "A tutoring request is already registered for this user"}
     else:
-        requested_student.awaiting_student_requests.append(current_user_object)
+        requested_student.awaiting_student_requests.append(user)
         requested_student.save()
-        response = current_user_object
+        response = user
         error_code = 200
 
     return response, error_code
@@ -64,17 +64,17 @@ def post_tutored_student_request(user_id):
 def post_tutor_accept(user_id):
     requesting_student = users.get_or_404(user_id)
 
-    current_user_object = current_user._get_current_object()
+    user = current_user.user
     error_code = 400
-    if requesting_student not in current_user_object.awaiting_tutor_requests:
+    if requesting_student not in user.awaiting_tutor_requests:
         response = {"error_code": 9, "error_message": "There is no request to respond for this user"}
     else:
-        current_user_object.awaiting_tutor_requests.remove(requesting_student)
-        current_user_object.tutored_students.append(requesting_student)
-        current_user_object.save()
-        requesting_student.tutors.append(current_user_object)
+        user.awaiting_tutor_requests.remove(requesting_student)
+        user.tutored_students.append(requesting_student)
+        user.save()
+        requesting_student.tutors.append(user)
         requesting_student.save()
-        response = current_user_object
+        response = user
         error_code = 200
 
     return response, error_code
@@ -85,14 +85,14 @@ def post_tutor_accept(user_id):
 def post_tutor_decline(user_id):
     requesting_student = users.get_or_404(user_id)
 
-    current_user_object = current_user._get_current_object()
+    user = current_user.user
     error_code = 400
-    if requesting_student not in current_user_object.awaiting_tutor_requests:
+    if requesting_student not in user.awaiting_tutor_requests:
         response = {"error_code": 9, "error_message": "There is no request to respond for this user"}
     else:
-        current_user_object.awaiting_tutor_requests.remove(requesting_student)
-        current_user_object.save()
-        response = current_user_object
+        user.awaiting_tutor_requests.remove(requesting_student)
+        user.save()
+        response = user
         error_code = 200
 
     return response, error_code
@@ -103,17 +103,17 @@ def post_tutor_decline(user_id):
 def post_tutored_student_accept(user_id):
     requesting_tutor = users.get_or_404(user_id)
 
-    current_user_object = current_user._get_current_object()
+    user = current_user.user
     error_code = 400
-    if requesting_tutor not in current_user_object.awaiting_student_requests:
+    if requesting_tutor not in user.awaiting_student_requests:
         response = {"error_code": 9, "error_message": "There is no request to respond for this user"}
     else:
-        current_user_object.awaiting_student_requests.remove(current_user_object)
-        current_user_object.tutors.append(requesting_tutor)
-        current_user_object.save()
-        requesting_tutor.tutored_students.append(current_user_object)
+        user.awaiting_student_requests.remove(user)
+        user.tutors.append(requesting_tutor)
+        user.save()
+        requesting_tutor.tutored_students.append(user)
         requesting_tutor.save()
-        response = current_user_object
+        response = user
         error_code = 200
 
     return response, error_code
@@ -124,14 +124,14 @@ def post_tutored_student_accept(user_id):
 def post_tutored_student_decline(user_id):
     requesting_tutor = users.get_or_404(user_id)
 
-    current_user_object = current_user._get_current_object()
+    user = current_user.user
     error_code = 400
-    if requesting_tutor not in current_user_object.awaiting_student_requests:
+    if requesting_tutor not in user.awaiting_student_requests:
         response = {"error_code": 9, "error_message": "There is no request to respond for this user"}
     else:
-        current_user_object.awaiting_student_requests.remove(requesting_tutor)
-        current_user_object.save()
-        response = current_user_object
+        user.awaiting_student_requests.remove(requesting_tutor)
+        user.save()
+        response = user
         error_code = 200
 
     return response, error_code
@@ -142,15 +142,15 @@ def post_tutored_student_decline(user_id):
 def post_cancel_request(user_id):
     other_user = users.get_or_404(user_id)
 
-    current_user_object = current_user._get_current_object()
+    user = current_user.user
     error_code = 400
-    if current_user_object not in other_user.awaiting_student_requests and current_user_object not in other_user.awaiting_tutor_requests:
+    if user not in other_user.awaiting_student_requests and user not in other_user.awaiting_tutor_requests:
         response = {"error_code": 10, "error_message": "There is no request to cancel for this user"}
     else:
-        other_user.awaiting_student_requests.remove(current_user_object)
-        other_user.awaiting_tutor_requests.remove(current_user_object)
+        other_user.awaiting_student_requests.remove(user)
+        other_user.awaiting_tutor_requests.remove(user)
         other_user.save()
-        response = current_user_object
+        response = user
         error_code = 200
 
     return response, error_code
@@ -161,13 +161,13 @@ def post_cancel_request(user_id):
 def post_remove_relationship(user_id):
     other_user = users.get_or_404(user_id)
 
-    current_user_object = current_user._get_current_object()
-    other_user.tutors.remove(current_user_object)
-    other_user.tutored_students.remove(current_user_object)
+    user = current_user.user
+    other_user.tutors.remove(user)
+    other_user.tutored_students.remove(user)
     other_user.save()
-    current_user_object.tutors.remove(other_user)
-    current_user_object.tutored_students.remove(other_user)
-    current_user_object.save()
-    response = current_user_object
+    user.tutors.remove(other_user)
+    user.tutored_students.remove(other_user)
+    user.save()
+    response = user
 
     return response
