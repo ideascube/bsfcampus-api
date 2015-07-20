@@ -24,7 +24,7 @@ class SyncProcess(object):
         return requests.post(url, data=data, json=json, auth=(self.key, self.secret))
 
     def reset(self):
-        r = self._get_request("/local_servers/reset")
+        r = self._post_request("/local_servers/reset")
         if r.status_code == 200:
             from settings_local import Config
             db_name = Config.MONGODB_DB
@@ -154,6 +154,7 @@ class SyncProcess(object):
         else:
             print "No more item to depile"
             self.resolve_references()
+            self.post_all_documents()
             print "Fetching new list of operations"
             result, details = self.fetch_sync_list()
             return 'fetch_list', result, details

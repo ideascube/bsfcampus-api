@@ -29,7 +29,7 @@ def get_local_server(local_server_id):
 
     return local_server
 
-@route(bp, "/reset")
+@route(bp, "/reset", methods=['POST'])
 @basic_auth_required
 def reset_local_server():
     user = basic_auth_user._get_current_object()
