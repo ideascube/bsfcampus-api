@@ -39,6 +39,8 @@ class User(UserJsonSerializer, SyncableDocument):
 
     awaiting_student_requests = db.ListField(db.ReferenceField('self'))
 
+    phagocyted_by = db.ReferenceField('self', required=False)
+
     def add_completed_resource(self, resource):
         from MookAPI.services import completed_resources
         if completed_resources.find(user=self, resource=resource).count() == 0:
@@ -84,6 +86,27 @@ class User(UserJsonSerializer, SyncableDocument):
 
         return False
 
+    def update_progress(self):
+        from MookAPI.services import \
+            completed_resources, \
+            completed_skills, \
+            unlocked_track_tests
+        skills = []
+        tracks = []
+        for activity in completed_resources.find(user=self):
+            if activity.resource.skill not in skills:
+                skills.append(activity.resource.skill)
+        for skill in skills:
+            if skill.track not in tracks:
+                tracks.append(skill.track)
+            skill_progress = skill.user_progress(self)
+            if completed_skills.find(user=self, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
+                self.add_completed_skill(skill, False)
+        for track in tracks:
+            track_progress = track.user_progress(self)
+            if unlocked_track_tests.find(user=self, track=track).count() == 0 and track_progress['current'] >= track_progress['max']:
+                self.unlock_track_validation_test(track)
+
     @property
     def url(self):
         return url_for("users.get_user_info", user_id=self.id, _external=True)
@@ -102,6 +125,40 @@ class User(UserJsonSerializer, SyncableDocument):
     def __unicode__(self):
         return self.full_name or self.email or self.id
 
+    def phagocyte(self, other):
+        from MookAPI.services import users, user_credentials, activities
+        for creds in user_credentials.find(user=other):
+            creds.user = self
+            creds.save(validate=False)
+        for activity in activities.find(user=other):
+            activity.user = self
+            activity.save()
+        for user in users.find(tutors=other):
+            user.tutors.remove(other)
+            user.tutors.append(self)
+            user.tutors.save()
+        for user in users.find(tutored_students=other):
+            user.tutored_students.remove(other)
+            user.tutored_students.append(self)
+            user.tutors.save()
+        for user in users.find(awaiting_tutor_requests=other):
+            user.awaiting_tutor_requests.remove(other)
+            user.awaiting_tutor_requests.append(self)
+            user.awaiting_tutor_requests.save()
+        for user in users.find(awaiting_student_requests=other):
+            user.awaiting_student_requests.remove(other)
+            user.awaiting_student_requests.append(self)
+            user.awaiting_student_requests.save()
+
+        other.active = False
+        other.phagocyted_by = self
+        other.save()
+
+        self.update_progress()
+        self.save()
+
+        return self
+
 
 class UserCredentialsJsonSerializer(SyncableDocumentJsonSerializer):
     pass
@@ -110,7 +167,7 @@ class UserCredentials(SyncableDocument):
 
     user = db.ReferenceField(User, required=True)
 
-    local_server = db.ReferenceField('LocalServer')
+    local_server = db.ReferenceField('LocalServer', required=False)
 
     username = db.StringField(unique_with='local_server', required=True)
 

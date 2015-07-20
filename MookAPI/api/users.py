@@ -1,6 +1,6 @@
 from mongoengine import NotUniqueError
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from flask_jwt import current_user
 from flask_mongoengine import ValidationError
 
@@ -200,10 +200,33 @@ def register_user():
         activity.record_misc_analytic("register_user_attempt", "success")
         return jsonify(data=new_user)
 
-@route(bp, "/search/<username>", methods=['GET'])
+@route(bp, "/search/<username>")
 def search_users(username):
     from MookAPI.helpers import current_local_server
     local_server = current_local_server()
     credentials = user_credentials.find(username=username, local_server=local_server)
 
     return [creds.user for creds in credentials]
+
+@route(bp, "/phagocyte", methods=['POST'])
+@jwt_required()
+def absorb_user():
+    data = request.get_json()
+    local_server = data.get('local_server', None)
+    username = data.get('username', None)
+    password = data.get('password', None)
+
+    creds = user_credentials.get(
+        local_server=local_server,
+        username=username,
+        password=password
+    )
+
+    if not creds:
+        abort(404)
+
+    user = current_user.user
+
+    user.phagocyte(other=creds.user)
+
+    return user
