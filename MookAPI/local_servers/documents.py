@@ -1,5 +1,5 @@
+from passlib.hash import bcrypt
 from mongoengine import ValidationError
-import datetime
 
 from flask import url_for
 
@@ -69,7 +69,7 @@ class SyncableItem(SyncableItemJsonSerializer, db.EmbeddedDocument):
 
 
 class LocalServerJsonSerializer(JsonSerializer):
-    pass
+    __json_hidden__ = ['secret']
 
 class LocalServer(LocalServerJsonSerializer, SyncableDocument):
     """
@@ -80,11 +80,11 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
 
     ### PROPERTIES
 
-    user = db.ReferenceField('User', unique=True)
-    """
-    The ``User`` account associated to the ``LocalServer``.
-    It must have a ``Role`` named ``local_server``.
-    """
+    name = db.StringField()
+
+    key = db.StringField(unique=True)
+
+    secret = db.StringField()
 
     ## List of items to synchronize
     syncable_items = db.ListField(db.EmbeddedDocumentField(SyncableItem))
@@ -108,11 +108,6 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
     def syncs_document(self, document):
         top_level_document = document.top_level_syncable_document()
         return top_level_document in self.synchronized_documents
-
-    def all_syncable_items(self, local_server=None):
-        items = self.user.all_syncable_items(local_server=local_server)
-        items.extend(super(LocalServer, self).all_syncable_items(local_server=local_server))
-        return items
 
     @staticmethod
     def _unique(list):
@@ -139,3 +134,16 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
 
     def reset(self):
         self.set_last_sync(date=None)
+
+    def __unicode__(self):
+        return self.name
+
+    @staticmethod
+    def hash_secret(secret):
+        """
+        Return the md5 hash of the secret+salt
+        """
+        return bcrypt.encrypt(secret)
+
+    def verify_secret(self, secret):
+        return bcrypt.verify(secret, self.secret)

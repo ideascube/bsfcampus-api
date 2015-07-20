@@ -181,7 +181,8 @@ class JsonSerializer(object):
         elif isinstance(field, GenericReferenceField):
             # FIXME This way of getting the id is not really clean.
             try:
-                service = _get_service_for_class(value['_cls'])
+                from MookAPI.helpers import get_service_for_class
+                service = get_service_for_class(value['_cls'])
                 document = service.get(distant_id=value['_id'])
                 return document
             except:

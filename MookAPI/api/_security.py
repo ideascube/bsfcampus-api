@@ -1,7 +1,7 @@
 from functools import wraps
 from werkzeug.local import LocalProxy
 
-from flask import jsonify, request, Response, _request_ctx_stack
+from flask import jsonify, request, _request_ctx_stack
 
 from flask_cors import CORS
 from flask_jwt import JWT
@@ -43,7 +43,7 @@ def load_user(payload):
     else:
         return user
 
-def basic_auth_required(f):
+def local_server_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth = request.authorization
@@ -51,13 +51,15 @@ def basic_auth_required(f):
             return jsonify(error="Basic Authorization required"),\
                    401,\
                    {'WWW-Authenticate': 'Basic realm="Login required"'}
-        user = authenticate(auth.username, auth.password)
-        if not user:
+        from MookAPI.services import local_servers
+        try:
+            local_server = local_servers.get(key=auth.username, secret=auth.password)
+        except:
             return jsonify(error="Invalid credentials"), \
                    401, \
                    {'WWW-Authenticate': 'Basic realm="Login required"'}
-        _request_ctx_stack.top.basic_auth_user = user
+        _request_ctx_stack.top.authenticated_local_server = local_server
         return f(*args, **kwargs)
     return decorated
 
-basic_auth_user = LocalProxy(lambda: getattr(_request_ctx_stack.top, 'basic_auth_user', None))
+authenticated_local_server = LocalProxy(lambda: getattr(_request_ctx_stack.top, 'authenticated_local_server', None))

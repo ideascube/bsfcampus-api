@@ -4,38 +4,29 @@ from flask import abort, Blueprint, jsonify, request
 
 from MookAPI.services import local_servers
 
-from ._security import basic_auth_required, basic_auth_user
+from ._security import local_server_required, authenticated_local_server
 from . import route
 
 bp = Blueprint("local_servers", __name__, url_prefix="/local_servers")
 
 @route(bp, "/current")
-@basic_auth_required
+@local_server_required
 def get_current_local_server():
-    user = basic_auth_user._get_current_object()
-    # FIXME: Check if user has role "local_server"
-
-    return local_servers.get_or_404(user=user)
+    return authenticated_local_server._get_current_object()
 
 @route(bp, "/<local_server_id>")
-@basic_auth_required
+@local_server_required
 def get_local_server(local_server_id):
-    user = basic_auth_user._get_current_object()
-    # FIXME: Check if user has role "local_server"
-
     local_server = local_servers.get_or_404(id=local_server_id)
-    if local_server.user != user:
+    if authenticated_local_server._get_current_object().id != local_server.id:
         abort(401)
 
     return local_server
 
 @route(bp, "/reset", methods=['POST'])
-@basic_auth_required
+@local_server_required
 def reset_local_server():
-    user = basic_auth_user._get_current_object()
-    # FIXME: Check if user has role "local_server"
-
-    local_server = local_servers.get_or_404(user=user)
+    local_server = authenticated_local_server._get_current_object()
 
     local_server.reset()
 
@@ -44,12 +35,9 @@ def reset_local_server():
     return local_server
 
 @route(bp, "/sync")
-@basic_auth_required
+@local_server_required
 def get_local_server_sync_list():
-    user = basic_auth_user._get_current_object()
-    #FIXME: Check if user has role "local_server"
-
-    local_server = local_servers.get_or_404(user=user)
+    local_server = authenticated_local_server._get_current_object()
     now = datetime.datetime.now
     updates, deletes = local_server.get_sync_list()
 
@@ -64,12 +52,9 @@ def get_local_server_sync_list():
     return references
 
 @route(bp, "/add_item", methods=['POST'], jsonify_wrap=False)
-@basic_auth_required
+@local_server_required
 def add_item_from_local_server():
-    user = basic_auth_user._get_current_object()
-    #FIXME: Check if user has role "local_server"
-
-    local_server = local_servers.get_or_404(user=user)
+    local_server = authenticated_local_server._get_current_object()
 
     try:
         from bson.json_util import loads
@@ -87,25 +72,11 @@ def add_item_from_local_server():
 
     return jsonify(data=obj)
 
-@route(bp, "/register", methods=['POST'])
-@basic_auth_required
-def register_local_server():
-
-    user = basic_auth_user._get_current_object()
-    #FIXME: Check if user has role "local_server"
-
-    local_server = local_servers.create(user=user)
-
-    return local_server
-
 @route(bp, "/subscribe", methods=['POST'], jsonify_wrap=False)
-@basic_auth_required
+@local_server_required
 def subscribe_item_to_sync():
 
-    user = basic_auth_user._get_current_object()
-    #FIXME: Check if user has role "local_server"
-
-    local_server = local_servers.get_or_404(user=user)
+    local_server = authenticated_local_server._get_current_object()
 
     try:
         data = request.get_json()

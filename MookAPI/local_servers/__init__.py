@@ -6,13 +6,21 @@ from .documents import LocalServer
 class LocalServersService(Service):
     __model__ = LocalServer
 
-    def get_by_key_secret(self, key, secret):
-        from MookAPI.services import users
-        user = users.get(username=key)
-        user.verify_pass(secret)
-        return self.get(user=user)
+    def _preprocess_params(self, kwargs):
+        secret = kwargs.get('secret', None)
+        if secret:
+            hashed_secret = self.__model__.hash_secret(secret)
+            kwargs['secret'] = hashed_secret
+        return super(LocalServersService, self)._preprocess_params(kwargs)
+
+    def get(self, id=None, **kwargs):
+        secret = kwargs.pop('secret', None)
+        local_server = super(LocalServersService, self).get(id=id, **kwargs)
+        if local_server.verify_secret(secret):
+            return local_server
+        return None
 
     def get_current(self):
         key = current_app.config.get('CENTRAL_SERVER_KEY', None)
         secret = current_app.config.get('CENTRAL_SERVER_SECRET', None)
-        return self.get_by_key_secret(key, secret)
+        return self.get(key=key, secret=secret)

@@ -48,6 +48,11 @@ class HierarchyLessonView(ModelView):
     column_list = ('title', 'slug', 'description', 'order', 'skill')
     form_columns = ('title', 'slug', 'description', 'order', 'skill')
 
+class LocalServerView(ModelView):
+    def on_model_change(self, form, model, is_created):
+        model.secret = self.model.hash_pass(model.secret)
+        return
+
 
 admin_ui = Admin()
 
@@ -111,7 +116,7 @@ admin_ui.add_view(ModelView(
     name='Role',
     category='Authentication'))
 
-admin_ui.add_view(ModelView(
+admin_ui.add_view(LocalServerView(
     local_servers.__model__,
     name='Local server',
     category='Authentication'))
