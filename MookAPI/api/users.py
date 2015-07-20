@@ -122,75 +122,75 @@ def user_dashboard(user_id):
 
 @route(bp, "/register", methods=['POST'], jsonify_wrap=False)
 def register_user():
-        """Registers a new user"""
-        activity.record_simple_misc_analytic("register_user_attempt")
+    """Registers a new user"""
+    activity.record_simple_misc_analytic("register_user_attempt")
 
-        data = request.get_json()
-        password = data['password']
-        if password is None or password == "":
-            response = {
-                "error": "The password cannot be empty",
-                "code": 4
-            }
-            return jsonify(response), 400
+    data = request.get_json()
+    password = data['password']
+    if password is None or password == "":
+        response = {
+            "error": "The password cannot be empty",
+            "code": 4
+        }
+        return jsonify(response), 400
 
-        if password != data['password_confirm']:
-            response = {
-                "error": "Passwords don't match",
-                "code": 5
-            }
-            return jsonify(response), 400
+    if password != data['password_confirm']:
+        response = {
+            "error": "Passwords don't match",
+            "code": 5
+        }
+        return jsonify(response), 400
 
-        if 'accept_cgu' not in data:
-            response = {
-                "error": "User must accept cgu",
-                "code": 6
-            }
-            return jsonify(response), 400
+    if 'accept_cgu' not in data:
+        response = {
+            "error": "User must accept cgu",
+            "code": 6
+        }
+        return jsonify(response), 400
 
-        username = data['username']
-        full_name = data['full_name']
-        if not full_name:
-            full_name = username
+    username = data['username']
+    full_name = data['full_name']
+    if not full_name:
+        full_name = username
 
-        new_user = users.new(
-            full_name=full_name,
-            username=username,
-            email=data['email'],
-            password=users.__model__.hash_pass(password),
-            accept_cgu='accept_cgu' in data
-        )
+    new_user = users.new(
+        full_name=full_name,
+        username=username,
+        email=data['email'],
+        password=users.__model__.hash_pass(password),
+        accept_cgu='accept_cgu' in data
+    )
 
-        try:
-            new_user.save()
+    try:
+        new_user.save()
 
-        except ValidationError as e:
-            response = {
-                "error": "Could not create user",
-                "message": e.message,
-                "code": 2
-            }
-            return jsonify(response), 400
+    except ValidationError as e:
+        response = {
+            "error": "Could not create user",
+            "message": e.message,
+            "code": 2
+        }
+        return jsonify(response), 400
 
-        except NotUniqueError as e:
-            response = {
-                "error": "This username already belongs to someone",
-                "message": e.message,
-                "code": 3
-            }
-            return jsonify(response), 400
+    except NotUniqueError as e:
+        response = {
+            "error": "This username already belongs to someone",
+            "message": e.message,
+            "code": 3
+        }
+        return jsonify(response), 400
 
-        except Exception as e:
-            response = {
-                "error": "Unrecognized exception",
-                "message": e.message,
-                "code": 1
-            }
-            return jsonify(response), 400
+    except Exception as e:
+        response = {
+            "error": "Unrecognized exception",
+            "message": e.message,
+            "code": 1
+        }
+        return jsonify(response), 400
 
-        else:
-            activity.record_misc_analytic("register_user_attempt", "success")
-            return jsonify(data=new_user)
+    else:
+        activity.record_misc_analytic("register_user_attempt", "success")
+        return jsonify(data=new_user)
 
 @route(bp, "/search/<username>", methods=['GET'])
 def search_users(username):
