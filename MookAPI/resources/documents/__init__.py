@@ -1,5 +1,4 @@
 import datetime
-import bson
 import slugify
 
 from flask import url_for
@@ -142,7 +141,8 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     def _set_slug(self):
         """Sets a slug for the hierarchy level based on the title."""
 
-        slug = slugify.slugify(self.title) if self.slug is None else slugify.slugify(self.slug)
+        if not self.slug:
+            slug = slugify(self.title)
 
         def alternate_slug(text, k=1):
             return text if k <= 1 else "{text}-{k}".format(text=text, k=k)

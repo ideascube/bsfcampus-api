@@ -1,12 +1,10 @@
 import datetime
-import bson
-import slugify
+from slugify import slugify
 
 from flask_jwt import current_user, verify_jwt
 
 from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 from MookAPI.core import db
-from MookAPI.serialization import JsonSerializer
 
 class ResourceHierarchyJsonSerializer(SyncableDocumentJsonSerializer):
     __json_additional__ = ['is_validated', 'progress', 'breadcrumb']
@@ -82,7 +80,8 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
     def _set_slug(self):
         """Sets a slug for the hierarchy level based on the title."""
 
-        slug = slugify.slugify(self.title) if self.slug is None else slugify.slugify(self.slug)
+        if not self.slug:
+            slug = slugify(self.title)
         def alternate_slug(text, k=1):
             return text if k <= 1 else "{text}-{k}".format(text=text, k=k)
         k = 0
@@ -101,6 +100,7 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
 
     def clean(self):
         self._set_slug()
+        super(ResourceHierarchy, self).clean()
 
     def __unicode__(self):
         return self.title
