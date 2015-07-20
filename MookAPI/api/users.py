@@ -202,6 +202,8 @@ def register_user():
 
 @route(bp, "/search/<username>", methods=['GET'])
 def search_users(username):
-    results = users.queryset()(username=username)
+    from MookAPI.helpers import current_local_server
+    local_server = current_local_server()
+    credentials = user_credentials.find(username=username, local_server=local_server)
 
-    return results
+    return [creds.user for creds in credentials]
