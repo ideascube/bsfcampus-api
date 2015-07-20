@@ -33,11 +33,11 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
     date = db.DateTimeField(default=datetime.datetime.now, required=True)
     """The date at which the activity was performed."""
 
-    local_server_username = db.StringField()
-    """The username (= unique id) of the local server on which the activity has been performed"""
+    local_server = db.ReferenceField('LocalServer')
+    """The local server on which the activity has been performed"""
 
     local_server_name = db.StringField()
-    """The full name of the local server on which the activity has been performed"""
+    """The name of the local server on which the activity has been performed"""
 
     type = db.StringField()
     """ The type of the activity, so we can group the activities by type to better analyse them.
@@ -57,6 +57,8 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
             self.user_name = self.user.full_name
         if self.object:
             self.object_title = getattr(self.object, 'title', None)
+        if self.local_server:
+            self.local_server_name = self.local_server.name
 
     @classmethod
     def field_names_header_for_csv(cls):
