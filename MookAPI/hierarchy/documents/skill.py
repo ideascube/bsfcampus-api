@@ -4,7 +4,7 @@ import random
 from flask import url_for
 
 from MookAPI.core import db
-from MookAPI.helpers import JsonSerializer
+from MookAPI.serialization import JsonSerializer
 from . import ResourceHierarchyJsonSerializer, ResourceHierarchy
 
 

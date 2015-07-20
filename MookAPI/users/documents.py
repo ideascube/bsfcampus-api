@@ -4,7 +4,7 @@ import bson
 from flask import url_for
 
 from MookAPI.core import db
-from MookAPI.helpers import JsonSerializer
+from MookAPI.serialization import JsonSerializer
 from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 
 class RoleJsonSerializer(SyncableDocumentJsonSerializer):

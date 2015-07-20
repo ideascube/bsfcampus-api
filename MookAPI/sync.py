@@ -2,7 +2,7 @@ import datetime
 import exceptions
 
 from MookAPI.core import db
-from MookAPI.helpers import JsonSerializer
+from MookAPI.serialization import JsonSerializer
 
 
 class DeletedSyncableDocument(JsonSerializer, db.Document):

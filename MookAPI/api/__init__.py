@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import jsonify
 
-from MookAPI.helpers import JSONEncoder
+from MookAPI.serialization import JSONEncoder
 from MookAPI import factory
 
 def create_app(settings_override=None, register_security_blueprint=False):

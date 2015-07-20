@@ -1,5 +1,5 @@
 from MookAPI.core import db
-from MookAPI.utils import is_local
+from MookAPI.helpers import is_local
 from .linked_file import LinkedFileResourceContentJsonSerializer, \
     LinkedFileResourceContent, \
     LinkedFileResourceJsonSerializer, \

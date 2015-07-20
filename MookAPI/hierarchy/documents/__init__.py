@@ -6,7 +6,7 @@ from flask_jwt import current_user, verify_jwt
 
 from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 from MookAPI.core import db
-from MookAPI.helpers import JsonSerializer
+from MookAPI.serialization import JsonSerializer
 
 class ResourceHierarchyJsonSerializer(SyncableDocumentJsonSerializer):
     __json_additional__ = ['is_validated', 'progress', 'breadcrumb']

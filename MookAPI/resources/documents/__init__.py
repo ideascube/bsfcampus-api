@@ -6,7 +6,7 @@ from flask import url_for
 from flask_jwt import current_user, verify_jwt
 
 from MookAPI.core import db
-from MookAPI.helpers import JsonSerializer
+from MookAPI.serialization import JsonSerializer
 from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 
 

@@ -15,7 +15,7 @@ from MookAPI.services import \
     track_validation_resources, \
     skills
 
-from MookAPI.helpers import UnicodeCSVWriter
+from MookAPI.serialization import UnicodeCSVWriter
 
 from . import route
 
