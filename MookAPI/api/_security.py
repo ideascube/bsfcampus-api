@@ -25,8 +25,12 @@ def authenticate(username, password):
             password=password
         )
         if creds:
-            activity.record_misc_analytic("auth_success", username)
-            return creds
+            if creds.user.active:
+                activity.record_misc_analytic("auth_success", username)
+                return creds
+            else:
+                activity.record_misc_analytic("auth_fail", username)
+                return creds
         else:
             activity.record_misc_analytic("auth_fail", username)
             return None
