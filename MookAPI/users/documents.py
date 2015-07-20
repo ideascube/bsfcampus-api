@@ -17,7 +17,7 @@ class Role(RoleJsonSerializer, SyncableDocument):
         return self.name
 
 class UserJsonSerializer(SyncableDocumentJsonSerializer):
-    pass
+    __json_dbref__ = ['full_name']
 
 class User(UserJsonSerializer, SyncableDocument):
 
