@@ -51,7 +51,7 @@ class User(UserJsonSerializer, SyncableDocument):
 
         return False
 
-    def update_progress(self):
+    def update_progress(self, self_credentials):
         from MookAPI.services import \
             completed_resources, \
             completed_skills, \
@@ -66,11 +66,11 @@ class User(UserJsonSerializer, SyncableDocument):
                 tracks.append(skill.track)
             skill_progress = skill.user_progress(self)
             if completed_skills.find(user=self, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
-                self.add_completed_skill(skill, False)
+                self_credentials.add_completed_skill(skill, False)
         for track in tracks:
             track_progress = track.user_progress(self)
             if unlocked_track_tests.find(user=self, track=track).count() == 0 and track_progress['current'] >= track_progress['max']:
-                self.unlock_track_validation_test(track)
+                self_credentials.unlock_track_validation_test(track)
 
     @property
     def url(self):
@@ -90,7 +90,12 @@ class User(UserJsonSerializer, SyncableDocument):
     def __unicode__(self):
         return self.full_name or self.email or self.id
 
-    def phagocyte(self, other):
+    def phagocyte(self, other, self_credentials):
+        if other == self:
+            self.update_progress(self_credentials)
+            self.save()
+            return self
+
         from MookAPI.services import users, user_credentials, activities
         for creds in user_credentials.find(user=other):
             creds.user = self
@@ -119,7 +124,7 @@ class User(UserJsonSerializer, SyncableDocument):
         other.phagocyted_by = self
         other.save()
 
-        self.update_progress()
+        self.update_progress(self_credentials)
         self.save()
 
         return self

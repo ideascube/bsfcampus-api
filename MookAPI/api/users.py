@@ -230,7 +230,10 @@ def absorb_user():
 
     user = current_user.user
 
-    user.phagocyte(other=creds.user)
+    user.phagocyte(
+        other=creds.user,
+        self_credentials=current_user._get_current_object()
+    )
 
     return user
 
