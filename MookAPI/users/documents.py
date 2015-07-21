@@ -41,41 +41,6 @@ class User(UserJsonSerializer, SyncableDocument):
 
     phagocyted_by = db.ReferenceField('self', required=False)
 
-    def add_completed_resource(self, resource):
-        from MookAPI.services import completed_resources
-        if completed_resources.find(user=self, resource=resource).count() == 0:
-            completed_resources.create(user=self, resource=resource)
-            skill = resource.parent.skill
-            skill_progress = skill.user_progress(self)
-            from MookAPI.services import completed_skills
-            if completed_skills.find(user=self, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
-                self.add_completed_skill(skill, False)
-
-    def add_completed_skill(self, skill, is_validated_through_test):
-        from MookAPI.services import completed_skills
-        if completed_skills.find(user=self, skill=skill).count() == 0:
-            completed_skills.create(user=self, skill=skill, is_validated_through_test=is_validated_through_test)
-            track = skill.track
-            track_progress = track.user_progress(self)
-            from MookAPI.services import unlocked_track_tests
-            if unlocked_track_tests.find(user=self, track=track).count() == 0 and track_progress['current'] >= track_progress['max']:
-                self.unlock_track_validation_test(track)
-
-    def add_started_track(self, track):
-        from MookAPI.services import started_tracks
-        if started_tracks.find(user=self, track=track).count() == 0:
-            started_tracks.create(user=self, track=track)
-
-    def unlock_track_validation_test(self, track):
-        from MookAPI.services import unlocked_track_tests
-        if unlocked_track_tests.find(user=self, track=track).count() == 0:
-            unlocked_track_tests.create(user=self, track=track)
-
-    def add_completed_track(self, track):
-        from MookAPI.services import completed_tracks
-        if completed_tracks.find(user=self, track=track).count() == 0:
-            completed_tracks.create(user=self, track=track)
-
     def is_track_test_available_and_never_attempted(self, track):
         # FIXME Make more efficient search using Service
         from MookAPI.services import unlocked_track_tests
@@ -172,6 +137,44 @@ class UserCredentials(SyncableDocument):
     username = db.StringField(unique_with='local_server', required=True)
 
     password = db.StringField()
+
+    def add_completed_resource(self, resource):
+        from MookAPI.services import completed_resources
+        if completed_resources.find(user=self.user, resource=resource).count() == 0:
+            completed_resources.create(credentials=self, resource=resource)
+            skill = resource.parent.skill
+            skill_progress = skill.user_progress(self)
+            from MookAPI.services import completed_skills
+            if completed_skills.find(user=self.user, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
+                self.add_completed_skill(skill, False)
+
+    def add_completed_skill(self, skill, is_validated_through_test):
+        from MookAPI.services import completed_skills
+        if completed_skills.find(user=self.user, skill=skill).count() == 0:
+            completed_skills.create(credentials=self, skill=skill, is_validated_through_test=is_validated_through_test)
+            track = skill.track
+            track_progress = track.user_progress(self)
+            from MookAPI.services import unlocked_track_tests
+            if unlocked_track_tests.find(user=self.user, track=track).count() == 0 and track_progress['current'] >= track_progress['max']:
+                self.unlock_track_validation_test(track)
+
+    def add_started_track(self, track):
+        from MookAPI.services import started_tracks
+        if started_tracks.find(user=self.user, track=track).count() == 0:
+            started_tracks.create(credentials=self, track=track)
+
+    def unlock_track_validation_test(self, track):
+        from MookAPI.services import unlocked_track_tests
+        if unlocked_track_tests.find(user=self.user, track=track).count() == 0:
+            unlocked_track_tests.create(credentials=self, track=track)
+
+    def add_completed_track(self, track):
+        from MookAPI.services import completed_tracks
+        if completed_tracks.find(user=self.user, track=track).count() == 0:
+            completed_tracks.create(credentials=self, track=track)
+
+    def is_track_test_available_and_never_attempted(self, track):
+        return self.user.is_track_test_available_and_never_attempted(track)
 
     @staticmethod
     def hash_pass(password):

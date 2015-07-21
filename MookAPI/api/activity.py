@@ -36,7 +36,7 @@ def post_exercise_attempt():
     exercise = exercise_resources.get_or_404(exercise_id)
 
     attempt = exercise_attempts.__model__.init_with_exercise(exercise)
-    attempt.user = current_user.user
+    attempt.credentials = current_user._get_current_object()
     attempt.save()
 
     return attempt
@@ -47,8 +47,10 @@ def post_exercise_attempt():
 def get_exercise_attempt(attempt_id):
     """GET one exercise attempt"""
 
-    # FIXME Check that attempt.user == current_user
-    return exercise_attempts.get_or_404(attempt_id)
+    attempt = exercise_attempts.get_or_404(attempt_id)
+    if attempt.user != current_user.user:
+        abort(403)
+    return attempt
 
 
 @route(bp, "/exercise_attempts/<attempt_id>/start_next_question", methods=['POST'])
@@ -57,7 +59,8 @@ def start_exercise_attempt_next_question(attempt_id):
     """ records the fact that the user has started the next question """
 
     attempt = exercise_attempts.get_or_404(attempt_id)
-    # FIXME Check that attempt.user == current_user
+    if attempt.user != current_user.user:
+        abort(403)
 
     form_data = json_util.loads(request.form.get('form_data'))
     question_id = form_data['question_id']
@@ -73,7 +76,8 @@ def post_exercise_attempt_question_answer(attempt_id):
     """POST answer to current question of an exercise attempt"""
 
     attempt = exercise_attempts.get_or_404(attempt_id)
-    # FIXME Check that attempt.user == current_user
+    if attempt.user != current_user.user:
+        abort(403)
 
     form_data = json_util.loads(request.form.get('form_data'))
     question_id = form_data['question_id']
@@ -84,12 +88,8 @@ def post_exercise_attempt_question_answer(attempt_id):
     if attempt.is_exercise_completed():
         attempt.is_validated = True
         exercise_resource = attempt.exercise
-        user = current_user.user
-        user.add_completed_resource(exercise_resource)
-        user.save(validate=False)
-        # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
-        # It should be solved in version 0.10.1
-        if user.is_track_test_available_and_never_attempted(attempt.exercise.track):
+        current_user.add_completed_resource(exercise_resource)
+        if current_user.user.is_track_test_available_and_never_attempted(attempt.exercise.track):
             alert = {"code": "prompt_track_validation", "id": attempt.exercise.track._data.get("id", None)}
             response = jsonify(data=attempt, alert=alert)
 
@@ -107,7 +107,7 @@ def post_skill_validation_attempt():
     print "CREATING skill validation attempt for skill {skill}".format(skill=skill.id)
 
     attempt = skill_validation_attempts.__model__.init_with_skill(skill)
-    attempt.user = current_user.user
+    attempt.credentials = current_user._get_current_object()
     attempt.save()
 
     return attempt
@@ -128,7 +128,8 @@ def start_skill_validation_attempt_next_question(attempt_id):
     """ records the fact that the user has started the next question """
 
     attempt = skill_validation_attempts.get_or_404(attempt_id)
-    # FIXME Check that attempt.user == current_user
+    if attempt.user != current_user.user:
+        abort(403)
 
     form_data = json_util.loads(request.form.get('form_data'))
     question_id = form_data['question_id']
@@ -144,7 +145,8 @@ def post_skill_validation_attempt_question_answer(attempt_id):
     """POST answer to current question of a skill validation attempt"""
 
     attempt = skill_validation_attempts.get_or_404(attempt_id)
-    # FIXME Check that attempt.user == current_user
+    if attempt.user != current_user.user:
+        abort(403)
 
     form_data = json_util.loads(request.form.get('form_data'))
     question_id = form_data['question_id']
@@ -156,9 +158,8 @@ def post_skill_validation_attempt_question_answer(attempt_id):
     if attempt.is_skill_validation_completed():
         attempt.is_validated = True
         skill = attempt.skill
-        current_user.user.add_completed_skill(skill, True)
-        current_user.user.save()
-        if current_user.is_track_test_available_and_never_attempted(skill.track):
+        current_user.add_completed_skill(skill, True)
+        if current_user.user.is_track_test_available_and_never_attempted(skill.track):
             alert = {"code": "prompt_track_validation", "id": skill.track._data.get("id", None)}
             response = jsonify(data=attempt, alert=alert)
 
@@ -174,7 +175,7 @@ def post_track_validation_attempt():
     exercise = track_validation_resources.get_or_404(id=exercise_id)
 
     attempt = track_validation_attempts.__model__.init_with_exercise(exercise)
-    attempt.user = current_user.user
+    attempt.credentials = current_user._get_current_object()
     attempt.save()
 
     return attempt
@@ -185,8 +186,10 @@ def post_track_validation_attempt():
 def get_track_validation_attempt(attempt_id):
     """GET one track validation attempt"""
 
-    # FIXME Check that attempt.user == current_user
-    return track_validation_attempts.get_or_404(attempt_id)
+    attempt = track_validation_attempts.get_or_404(attempt_id)
+    if attempt.user != current_user.user:
+        abort(403)
+    return attempt
 
 
 @route(bp, "/track_validation_attempts/<attempt_id>/start_next_question", methods=['POST'])
@@ -195,7 +198,8 @@ def start_track_validation_attempt_next_question(attempt_id):
     """ records the fact that the user has started the next question """
 
     attempt = track_validation_attempts.get_or_404(attempt_id)
-    # FIXME Check that attempt.user == current_user
+    if attempt.user != current_user.user:
+        abort(403)
 
     form_data = json_util.loads(request.form.get('form_data'))
     question_id = form_data['question_id']
@@ -220,8 +224,7 @@ def post_track_validation_attempt_question_answer(attempt_id):
     if attempt.is_exercise_completed():
         attempt.is_validated = True
         track = attempt.exercise.parent
-        current_user.user.add_completed_track(track)
-        current_user.user.save()
+        current_user.add_completed_track(track)
 
     return attempt
 
@@ -234,11 +237,11 @@ def record_simple_misc_analytic(misc_type):
 
     from MookAPI.services import misc_activities
 
-    user = None
-    if current_user:
-        user = current_user.user
-
-    return misc_activities.create(user=user, type=misc_type, object_title="")
+    return misc_activities.create(
+        credentials=current_user._get_current_object(),
+        type=misc_type,
+        object_title=""
+    )
 
 
 @route(bp, "/misc_analytics/<misc_type>/<misc_title>", methods=['POST'])
@@ -250,11 +253,11 @@ def record_misc_analytic(misc_type, misc_title):
 
     from MookAPI.services import misc_activities
 
-    user = None
-    if current_user:
-        user = current_user.user
-
-    return misc_activities.create(user=user, type=misc_type, object_title=misc_title)
+    return misc_activities.create(
+        credentials=current_user._get_current_object(),
+        type=misc_type,
+        object_title=misc_title
+    )
 
 
 @route(bp, "/analytics.csv", methods=['GET'], jsonify_wrap=False)

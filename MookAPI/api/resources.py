@@ -47,19 +47,17 @@ def get_resource(resource_id):
     except:
         pass
     else:
-        user = current_user.user
         from MookAPI.services import visited_resources
-        visited_resources.create(user=user, resource=resource)
-        user.add_started_track(resource.track)
+        visited_resources.create(
+            credentials=current_user._get_current_object(),
+            resource=resource
+        )
+        current_user.add_started_track(resource.track)
         if not exercise_resources._isinstance(resource):
-            user.add_completed_resource(resource)
-            if user.is_track_test_available_and_never_attempted(resource.track):
+            current_user.add_completed_resource(resource)
+            if current_user.user.is_track_test_available_and_never_attempted(resource.track):
                 alert = {"code": "prompt_track_validation", "id": resource.track._data.get("id", None)}
                 response = jsonify(data=resource, alert=alert)
-
-        user.save(validate=False)
-        # FIXME We need to skip validation due to a dereferencing bug in MongoEngine.
-        # It should be solved in version 0.10.1
 
     if not response:
         response = jsonify(data=resource)

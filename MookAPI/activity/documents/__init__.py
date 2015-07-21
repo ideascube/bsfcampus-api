@@ -20,6 +20,9 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
 
     ### PROPERTIES
 
+    credentials = db.ReferenceField('UserCredentials')
+    """The credentials under which the user was logged when they performed the action."""
+
     user = db.ReferenceField('User')
     """The user performing the activity."""
 
@@ -53,10 +56,14 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
 
     def clean(self):
         super(Activity, self).clean()
-        if self.user:
-            self.user_name = self.user.full_name
         if self.object:
             self.object_title = getattr(self.object, 'title', None)
+        if self.credentials:
+            self.user = self.credentials.user
+            self.user_username = self.credentials.username
+            self.local_server = self.credentials.local_server
+        if self.user:
+            self.user_name = self.user.full_name
         if self.local_server:
             self.local_server_name = self.local_server.name
 
