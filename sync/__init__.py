@@ -7,11 +7,10 @@ def launch_process(config, *args):
     db.init_app(create_app(__name__, settings_override=config))
 
     try:
-        user = users.get(username=config.CENTRAL_SERVER_KEY)
-        if user.verify_pass(config.CENTRAL_SERVER_SECRET):
-            local_server = local_servers.get(user=user)
-        else:
-            local_server = None
+        local_server=local_servers.get(
+            key=config.CENTRAL_SERVER_KEY,
+            secret=config.CENTRAL_SERVER_SECRET
+        )
     except:
         local_server = None
 
