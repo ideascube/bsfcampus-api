@@ -58,6 +58,8 @@ class ItemToSync(db.Document):
             document = service.__model__.from_json(
                 son['data'],
                 save=True,
+                validate=False, # FIXME MongoEngine bug, hopefully be fixed in next version
+                clean=True,
                 from_distant=True,
                 overwrite_document=local_document
             )
