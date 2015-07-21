@@ -18,8 +18,9 @@ def post_tutor_request(user_id):
     error_code = 400
     if requested_tutor in user.tutors:
         response = {"error_code": 1, "error_message": "The requested user is already a tutor for you"}
-    elif requested_tutor in user.tutored_students:
-        response = {"error_code": 2, "error_message": "The requested user is already tutored by you"}
+    # It should be allowed to be both student and tutor to the same user
+    # elif requested_tutor in user.tutored_students:
+    #     response = {"error_code": 2, "error_message": "The requested user is already tutored by you"}
     elif user in requested_tutor.awaiting_tutor_requests:
         response = {"error_code": 3, "error_message": "A tutor request is already registered for this user"}
     # It should be allowed to be both student and tutor to the same user
@@ -43,8 +44,9 @@ def post_tutored_student_request(user_id):
     error_code = 400
     if requested_student in user.tutored_students:
         response = {"error_code": 5, "error_message": "The requested user is already tutored by you"}
-    elif requested_student in user.tutors:
-        response = {"error_code": 6, "error_message": "The requested user is already a tutor for you"}
+    # It should be allowed to be both student and tutor to the same user
+    # elif requested_student in user.tutors:
+    #     response = {"error_code": 6, "error_message": "The requested user is already a tutor for you"}
     # It should be allowed to be both student and tutor to the same user
     # elif user in requested_student.awaiting_tutor_requests:
     #     response = {"error_code": 7, "error_message": "A tutor request is already registered for this user"}
