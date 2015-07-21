@@ -39,14 +39,6 @@ class SyncableItem(SyncableItemJsonSerializer, db.EmbeddedDocument):
         """
         return self.document.items_to_sync(self.last_sync, local_server=self._instance)
 
-    @classmethod
-    def init_with_service_and_id(cls, service_name, document_id):
-        services = __import__('MookAPI.services', globals(), locals(), [service_name], 0)
-        service = getattr(services, service_name)
-        document = service.get(document_id)
-
-        return cls(document=document)
-
     def validate(self, clean=True):
         super(SyncableItem, self).validate(clean)
 
@@ -100,9 +92,20 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
     def synchronized_documents(self):
         return [item.document for item in self.syncable_items]
 
-    def append_syncable_item(self, service_name, document_id):
-        syncable_item = SyncableItem.init_with_service_and_id(service_name, document_id)
-        if syncable_item.document not in self.synchronized_documents:
+    def append_syncable_item(self, document=None, **kwargs):
+        if not document:
+            service_name = kwargs.pop('service_name', None)
+            document_id = kwargs.pop('document_id', None)
+
+            if not (service_name and document_id):
+                raise Exception("You need to provide a document, or a service_name and a document_id")
+
+            services = __import__('MookAPI.services', globals(), locals(), [service_name], 0)
+            service = getattr(services, service_name)
+            document = service.get(document_id)
+
+        if document not in self.synchronized_documents:
+            syncable_item = SyncableItem(document=document)
             self.syncable_items.append(syncable_item)
 
     def syncs_document(self, document):
