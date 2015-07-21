@@ -200,7 +200,7 @@ def register_user():
         activity.record_misc_analytic("register_user_attempt", "success")
         return jsonify(data=new_user)
 
-@route(bp, "/search/<username>")
+@route(bp, "/search/<username>", methods=['GET'])
 def search_users(username):
     from MookAPI.helpers import current_local_server
     local_server = current_local_server()
