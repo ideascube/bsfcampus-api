@@ -69,7 +69,7 @@ class SyncableItem(SyncableItemJsonSerializer, db.EmbeddedDocument):
 
 
 class LocalServerJsonSerializer(JsonSerializer):
-    __json_hidden__ = ['secret']
+    pass
 
 class LocalServer(LocalServerJsonSerializer, SyncableDocument):
     """

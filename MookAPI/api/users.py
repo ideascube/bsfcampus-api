@@ -233,3 +233,7 @@ def absorb_user():
     user.phagocyte(other=creds.user)
 
     return user
+
+@route(bp, "/credentials/<credentials_id>")
+def get_user_credentials(credentials_id):
+    return user_credentials.get_or_404(id=credentials_id)

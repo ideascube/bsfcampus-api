@@ -176,6 +176,10 @@ class UserCredentials(SyncableDocument):
     def is_track_test_available_and_never_attempted(self, track):
         return self.user.is_track_test_available_and_never_attempted(track)
 
+    @property
+    def url(self):
+        return url_for("users.get_user_credentials", credentials_id=self.id, _external=True)
+
     @staticmethod
     def hash_pass(password):
         """
