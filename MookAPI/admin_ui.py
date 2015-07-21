@@ -46,7 +46,7 @@ class HierarchyLessonView(ModelView):
 
 class LocalServerView(ModelView):
     def on_model_change(self, form, model, is_created):
-        model.secret = self.model.hash_pass(model.secret)
+        model.secret = self.model.hash_secret(model.secret)
         return
 
 
