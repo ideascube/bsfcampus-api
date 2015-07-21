@@ -113,23 +113,29 @@ class SyncProcess(object):
 
         from MookAPI.helpers import get_service_for_class
         service = get_service_for_class(data['_cls'])
-        return service.__model__.from_json(
-            data,
-            save=True,
-            from_distant=True,
-            overwrite_document=document
-        )
+        try:
+            service.__model__.from_json(
+                data,
+                save=True,
+                from_distant=True,
+                overwrite_document=document
+            )
+            print "Overwrote local document with information from central server"
+        except:
+            print "An error occurred while overwriting the local document"
 
     def _post_next_document(self):
+        print "Checking if there is a document to post to the central server..."
         if self.local_server:
-            from MookAPI.services import users, activities
+            self.local_server.reload()
+            from MookAPI.services import users
             for item in self.local_server.syncable_items:
                 if users._isinstance(item.document):
                     for sub_item in item.document.all_syncable_items(local_server=self.local_server):
-                        if activities._isinstance(sub_item):
-                            if not sub_item.distant_id:
-                                self._post_document(sub_item)
-                                return True
+                        if not sub_item.distant_id:
+                            print "Sending document: %s" % sub_item
+                            self._post_document(sub_item)
+                            return True
         return False
 
     def post_all_documents(self):
@@ -154,7 +160,8 @@ class SyncProcess(object):
         else:
             print "No more item to depile"
             self.resolve_references()
-            self.post_all_documents()
+            # self.post_all_documents()
+            # FIXME Find out where this should be done in the loop...
             print "Fetching new list of operations"
             result, details = self.fetch_sync_list()
             return 'fetch_list', result, details
