@@ -286,6 +286,8 @@ class JsonSerializer(object):
     def from_json(cls, json, **kwargs):
 
         save = kwargs.get('save', False)
+        validate = kwargs.get('validate', True)
+        clean = kwargs.get('clean', True)
         from_distant = kwargs.get('from_distant', False)
         overwrite_document = kwargs.get('overwrite_document', None)
         instance = kwargs.get('instance', None)
@@ -317,7 +319,11 @@ class JsonSerializer(object):
         if save:
             Document = _import_class('Document')
             if isinstance(obj, Document):
-                obj.save()
+                if (not validate) and clean:
+                    obj.clean()
+                    obj.save(validate=False)
+                else:
+                    obj.save(validate=validate, clean=clean)
                 for ref in unresolved_references:
                     ref.document = instance
                     ref.save()
