@@ -143,7 +143,7 @@ class JsonSerializer(object):
         return rv
 
     @staticmethod
-    def _convert_value_from_json(value, field, instance, from_distant, path_in_instance, unresolved_references):
+    def _convert_value_from_json(value, key, field, instance, from_distant, path_in_instance, unresolved_references):
 
         if field is None:
             return field.to_python(value)
@@ -165,9 +165,9 @@ class JsonSerializer(object):
                 except Exception as e:
                     from MookAPI.sync import UnresolvedReference
                     ref = UnresolvedReference()
-                    ref.field_path = field.name
-                    ref.class_name=field.document_type_obj.__name__
-                    ref.distant_id=document_id
+                    ref.field_path = key
+                    ref.class_name = field.document_type_obj.__name__
+                    ref.distant_id = document_id
                     unresolved_references.append(ref)
                     return None
             else:
@@ -188,17 +188,18 @@ class JsonSerializer(object):
             except:
                 from MookAPI.sync import UnresolvedReference
                 ref = UnresolvedReference()
-                ref.field_path = field.name
-                ref.class_name=field.document_type_obj.__name__
-                ref.distant_id=value['_id']
+                ref.field_path = key
+                ref.class_name = field.document_type_obj.__name__
+                ref.distant_id = value['_id']
                 unresolved_references.append(ref)
                 return None
 
         ## EmbeddedDocumentField: instantiate MongoCoderEmbeddedDocument from JSON
         elif isinstance(field, EmbeddedDocumentField):
-            next_path_in_instance = ("%s.%s" % (path_in_instance, field.name)).lstrip('.')
+            next_path_in_instance = ("%s.%s" % (path_in_instance, key)).lstrip('.')
             return field.document_type_obj.from_json(
                 value,
+                from_distant=from_distant,
                 path_in_instance=next_path_in_instance,
                 instance=instance,
                 unresolved_references=unresolved_references
@@ -206,13 +207,13 @@ class JsonSerializer(object):
 
         ## ListField: recursively convert all elements in the list
         elif isinstance(field, ListField):
-            ## field.field is the type of elements in the listfield
             converted_value = []
-            missing_refs = []
             for index, element in enumerate(value):
-                next_path_in_instance = ("%s.%s[%d]" % (path_in_instance, field.name, index)).lstrip('.')
+                # FIXME This next_path does not seem right.
+                next_path_in_instance = ("%s.%s[%d]" % (path_in_instance, key, index)).lstrip('.')
                 value = JsonSerializer._convert_value_from_json(
                     value=element,
+                    key=key,
                     field=field.field,
                     instance=instance,
                     from_distant=from_distant,
@@ -274,6 +275,7 @@ class JsonSerializer(object):
         else:
             value = self._convert_value_from_json(
                 value=value,
+                key=key,
                 field=field,
                 instance=instance,
                 from_distant=from_distant,
@@ -301,15 +303,16 @@ class JsonSerializer(object):
 
         for key in json.iterkeys():
             obj._set_value_from_json(
-                json,
-                key,
-                from_distant=from_distant,
+                json=json,
+                key=key,
                 instance=instance,
+                from_distant=from_distant,
                 path_in_instance=path_in_instance,
                 unresolved_references=unresolved_references
             )
 
-        if from_distant:
+        Document = _import_class('Document')
+        if from_distant and issubclass(cls, Document):
             obj.distant_id = obj.id
             obj.id = None
 
