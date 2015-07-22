@@ -148,17 +148,17 @@ class UserCredentials(SyncableDocument):
         if completed_resources.find(user=self.user, resource=resource).count() == 0:
             completed_resources.create(credentials=self, resource=resource)
             skill = resource.parent.skill
-            skill_progress = skill.user_progress(self)
+            skill_progress = skill.user_progress(self.user)
             from MookAPI.services import completed_skills
             if completed_skills.find(user=self.user, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
-                self.add_completed_skill(skill, False)
+                self.add_completed_skill(skill=skill, is_validated_through_test=False)
 
     def add_completed_skill(self, skill, is_validated_through_test):
         from MookAPI.services import completed_skills
         if completed_skills.find(user=self.user, skill=skill).count() == 0:
             completed_skills.create(credentials=self, skill=skill, is_validated_through_test=is_validated_through_test)
             track = skill.track
-            track_progress = track.user_progress(self)
+            track_progress = track.user_progress(self.user)
             from MookAPI.services import unlocked_track_tests
             if unlocked_track_tests.find(user=self.user, track=track).count() == 0 and track_progress['current'] >= track_progress['max']:
                 self.unlock_track_validation_test(track)
