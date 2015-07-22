@@ -197,8 +197,10 @@ def register_user():
         )
         ## Password is automatically hashed in the Service.
 
-        local_server.append_syncable_item(document=new_user)
-        local_server.save()
+        if local_server:
+            local_server.append_syncable_item(document=new_user)
+            local_server.clean()
+            local_server.save(validate=False) # FIXME Do validation when MongoEngine bug is fixed.
 
         activity.record_misc_analytic("register_user_attempt", "success")
         return jsonify(data=new_user)
