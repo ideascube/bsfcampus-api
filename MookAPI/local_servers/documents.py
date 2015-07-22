@@ -18,6 +18,10 @@ class SyncableItem(SyncableItemJsonSerializer, db.EmbeddedDocument):
     This embedded document contains a reference to an item (document) to synchronize, and the date it was last checked out by the local server.
     """
 
+    meta = {
+        'allow_inheritance': True
+    }
+
     ALLOWED_SERVICES = [
         'tracks',
         'users'
@@ -28,8 +32,8 @@ class SyncableItem(SyncableItemJsonSerializer, db.EmbeddedDocument):
     last_sync = db.DateTimeField()
     """The date of the last synchronization, *i.e.* the date when the list of updates to perform was last fetched."""
 
-    document = db.GenericReferenceField()
-    """A reference to the top-level ``SyncableDocument`` to synchronize."""
+    # document = db.ReferenceField('SyncableDocument')
+    # """A reference to the top-level ``SyncableDocument`` to synchronize."""
 
     ### METHODS
 
@@ -60,6 +64,12 @@ class SyncableItem(SyncableItemJsonSerializer, db.EmbeddedDocument):
             raise ValidationError(message, errors=errors)
 
 
+class SyncableTrack(SyncableItem):
+    document = db.ReferenceField('Track')
+
+class SyncableUser(SyncableItem):
+    document = db.ReferenceField('User')
+
 class LocalServerJsonSerializer(JsonSerializer):
     pass
 
@@ -78,9 +88,15 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
 
     secret = db.StringField()
 
-    ## List of items to synchronize
-    syncable_items = db.ListField(db.EmbeddedDocumentField(SyncableItem))
-    """A list of SyncableItem_ embedded documents describing the items to synchronize on the local server."""
+    syncable_tracks = db.ListField(db.EmbeddedDocumentField(SyncableTrack))
+    syncable_users = db.ListField(db.EmbeddedDocumentField(SyncableUser))
+
+    @property
+    def syncable_items(self):
+        items = []
+        items.extend(self.syncable_tracks)
+        items.extend(self.syncable_users)
+        return items
 
     last_sync = db.DateTimeField()
 
@@ -93,6 +109,7 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
         return [item.document for item in self.syncable_items]
 
     def append_syncable_item(self, document=None, **kwargs):
+        from MookAPI.services import tracks, users
         if not document:
             service_name = kwargs.pop('service_name', None)
             document_id = kwargs.pop('document_id', None)
@@ -100,13 +117,18 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
             if not (service_name and document_id):
                 raise Exception("You need to provide a document, or a service_name and a document_id")
 
-            services = __import__('MookAPI.services', globals(), locals(), [service_name], 0)
-            service = getattr(services, service_name)
-            document = service.get(document_id)
+            if service_name == 'users':
+                document = users.get(document_id)
+            elif service_name == 'tracks':
+                document = tracks.get(document_id)
 
-        if document not in self.synchronized_documents:
-            syncable_item = SyncableItem(document=document)
-            self.syncable_items.append(syncable_item)
+        if document and document not in self.synchronized_documents:
+            if users._isinstance(document):
+                syncable_user = SyncableUser(document=document)
+                self.syncable_users.append(syncable_user)
+            elif tracks._isinstance(document):
+                syncable_track = SyncableTrack(document=document)
+                self.syncable_tracks.append(syncable_track)
 
     def syncs_document(self, document):
         top_level_document = document.top_level_syncable_document()
