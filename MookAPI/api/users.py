@@ -205,14 +205,6 @@ def register_user():
         activity.record_misc_analytic("register_user_attempt", "success")
         return jsonify(data=new_user)
 
-@route(bp, "/search/<username>", methods=['GET'])
-def search_users(username):
-    from MookAPI.helpers import current_local_server
-    local_server = current_local_server()
-    credentials = user_credentials.find(username=username, local_server=local_server)
-
-    return [creds.user for creds in credentials]
-
 @route(bp, "/phagocyte", methods=['POST'])
 @jwt_required()
 def absorb_user():
