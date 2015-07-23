@@ -70,8 +70,8 @@ class SyncableTrack(SyncableItem):
 class SyncableUser(SyncableItem):
     document = db.ReferenceField('User')
 
-class LocalServerJsonSerializer(JsonSerializer):
-    pass
+class LocalServerJsonSerializer(SyncableDocumentJsonSerializer):
+    __json_dbref__ = ['name', 'key']
 
 class LocalServer(LocalServerJsonSerializer, SyncableDocument):
     """
