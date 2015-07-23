@@ -1,7 +1,8 @@
 import csv, codecs, cStringIO
+import collections
 import os
 import requests
-from bson import json_util
+from bson import json_util, DBRef
 from mongoengine.common import _import_class
 
 from flask.json import JSONEncoder as BaseJSONEncoder
@@ -55,7 +56,10 @@ class JsonSerializer(object):
                 elif isinstance(field, (ReferenceField, GenericReferenceField)):
                     value = getattr(self, key, None)
                     if value:
-                        rv[key] = value.to_json_dbref(for_distant=for_distant)
+                        if isinstance(value, Document):
+                            rv[key] = value.to_json_dbref(for_distant=for_distant)
+                        elif isinstance(value, DBRef):
+                            rv[key] = value
 
                 ## Recursively encode embedded documents....
                 elif isinstance(field, EmbeddedDocumentField):
@@ -104,7 +108,19 @@ class JsonSerializer(object):
                 rv[key] = getattr(self, key)
 
         for key in additional:
-            rv[key] = getattr(self, key)
+            value = getattr(self, key)
+            if isinstance(value, Document):
+                rv[key] = value.to_json_dbref()
+            elif isinstance(value, collections.Iterable):
+                serialized_value = []
+                for item in value:
+                    if isinstance(item, Document):
+                        serialized_value.append(item.to_json_dbref())
+                    else:
+                        serialized_value.append(item)
+                rv[key] = serialized_value
+            else:
+                rv[key] = getattr(self, key)
         for key, modifier in modifiers.items():
             rv[key] = modifier(rv[key], self)
         for key in hidden:

@@ -18,6 +18,14 @@ class Role(RoleJsonSerializer, SyncableDocument):
 
 class UserJsonSerializer(SyncableDocumentJsonSerializer):
     __json_dbref__ = ['full_name']
+    __json_additional__ = [
+        'tutors',
+        'students',
+        'awaiting_tutors',
+        'awaiting_students',
+        'pending_tutors',
+        'pending_students'
+    ]
 
 class User(UserJsonSerializer, SyncableDocument):
 
@@ -30,14 +38,60 @@ class User(UserJsonSerializer, SyncableDocument):
     accept_cgu = db.BooleanField(required=True, default=False)
 
     roles = db.ListField(db.ReferenceField(Role))
+    
+    @property
+    def tutors(self):
+        from MookAPI.services import tutoring_relations
+        relations = tutoring_relations.find(student=self, accepted=True)
+        return [relation.tutor for relation in relations]
+    
+    @property
+    def students(self):
+        from MookAPI.services import tutoring_relations
+        relations = tutoring_relations.find(tutor=self, accepted=True)
+        return [relation.student for relation in relations]
 
-    tutors = db.ListField(db.ReferenceField('self'))
+    ## Awaiting: the current user was requested
+    @property
+    def awaiting_tutors(self):
+        from MookAPI.services import tutoring_relations
+        relations = tutoring_relations.find(
+            student=self,
+            initiated_by='tutor',
+            accepted=False
+        )
+        return [relation.tutor for relation in relations]
 
-    tutored_students = db.ListField(db.ReferenceField('self'))
+    @property
+    def awaiting_students(self):
+        from MookAPI.services import tutoring_relations
+        relations = tutoring_relations.find(
+            tutor=self,
+            initiated_by='student',
+            accepted=False
+        )
+        return [relation.student for relation in relations]
 
-    awaiting_tutor_requests = db.ListField(db.ReferenceField('self'))
+    ## Pending: the current user made the request
+    @property
+    def pending_tutors(self):
+        from MookAPI.services import tutoring_relations
+        relations = tutoring_relations.find(
+            student=self,
+            initiated_by='student',
+            accepted=False
+        )
+        return [relation.tutor for relation in relations]
 
-    awaiting_student_requests = db.ListField(db.ReferenceField('self'))
+    @property
+    def pending_students(self):
+        from MookAPI.services import tutoring_relations
+        relations = tutoring_relations.find(
+            tutor=self,
+            initiated_by='tutor',
+            accepted=False
+        )
+        return [relation.student for relation in relations]
 
     phagocyted_by = db.ReferenceField('self', required=False)
 
@@ -79,11 +133,15 @@ class User(UserJsonSerializer, SyncableDocument):
     def all_syncable_items(self, local_server=None):
         items = super(User, self).all_syncable_items()
 
-        from MookAPI.services import user_credentials, activities
+        from MookAPI.services import user_credentials, activities, tutoring_relations
         for creds in user_credentials.find(user=self):
             items.extend(creds.all_syncable_items(local_server=local_server))
         for activity in activities.find(user=self):
             items.extend(activity.all_syncable_items(local_server=local_server))
+        for student_relation in tutoring_relations.find(tutor=self):
+            items.extend(student_relation.all_syncable_items(local_server=local_server))
+        for tutor_relation in tutoring_relations.find(student=self):
+            items.extend(tutor_relation.all_syncable_items(local_server=local_server))
 
         return items
 
@@ -96,29 +154,19 @@ class User(UserJsonSerializer, SyncableDocument):
             self.save()
             return self
 
-        from MookAPI.services import users, user_credentials, activities
+        from MookAPI.services import users, user_credentials, activities, tutoring_relations
         for creds in user_credentials.find(user=other):
             creds.user = self
             creds.save(validate=False)
         for activity in activities.find(user=other):
             activity.user = self
             activity.save()
-        for user in users.find(tutors=other):
-            user.tutors.remove(other)
-            user.tutors.append(self)
-            user.tutors.save()
-        for user in users.find(tutored_students=other):
-            user.tutored_students.remove(other)
-            user.tutored_students.append(self)
-            user.tutors.save()
-        for user in users.find(awaiting_tutor_requests=other):
-            user.awaiting_tutor_requests.remove(other)
-            user.awaiting_tutor_requests.append(self)
-            user.awaiting_tutor_requests.save()
-        for user in users.find(awaiting_student_requests=other):
-            user.awaiting_student_requests.remove(other)
-            user.awaiting_student_requests.append(self)
-            user.awaiting_student_requests.save()
+        for student_relation in tutoring_relations.find(tutor=other):
+            student_relation.tutor = self
+            student_relation.save()
+        for tutor_relation in tutoring_relations.find(student=other):
+            tutor_relation.student = self
+            tutor_relation.save()
 
         other.active = False
         other.phagocyted_by = self
