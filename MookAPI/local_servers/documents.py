@@ -139,11 +139,11 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
         updates = []
         deletes = []
 
+        updates.extend(self.items_to_update(last_sync=self.last_sync, local_server=self))
+
         for (index, item) in enumerate(self.syncable_items):
             updates.extend(item.sync_list()['update'])
             deletes.extend(item.sync_list()['delete'])
-
-        updates.extend(self.items_to_update(last_sync=self.last_sync, local_server=self))
 
         return helpers.unique(updates), helpers.unique(deletes)
 
