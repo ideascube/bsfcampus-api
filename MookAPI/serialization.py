@@ -256,7 +256,8 @@ class JsonSerializer(object):
             # FIXME: add a dir path for these temp files
             filename = json[filename_key] or 'temp'
             with open(filename, 'wb') as handle:
-                r = requests.get(url, stream=True)
+                # FIXME We ignore SSL errors for now, but verify should be a parameter defaulting to True.
+                r = requests.get(url, stream=True, verify=False)
                 if not r.ok:
                     return  # Raise an exception
                 for block in r.iter_content(1024):
