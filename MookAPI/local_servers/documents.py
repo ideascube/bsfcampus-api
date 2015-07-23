@@ -153,6 +153,11 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
         self.last_sync = date
 
     def reset(self):
+        # TODO Technically we should also remove any object on the central server associated to this local server
+        # For now we only delete credentials.
+        from MookAPI.services import user_credentials
+        for creds in user_credentials.find(local_server=self):
+            creds.delete()
         self.set_last_sync(date=None)
 
     def __unicode__(self):
