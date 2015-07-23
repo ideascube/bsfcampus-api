@@ -170,14 +170,6 @@ def register_user():
         }
         return jsonify(response), 400
 
-    except NotUniqueError as e:
-        response = {
-            "error": "This username already belongs to someone",
-            "message": e.message,
-            "code": 3
-        }
-        return jsonify(response), 400
-
     except Exception as e:
         response = {
             "error": "Unrecognized exception",
@@ -189,21 +181,34 @@ def register_user():
     else:
         from MookAPI.helpers import current_local_server
         local_server = current_local_server()
-        user_credentials.create(
-            user=new_user,
-            username=username,
-            password=password,
-            local_server=local_server
-        )
-        ## Password is automatically hashed in the Service.
 
-        if local_server:
-            local_server.append_syncable_item(document=new_user)
-            local_server.clean()
-            local_server.save(validate=False) # FIXME Do validation when MongoEngine bug is fixed.
+        try:
+            user_credentials.create(
+                user=new_user,
+                username=username,
+                password=password,
+                local_server=local_server
+            )
+            ## Password is automatically hashed in the Service.
 
-        activity.record_misc_analytic("register_user_attempt", "success")
-        return jsonify(data=new_user)
+        except NotUniqueError as e:
+            new_user.delete()
+            response = {
+                "error": "This username already belongs to someone",
+                "message": e.message,
+                "code": 3
+            }
+            return jsonify(response), 400
+
+        else:
+
+            if local_server:
+                local_server.append_syncable_item(document=new_user)
+                local_server.clean()
+                local_server.save(validate=False) # FIXME Do validation when MongoEngine bug is fixed.
+
+            activity.record_misc_analytic("register_user_attempt", "success")
+            return jsonify(data=new_user)
 
 @route(bp, "/phagocyte", methods=['POST'])
 @jwt_required()
