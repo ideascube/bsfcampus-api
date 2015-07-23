@@ -17,11 +17,13 @@ class SyncProcess(object):
 
     def _get_request(self, path):
         url = self.host + path
-        return requests.get(url, auth=(self.key, self.secret))
+        # FIXME We ignore SSL errors for now, but verify should be a parameter defaulting to True.
+        return requests.get(url, auth=(self.key, self.secret), verify=False)
 
     def _post_request(self, path, data=None, json=None):
         url = self.host + path
-        return requests.post(url, data=data, json=json, auth=(self.key, self.secret))
+        # FIXME We ignore SSL errors for now, but verify should be a parameter defaulting to True.
+        return requests.post(url, data=data, json=json, auth=(self.key, self.secret), verify=False)
 
     def reset(self):
         r = self._post_request("/local_servers/reset")
