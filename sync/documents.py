@@ -51,7 +51,8 @@ class ItemToSync(db.Document):
         local_document = local_documents.first()
 
         import requests
-        r = requests.get(self.url, auth=(key, secret))
+        # FIXME We ignore SSL errors for now, but verify should be a parameter defaulting to True.
+        r = requests.get(self.url, auth=(key, secret), verify=False)
 
         if r.status_code == 200:
             son = json_util.loads(r.text)
