@@ -37,3 +37,8 @@ def register_blueprints(app, package_name, package_path):
                 app.register_blueprint(item)
             rv.append(item)
     return rv
+
+def unique(list):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in list if not(x in seen or seen_add(x))]

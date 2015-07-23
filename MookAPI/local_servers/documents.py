@@ -6,6 +6,7 @@ from flask import url_for
 from MookAPI.core import db
 from MookAPI.serialization import JsonSerializer
 from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
+from MookAPI import helpers
 
 
 class SyncableItemJsonSerializer(SyncableDocumentJsonSerializer):
@@ -134,12 +135,6 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
         top_level_document = document.top_level_syncable_document()
         return top_level_document in self.synchronized_documents
 
-    @staticmethod
-    def _unique(list):
-        seen = set()
-        seen_add = seen.add
-        return [x for x in list if not(x in seen or seen_add(x))]
-
     def get_sync_list(self):
         updates = []
         deletes = []
@@ -150,7 +145,7 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
 
         updates.extend(self.items_to_update(last_sync=self.last_sync, local_server=self))
 
-        return self._unique(updates), self._unique(deletes)
+        return helpers.unique(updates), helpers.unique(deletes)
 
     def set_last_sync(self, date):
         for item in self.syncable_items:

@@ -3,6 +3,7 @@ from flask import Blueprint, request
 import re
 
 from MookAPI.services import tracks, skills, lessons, resources, user_credentials
+from MookAPI import helpers
 
 from . import route
 
@@ -16,7 +17,18 @@ def search_users():
     local_server = current_local_server()
     credentials = user_credentials.find(username=username, local_server=local_server)
 
-    return [creds.user for creds in credentials]
+    users = []
+    response = []
+    current_user_json = None
+    for creds in credentials:
+        user = creds.user
+        if user not in users:
+            current_user_json = user.to_json()
+            current_user_json['credentials'] = []
+            response.append(current_user_json)
+            users.append(user)
+        current_user_json['credentials'].append(creds.to_json())
+    return response
 
 @route(bp, "")
 def search():
