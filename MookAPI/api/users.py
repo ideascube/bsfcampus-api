@@ -40,12 +40,12 @@ def current_user_info():
 @route(bp, "/current/password", methods=['PATCH'], jsonify_wrap=False)
 @jwt_required()
 def current_user_change_password():
-    user = current_user.user
+    creds = current_user._get_current_object()
 
     if request.method == 'PATCH':
 
         data = request.get_json()
-        if not user.verify_pass(data['current_password']):
+        if not creds.verify_pass(data['current_password']):
             response = {
                 "error": "Current password is wrong",
                 "code": 1
@@ -68,17 +68,17 @@ def current_user_change_password():
             }
             return jsonify(response), 400
 
-        user.password = users.__model__.hash_pass(new_password)
+        creds.password = user_credentials.__model__.hash_pass(new_password)
         try:
-            user.save()
+            creds.save(validate=False) # FIXME This is related to the MongoEngine bug.
         except ValidationError as e:
             response = {
                 "error": "Could not update user",
                 "message": e.message
             }
-            return response, 400
+            return jsonify(response), 400
 
-        return jsonify(data=user)
+        return jsonify(data=creds)
 
 
 @route(bp, "/current/dashboard")
