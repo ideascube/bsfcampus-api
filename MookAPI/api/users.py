@@ -126,6 +126,17 @@ def register_user():
     """Registers a new user"""
     activity.record_simple_misc_analytic("register_user_attempt")
 
+    # First, check that if this is a local server, it "knows itself":
+    from MookAPI.helpers import is_local, current_local_server
+    local_server = current_local_server()
+    if is_local() and not local_server:
+        response = {
+            "error":"The local server could not find its document",
+            "code":7
+        }
+        return jsonify(response), 500
+
+
     data = request.get_json()
     password = data['password']
     if password is None or password == "":
@@ -180,8 +191,6 @@ def register_user():
         return jsonify(response), 400
 
     else:
-        from MookAPI.helpers import current_local_server
-        local_server = current_local_server()
 
         try:
             user_credentials.create(
