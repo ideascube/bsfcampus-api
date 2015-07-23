@@ -96,6 +96,21 @@ def post_exercise_attempt_question_answer(attempt_id):
     return response
 
 
+@route(bp, "/exercise_attempts/<attempt_id>/end", methods=['POST'])
+@jwt_required()
+def end_exercise_attempt(attempt_id):
+    """ records the date and time when the user has finished (failed or succeeded) the attempt """
+
+    attempt = exercise_attempts.get_or_404(attempt_id)
+    if attempt.user != current_user.user:
+        abort(403)
+
+    attempt.end()
+    attempt.save()
+
+    return attempt
+
+
 ## Skill Validation's attempts
 
 @route(bp, "/skill_validation_attempts", methods=['POST'])
@@ -166,6 +181,21 @@ def post_skill_validation_attempt_question_answer(attempt_id):
     return response
 
 
+@route(bp, "/skill_validation_attempts/<attempt_id>/end", methods=['POST'])
+@jwt_required()
+def end_skill_validation_attempt(attempt_id):
+    """ records the date and time when the user has finished (failed or succeeded) the attempt """
+
+    attempt = skill_validation_attempts.get_or_404(attempt_id)
+    if attempt.user != current_user.user:
+        abort(403)
+
+    attempt.end()
+    attempt.save()
+
+    return attempt
+
+
 ## Track Validation's attempts
 
 @route(bp, "/track_validation_attempts", methods=['POST'])
@@ -228,6 +258,22 @@ def post_track_validation_attempt_question_answer(attempt_id):
 
     return attempt
 
+
+@route(bp, "/track_validation_attempts/<attempt_id>/end", methods=['POST'])
+@jwt_required()
+def end_track_validation_attempt(attempt_id):
+    """ records the date and time when the user has finished (failed or succeeded) the attempt """
+
+    attempt = track_validation_attempts.get_or_404(attempt_id)
+    if attempt.user != current_user.user:
+        abort(403)
+
+    attempt.end()
+    attempt.save()
+
+    return attempt
+
+## Various activity related actions
 
 @route(bp, "/misc_analytics/<misc_type>", methods=['POST'])
 def record_simple_misc_analytic(misc_type):

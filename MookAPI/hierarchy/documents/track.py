@@ -1,4 +1,6 @@
 import random
+import datetime
+import math
 
 from flask import url_for
 from flask_jwt import current_user, verify_jwt
@@ -6,11 +8,13 @@ from flask_jwt import current_user, verify_jwt
 from MookAPI.core import db
 from . import ResourceHierarchyJsonSerializer, ResourceHierarchy
 
+
 class TrackJsonSerializer(ResourceHierarchyJsonSerializer):
     __json_additional__ = []
     __json_additional__.extend(ResourceHierarchyJsonSerializer.__json_additional__)
     __json_additional__.extend(['skills_refs', 'is_started', 'test_is_unlocked', 'validation_test'])
     __json_rename__ = dict(skills_refs='skills')
+
 
 class Track(TrackJsonSerializer, ResourceHierarchy):
     """
@@ -40,6 +44,7 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
     def skills(self):
         """A queryset of the Skill_ objects that belong to the current Track_."""
         from MookAPI.services import skills
+
         return skills.find(track=self).order_by('order', 'title')
 
     @property
@@ -49,6 +54,7 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
     def is_validated_by_user(self, user):
         """Whether the user validated the hierarchy level based on their activity."""
         from MookAPI.services import completed_tracks
+
         return completed_tracks.find(track=self, user=user).count() > 0
 
     def user_progress(self, user):
@@ -60,6 +66,7 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
     def is_started_by_user(self, user):
         from MookAPI.services import started_tracks
+
         return started_tracks.find(track=self, user=user).count() > 0
 
     @property
@@ -74,6 +81,7 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
     def test_is_unlocked_by_user(self, user):
         from MookAPI.services import unlocked_track_tests
+
         return unlocked_track_tests.find(track=self, user=user).count() > 0
 
     @property
@@ -90,6 +98,7 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
     def track_validation_tests(self):
         """A queryset of the TrackValidationResource_ objects that belong to the current Track_."""
         from MookAPI.services import track_validation_resources
+
         return track_validation_resources.find(parent=self).order_by('order', 'title')
 
     @property
@@ -122,6 +131,20 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
         response['analytics']['last_attempts_scores'] = map(
             lambda a: {"date": a.date, "nb_questions": a.nb_questions, "score": a.nb_right_answers},
             track_validation_attempts[:5])
+
+        nb_finished_attempts = 0
+        total_duration = datetime.timedelta(0)
+        for i in range(len(track_validation_attempts)):
+            attempt = track_validation_attempts[i]
+            attempt_duration = attempt.duration
+            if attempt_duration.microseconds > 0:
+                nb_finished_attempts += 1
+                total_duration += attempt_duration
+        if nb_finished_attempts > 0:
+            response['analytics']['average_time_on_exercise'] = math.floor((total_duration / nb_finished_attempts).total_seconds())
+        else:
+            response['analytics']['average_time_on_exercise'] = 0
+
         response['analytics']['nb_attempts'] = len(track_validation_attempts)
         response['analytics']['nb_visit'] = len(visited_tracks.queryset()(user=user)(track=self))
 

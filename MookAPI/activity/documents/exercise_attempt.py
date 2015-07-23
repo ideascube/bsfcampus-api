@@ -84,18 +84,21 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
 
     ### PROPERTIES
 
-    ## Exercise
     exercise = db.ReferenceField('ExerciseResource')
+    """ Exercise """
 
     @property
     def object(self):
         return self.exercise
 
-    ## Question answers
     question_answers = db.ListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
+    """ Question answers """
 
-    ## Is exercise validated
     is_validated = db.BooleanField(default=False)
+    """ Is exercise validated """
+
+    end_date = db.DateTimeField()
+    """ The date when the attempt is ended """
 
     @property
     def max_mistakes(self):
@@ -114,6 +117,14 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     @property
     def nb_questions(self):
         return len(self.question_answers)
+
+    @property
+    def duration(self):
+        if not self.end_date:
+            delta = 0
+        else:
+            delta = self.end_date - self.date
+        return delta
 
     ### METHODS
 
@@ -175,6 +186,12 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
         """
         attempt_question_answer = self.question_answer(question_id)
         attempt_question_answer.asked_date = datetime.datetime.now
+
+    def end(self):
+        """
+        Records the "now" date as the date when the user has finished the attempt
+        """
+        self.end_date = datetime.datetime.now
 
     def is_exercise_completed(self):
         nb_total_questions = self.exercise.resource_content.number_of_questions

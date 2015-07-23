@@ -1,6 +1,8 @@
 import bson
 import exceptions
 import random
+import datetime
+import math
 
 from . import ResourceContentJsonSerializer, \
     ResourceContent, \
@@ -154,6 +156,20 @@ class ExerciseResource(ExerciseResourceJsonSerializer, Resource):
         response['analytics']['last_attempts_scores'] = map(
             lambda a: {"date": a.date, "nb_questions": a.nb_questions, "score": a.nb_right_answers},
             exercise_attempts[:5])
+
+        nb_finished_attempts = 0
+        total_duration = datetime.timedelta(0)
+        for i in range(len(exercise_attempts)):
+            attempt = exercise_attempts[i]
+            attempt_duration = attempt.duration
+            if attempt_duration.microseconds > 0:
+                nb_finished_attempts += 1
+                total_duration += attempt_duration
+        if nb_finished_attempts > 0:
+            response['analytics']['average_time_on_exercise'] = math.floor((total_duration / nb_finished_attempts).total_seconds())
+        else:
+            response['analytics']['average_time_on_exercise'] = 0
+
         response['analytics']['nb_attempts'] = len(exercise_attempts)
 
         return response
