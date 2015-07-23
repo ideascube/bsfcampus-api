@@ -210,6 +210,8 @@ def register_user():
 def absorb_user():
     data = request.get_json()
     local_server = data.get('local_server', None)
+    if not local_server:
+        local_server = None
     username = data.get('username', None)
     password = data.get('password', None)
 
