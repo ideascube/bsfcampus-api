@@ -9,6 +9,10 @@ from . import route
 
 bp = Blueprint("local_servers", __name__, url_prefix="/local_servers")
 
+@route(bp, "/")
+def get_all_local_servers():
+    return local_servers.all()
+
 @route(bp, "/current")
 @local_server_required
 def get_current_local_server():
