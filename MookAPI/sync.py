@@ -46,11 +46,12 @@ class UnresolvedReference(JsonSerializer, db.Document):
             service = get_service_for_class(self.class_name)
             local_document = service.get(distant_id=self.distant_id)
             self.document.set_value_for_field_path(local_document, self.field_path)
-            self.document.save()
+            self.document.clean()
+            self.document.save(validate=False) # FIXME MongoEngine bug
             self.delete()
             print "==> Success!"
             return True
-        except:
+        except Exception as e:
             print "==> Failed!"
             return False
 
