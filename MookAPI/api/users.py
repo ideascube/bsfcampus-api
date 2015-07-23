@@ -1,3 +1,4 @@
+from bson import ObjectId
 from mongoengine import NotUniqueError
 
 from flask import Blueprint, request, jsonify, abort
@@ -214,8 +215,9 @@ def register_user():
 @jwt_required()
 def absorb_user():
     data = request.get_json()
-    local_server = data.get('local_server', None)
-    if not local_server:
+    try:
+        local_server = ObjectId(data.get('local_server', None))
+    except:
         local_server = None
     username = data.get('username', None)
     password = data.get('password', None)
