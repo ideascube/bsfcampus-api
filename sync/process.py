@@ -168,7 +168,10 @@ class SyncProcess(object):
             result, details = self.fetch_sync_list()
             return 'fetch_list', result, details
 
-    def run(self, interval=60):
+    def run(self, interval=None):
+
+        if not interval:
+            interval = 60
 
         while True:
             rv = self.next_action()
