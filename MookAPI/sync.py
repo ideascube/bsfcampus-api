@@ -74,6 +74,15 @@ class SyncableDocumentJsonSerializer(JsonSerializer):
             pass
         return son
 
+    def to_json_search_result(self):
+        son = self.to_json_dbref()
+        try:
+            son['description'] = self.description
+            son['breadcrumb'] = self.breadcrumb
+        except:
+            pass
+        return son
+
 
 class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
     """

@@ -61,7 +61,7 @@ def search():
             if search_word in track.description.lower():
                 score += 1 * factor
         if score > 0:
-            results.append({"type": "track", "score": score, "document": track.to_json_dbref()})
+            results.append({"type": "track", "score": score, "document": track.to_json_search_result()})
 
     # search through skills
     for skill in skills.queryset():
@@ -77,7 +77,7 @@ def search():
             if search_word in skill.description.lower():
                 score += 1 * factor
         if score > 0:
-            results.append({"type": "skill", "score": score, "document": skill.to_json_dbref()})
+            results.append({"type": "skill", "score": score, "document": skill.to_json_search_result()})
 
     # search through lessons
     for lesson in lessons.queryset():
@@ -93,7 +93,7 @@ def search():
             if search_word in lesson.description.lower():
                 score += 1 * factor
         if score > 0:
-            results.append({"type": "lesson", "score": score, "document": lesson.to_json_dbref()})
+            results.append({"type": "lesson", "score": score, "document": lesson.to_json_search_result()})
 
     # search through resources
     for resource in resources.queryset():
@@ -109,6 +109,6 @@ def search():
             if search_word in resource.description.lower():
                 score += 1 * factor
         if score > 0:
-            results.append({"type": "resource", "score": score, "document": resource.to_json_dbref()})
+            results.append({"type": "resource", "score": score, "document": resource.to_json_search_result()})
 
     return results
