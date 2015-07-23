@@ -18,10 +18,7 @@ from MookAPI.services import \
 
 class UserView(ModelView):
     column_list = ('full_name', 'email', 'accept_cgu', 'roles')
-    # FIXME: adds tutoring related fields to user admin panel for debugging or test purposes
-    # form_columns = ('full_name', 'username', 'email', 'password', 'accept_cgu', 'roles')
-    form_columns = ('full_name', 'email', 'accept_cgu', 'roles', 'tutors', 'tutored_students',
-                    'awaiting_tutor_requests', 'awaiting_student_requests')
+    form_columns = ('full_name', 'email', 'accept_cgu', 'roles')
 
 
 class ResourceView(ModelView):

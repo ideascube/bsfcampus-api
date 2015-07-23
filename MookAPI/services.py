@@ -7,6 +7,10 @@ roles = RolesService()
 users = UsersService()
 user_credentials = UserCredentialsService()
 
+from .tutoring import TutoringRelationsService
+
+tutoring_relations = TutoringRelationsService()
+
 from .hierarchy import \
     TracksService, \
     SkillsService, \
