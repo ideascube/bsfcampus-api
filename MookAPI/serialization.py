@@ -181,7 +181,7 @@ class JsonSerializer(object):
                 except Exception as e:
                     from MookAPI.sync import UnresolvedReference
                     ref = UnresolvedReference()
-                    ref.field_path = key
+                    ref.field_path = path_in_instance
                     ref.class_name = field.document_type_obj.__name__
                     ref.distant_id = document_id
                     unresolved_references.append(ref)
@@ -204,7 +204,7 @@ class JsonSerializer(object):
             except:
                 from MookAPI.sync import UnresolvedReference
                 ref = UnresolvedReference()
-                ref.field_path = key
+                ref.field_path = path_in_instance
                 ref.class_name = field.document_type_obj.__name__
                 ref.distant_id = value['_id']
                 unresolved_references.append(ref)
@@ -212,11 +212,10 @@ class JsonSerializer(object):
 
         ## EmbeddedDocumentField: instantiate MongoCoderEmbeddedDocument from JSON
         elif isinstance(field, EmbeddedDocumentField):
-            next_path_in_instance = ("%s.%s" % (path_in_instance, key)).lstrip('.')
             return field.document_type_obj.from_json(
                 value,
                 from_distant=from_distant,
-                path_in_instance=next_path_in_instance,
+                path_in_instance=path_in_instance,
                 instance=instance,
                 unresolved_references=unresolved_references
             )
@@ -226,7 +225,7 @@ class JsonSerializer(object):
             converted_value = []
             for index, element in enumerate(value):
                 # FIXME This next_path does not seem right.
-                next_path_in_instance = ("%s.%s[%d]" % (path_in_instance, key, index)).lstrip('.')
+                next_path_in_instance = "%s[%d]" % (path_in_instance, index)
                 value = JsonSerializer._convert_value_from_json(
                     value=element,
                     key=key,
@@ -319,12 +318,13 @@ class JsonSerializer(object):
             instance = obj
 
         for key in json.iterkeys():
+            next_path_in_instance = ("%s.%s" % (path_in_instance, key)).lstrip(".")
             obj._set_value_from_json(
                 json=json,
                 key=key,
                 instance=instance,
                 from_distant=from_distant,
-                path_in_instance=path_in_instance,
+                path_in_instance=next_path_in_instance,
                 unresolved_references=unresolved_references
             )
 
@@ -351,7 +351,38 @@ class JsonSerializer(object):
         return obj
 
     def set_value_for_field_path(self, value, field_path):
-        setattr(self, field_path, value) # FIXME handle field path recursively
+        import re
+        def rec_set(obj, path, value):
+            path_parts = path.split('.')
+            key = path_parts.pop(0)
+
+            match = re.match("^(\w+)\[(\d+)\]$", key)
+            if match:
+                key = match.group(1)
+                index = int(match.group(2))
+                tab = getattr(obj, key, None)
+                if path_parts:
+                    new_path = ".".join(path_parts)
+                    sub_obj = rec_set(tab[index], new_path, value)
+                    tab[index] = sub_obj
+                    setattr(obj, key, tab)
+                    return obj
+                else:
+                    tab[index] = value
+                    setattr(obj, key, tab)
+                    return obj
+            else:
+                if path_parts:
+                    new_obj = getattr(obj, key)
+                    new_path = ".".join(path_parts)
+                    sub_obj = rec_set(new_obj, new_path, value)
+                    setattr(obj, key, sub_obj)
+                    return obj
+                else:
+                    setattr(obj, key, value)
+                    return obj
+
+        return rec_set(self, field_path, value)
 
 
 class JSONEncoder(BaseJSONEncoder):
