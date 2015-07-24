@@ -89,7 +89,7 @@ def subscribe_item_to_sync():
     service_name = data.get('service', None)
     document_id = data.get('document_id', None)
 
-    local_server.append_syncable_item(service_name, document_id)
+    local_server.append_syncable_item(service_name=service_name, document_id=document_id)
 
     try:
         local_server.save()
