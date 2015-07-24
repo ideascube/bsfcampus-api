@@ -121,10 +121,9 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
     @property
     def duration(self):
         if not self.end_date:
-            delta = 0
+            return None
         else:
-            delta = self.end_date - self.date
-        return delta
+            return self.end_date - self.date
 
     ### METHODS
 
