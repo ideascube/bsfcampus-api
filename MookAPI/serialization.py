@@ -111,6 +111,14 @@ class JsonSerializer(object):
             value = getattr(self, key)
             if isinstance(value, Document):
                 rv[key] = value.to_json_dbref()
+            elif isinstance(value, dict):
+                serialized_value = dict()
+                for k, v in value.items():
+                    if isinstance(v, Document):
+                        serialized_value[k] = v.to_json_dbref()
+                    else:
+                        serialized_value[k] = v
+                rv[key] = serialized_value
             elif isinstance(value, collections.Iterable):
                 serialized_value = []
                 for item in value:
