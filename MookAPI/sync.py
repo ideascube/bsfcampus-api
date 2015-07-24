@@ -209,3 +209,6 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
         items['delete'] = self.items_to_delete(last_sync, local_server=local_server)
         ## We should do some cleanup at this point, in particular remove deletable items from 'update' list.
         return items
+
+    def __unicode__(self):
+        return "Document with class %s and id %s" % (self.__class__.__name__, str(self.id))
