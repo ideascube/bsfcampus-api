@@ -156,10 +156,9 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
         total_duration = datetime.timedelta(0)
         for i in range(len(skill_validation_attempts)):
             attempt = skill_validation_attempts[i]
-            attempt_duration = attempt.duration
-            if attempt_duration.microseconds > 0:
+            if attempt.duration:
                 nb_finished_attempts += 1
-                total_duration += attempt_duration
+                total_duration += attempt.duration
         if nb_finished_attempts > 0:
             response['analytics']['average_time_on_exercise'] = math.floor((total_duration / nb_finished_attempts).total_seconds())
         else:
