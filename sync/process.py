@@ -131,6 +131,22 @@ class SyncProcess(object):
 
         return item
 
+    def _subscribe_user(self, user):
+        print "Subscribing to user %s..." % user
+        json = dict(
+            service="users",
+            document_id=str(user.distant_id)
+        )
+        path = "/local_servers/subscribe"
+        r = self._post_request(path, json=json)
+
+        if r.status_code == 200:
+            # TODO Update local server at this point
+            # (We can skip this for now, the LS will be synced later anyway)
+            print "Success!" % user
+        else:
+            print "Failed with error code %d :(" % r.status_code
+
     def _post_document(self, document):
         path = "/local_servers/add_item"
         from bson.json_util import dumps, loads
@@ -144,13 +160,15 @@ class SyncProcess(object):
             from MookAPI.helpers import get_service_for_class
             service = get_service_for_class(data['_cls'])
             try:
-                service.__model__.from_json(
+                new_document = service.__model__.from_json(
                     data,
                     save=True,
                     from_distant=True,
                     overwrite_document=document
                 )
                 print "Overwrote local document with information from central server"
+                if service.__class__.__name__ == 'UsersService': # FIXME Do something cleaner
+                    self._subscribe_user(new_document)
             except:
                 print "An error occurred while overwriting the local document"
         else:
