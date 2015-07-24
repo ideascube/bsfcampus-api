@@ -73,7 +73,7 @@ class ExerciseResourceContent(ExerciseResourceContentJsonSerializer, ResourceCon
         """
 
         if not number:
-            number = self.number_of_questions
+            number = self.number_of_questions or len(self.questions)
 
         all_questions = self.questions
         random.shuffle(all_questions)
