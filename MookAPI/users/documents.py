@@ -154,10 +154,18 @@ class User(UserJsonSerializer, SyncableDocument):
             self.save()
             return self
 
-        from MookAPI.services import users, user_credentials, activities, tutoring_relations
+        from MookAPI.services import \
+            activities, \
+            local_servers, \
+            tutoring_relations, \
+            user_credentials
         for creds in user_credentials.find(user=other):
             creds.user = self
             creds.save(validate=False)
+        for local_server in local_servers.find(syncable_users__document=other):
+            local_server.unsync_user(other)
+            local_server.append_syncable_item(document=self)
+            local_server.save()
         for activity in activities.find(user=other):
             activity.user = self
             activity.save()

@@ -131,6 +131,13 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
                 syncable_track = SyncableTrack(document=document)
                 self.syncable_tracks.append(syncable_track)
 
+    def unsync_user(self, user):
+        for synced_user in self.syncable_users:
+            if synced_user.document == user:
+                self.syncable_users.remove(synced_user)
+                return True
+        return False
+
     def syncs_document(self, document):
         top_level_document = document.top_level_syncable_document()
         return top_level_document in self.synchronized_documents
