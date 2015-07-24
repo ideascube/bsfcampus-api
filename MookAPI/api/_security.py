@@ -16,9 +16,13 @@ jwt = JWT()
 def authenticate(username, password):
     activity.record_misc_analytic("auth_attempt", username)
     try:
-        from MookAPI.helpers import current_local_server
+        from MookAPI.helpers import current_local_server, is_local
         from MookAPI.services import users, user_credentials
         local_server = current_local_server()
+        if is_local() and not local_server:
+            return None
+
+
         creds = user_credentials.get(
             username=username,
             local_server=local_server,
