@@ -183,7 +183,10 @@ class SyncProcess(object):
                 if users._isinstance(item.document):
                     for sub_item in item.document.all_syncable_items(local_server=self.local_server):
                         if not sub_item.distant_id:
-                            print "Sending document: %s" % sub_item
+                            try:
+                                print "Sending document: %s" % sub_item
+                            except:
+                                print "Sending document: [Cannot get representation]"
                             self._post_document(sub_item)
                             return True
             print "No more document to post"
