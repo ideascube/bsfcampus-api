@@ -316,13 +316,13 @@ def get_general_analytics():
     if start_date_arg is None:
         start_date = datetime.datetime.fromtimestamp(0)
     else:
-        start_date = datetime.datetime.strptime(start_date_arg, "%Y%m%d").date()
+        start_date = datetime.datetime.strptime(start_date_arg, "%Y-%m-%d").date()
 
     end_date_arg = request.args.get('end_date', None)
     if end_date_arg is None:
         end_date = datetime.datetime.now
     else:
-        end_date = datetime.datetime.strptime(end_date_arg, "%Y%m%d").date() + datetime.timedelta(days=1)
+        end_date = datetime.datetime.strptime(end_date_arg, "%Y-%m-%d").date() + datetime.timedelta(days=1)
 
     all_analytics = activities.__model__.objects(date__gte=start_date)(date__lte=end_date)
 
