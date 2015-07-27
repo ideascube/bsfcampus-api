@@ -3,7 +3,7 @@ from MookAPI.core import db
 from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 
 class StaticPageJsonSerializer(SyncableDocumentJsonSerializer):
-    __json_additional__ = ['url']
+    pass
 
 class StaticPage(StaticPageJsonSerializer, SyncableDocument):
 
