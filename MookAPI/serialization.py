@@ -119,7 +119,7 @@ class JsonSerializer(object):
                     else:
                         serialized_value[k] = v
                 rv[key] = serialized_value
-            elif isinstance(value, collections.Iterable):
+            elif not isinstance(value, str) and isinstance(value, collections.Iterable):
                 serialized_value = []
                 for item in value:
                     if isinstance(item, Document):

@@ -1,8 +1,9 @@
+from flask import url_for
 from MookAPI.core import db
 from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 
 class StaticPageJsonSerializer(SyncableDocumentJsonSerializer):
-    pass
+    __json_additional__ = ['url']
 
 class StaticPage(StaticPageJsonSerializer, SyncableDocument):
 
@@ -14,3 +15,9 @@ class StaticPage(StaticPageJsonSerializer, SyncableDocument):
 
     html_content = db.StringField(required=True)
     """An HTML string containing the text of the page."""
+
+    ### VIRTUAL PROPERTIES
+
+    @property
+    def url(self):
+        return url_for("static_pages.get_static_page", page_id=self.page_id, _external=True)
