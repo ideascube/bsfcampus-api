@@ -54,6 +54,19 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
     """ The title of the object associated to this activity. It allows a better comprehension of the activity than the activity_id.
     This is supposed to be defaulted/initialized in each subclass """
 
+    @property
+    def url(self):
+        print("Activity (%s) url: %s" % (self._cls, self.id))
+        return url_for("activity.get_activity", activity_id=self.id, _external=True)
+
+    @property
+    def local_server_id(self):
+        return self.local_server.id if self.local_server is not None else ""
+
+    @property
+    def user_id(self):
+        return self.user.id if self.user is not None else ""
+
     def clean(self):
         super(Activity, self).clean()
         if self.object:
@@ -72,11 +85,6 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
         return ['Koombook id', 'Koombook name', 'User id', 'User username', 'User full name', 'Date - Time',
                 'Action type', 'Object id', 'Object title', 'Object-specific data']
 
-    @property
-    def url(self):
-        print("Activity (%s) url: %s" % (self._cls, self.id))
-        return url_for("activity.get_activity", activity_id=self.id, _external=True)
-
     def top_level_syncable_document(self):
         return self.user
 
@@ -91,5 +99,5 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
 
     def get_field_names_for_csv(self):
         """ this method gives the fields to export as csv row, in a chosen order """
-        return ['local_server_username', 'local_server_name', 'user', 'user_username', 'user_name', 'date', 'type',
+        return ['local_server_id', 'local_server_name', 'user_id', 'user_username', 'user_name', 'date', 'type',
                 'object', 'object_title']
