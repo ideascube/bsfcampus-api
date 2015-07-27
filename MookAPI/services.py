@@ -75,3 +75,7 @@ misc_activities = MiscActivityService()
 from .local_servers import LocalServersService
 
 local_servers = LocalServersService()
+
+from .static_pages import StaticPagesService
+
+static_pages = StaticPagesService()

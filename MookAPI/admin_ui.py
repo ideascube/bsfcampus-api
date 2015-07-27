@@ -13,7 +13,8 @@ from MookAPI.services import \
     video_resources, \
     downloadable_file_resources, \
     roles, \
-    local_servers
+    local_servers, \
+    static_pages
 
 
 class UserView(ModelView):
@@ -46,8 +47,17 @@ class LocalServerView(ModelView):
         model.secret = self.model.hash_secret(model.secret)
         return
 
+class StaticPageView(ModelView):
+    pass
+
 
 admin_ui = Admin()
+
+admin_ui.add_view(StaticPageView(
+    static_pages.__model__,
+    name='Static Pages',
+    category='Misc'
+))
 
 admin_ui.add_view(ResourceView(
     exercise_resources.__model__,
