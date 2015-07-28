@@ -17,7 +17,6 @@ def get_relation(relation_id):
 @route(bp, "/request/tutor/<user_id>", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def request_tutor(user_id):
-
     student = current_user.user
     tutor = users.get_or_404(user_id)
 
@@ -55,7 +54,6 @@ def request_tutor(user_id):
 @route(bp, "/request/student/<user_id>", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def request_student(user_id):
-
     student = users.get_or_404(user_id)
     tutor = current_user.user
 
@@ -93,16 +91,16 @@ def request_student(user_id):
 @route(bp, "/accept/tutor/<user_id>", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def accept_tutor(user_id):
-
-    student = current_user.user
-    tutor = users.get_or_404(user_id)
+    student = users.get_or_404(user_id)
+    tutor = current_user.user
 
     relation = tutoring_relations.get_or_404(
         tutor=tutor,
         student=student,
-        initiated_by='tutor',
+        initiated_by='student',
         accepted=False
     )
+
     relation.accepted = True
     relation.save()
 
@@ -112,26 +110,6 @@ def accept_tutor(user_id):
 @route(bp, "/accept/student/<user_id>", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def accept_student(user_id):
-
-    student = users.get_or_404(user_id)
-    tutor = current_user.user
-
-    relation = tutoring_relations.get_or_404(
-        tutor=tutor,
-        student=student,
-        initiated_by='student',
-        accepted=False
-    )
-    relation.accepted = True
-    relation.save()
-
-    return jsonify(data=current_user.user)
-
-
-@route(bp, "/decline/tutor/<user_id>", methods=['POST'], jsonify_wrap=False)
-@jwt_required()
-def decline_tutor(user_id):
-
     student = current_user.user
     tutor = users.get_or_404(user_id)
 
@@ -141,15 +119,54 @@ def decline_tutor(user_id):
         initiated_by='tutor',
         accepted=False
     )
-    relation.delete()
+
+    relation.accepted = True
+    relation.save()
 
     return jsonify(data=current_user.user)
 
 
-@route(bp, "/decline/student/<user_id>", methods=['POST'], jsonify_wrap=False)
+@route(bp, "/acknowledge/tutor/<user_id>", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
-def decline_student(user_id):
+def acknowledge_tutor_relation(user_id):
+    student = current_user.user
+    tutor = users.get_or_404(user_id)
 
+    relation = tutoring_relations.get_or_404(
+        tutor=tutor,
+        student=student,
+        initiated_by='student',
+        accepted=True,
+        acknowledged=False
+    )
+
+    relation.acknowledged = True
+    relation.save()
+    return jsonify(data=current_user.user)
+
+
+@route(bp, "/acknowledge/student/<user_id>", methods=['POST'], jsonify_wrap=False)
+@jwt_required()
+def acknowledge_student_relation(user_id):
+    student = users.get_or_404(user_id)
+    tutor = current_user.user
+
+    relation = tutoring_relations.get_or_404(
+        tutor=tutor,
+        student=student,
+        initiated_by='tutor',
+        accepted=True,
+        acknowledged=False
+    )
+
+    relation.acknowledged = True
+    relation.save()
+    return jsonify(data=current_user.user)
+
+
+@route(bp, "/decline/tutor/<user_id>", methods=['POST'], jsonify_wrap=False)
+@jwt_required()
+def decline_tutor(user_id):
     student = users.get_or_404(user_id)
     tutor = current_user.user
 
@@ -159,6 +176,25 @@ def decline_student(user_id):
         initiated_by='student',
         accepted=False
     )
+
+    relation.delete()
+
+    return jsonify(data=current_user.user)
+
+
+@route(bp, "/decline/student/<user_id>", methods=['POST'], jsonify_wrap=False)
+@jwt_required()
+def decline_student(user_id):
+    student = current_user.user
+    tutor = users.get_or_404(user_id)
+
+    relation = tutoring_relations.get_or_404(
+        tutor=tutor,
+        student=student,
+        initiated_by='tutor',
+        accepted=False
+    )
+
     relation.delete()
 
     return jsonify(data=current_user.user)
@@ -167,7 +203,6 @@ def decline_student(user_id):
 @route(bp, "/cancel/tutor/<user_id>", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def cancel_tutor_request(user_id):
-
     student = current_user.user
     tutor = users.get_or_404(user_id)
 
@@ -185,7 +220,6 @@ def cancel_tutor_request(user_id):
 @route(bp, "/cancel/student/<user_id>", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def cancel_student_request(user_id):
-
     student = users.get_or_404(user_id)
     tutor = current_user.user
 
@@ -203,7 +237,6 @@ def cancel_student_request(user_id):
 @route(bp, "/remove/tutor/<user_id>", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def remove_tutor(user_id):
-
     student = current_user.user
     tutor = users.get_or_404(user_id)
 
@@ -220,7 +253,6 @@ def remove_tutor(user_id):
 @route(bp, "/remove/student/<user_id>", methods=['POST'], jsonify_wrap=False)
 @jwt_required()
 def remove_student(user_id):
-
     student = users.get_or_404(user_id)
     tutor = current_user.user
 

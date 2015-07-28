@@ -21,10 +21,12 @@ class UserJsonSerializer(SyncableDocumentJsonSerializer):
     __json_additional__ = [
         'tutors',
         'students',
-        'awaiting_tutors',
-        'awaiting_students',
+        'awaiting_tutor_requests',
+        'awaiting_student_requests',
         'pending_tutors',
-        'pending_students'
+        'pending_students',
+        'not_acknowledged_tutors',
+        'not_acknowledged_students'
     ]
 
 class User(UserJsonSerializer, SyncableDocument):
@@ -38,7 +40,7 @@ class User(UserJsonSerializer, SyncableDocument):
     accept_cgu = db.BooleanField(required=True, default=False)
 
     roles = db.ListField(db.ReferenceField(Role))
-    
+
     @property
     def tutors(self):
         from MookAPI.services import tutoring_relations
@@ -53,7 +55,17 @@ class User(UserJsonSerializer, SyncableDocument):
 
     ## Awaiting: the current user was requested
     @property
-    def awaiting_tutors(self):
+    def awaiting_tutor_requests(self):
+        from MookAPI.services import tutoring_relations
+        relations = tutoring_relations.find(
+            tutor=self,
+            initiated_by='student',
+            accepted=False
+        )
+        return [relation.student for relation in relations]
+
+    @property
+    def awaiting_student_requests(self):
         from MookAPI.services import tutoring_relations
         relations = tutoring_relations.find(
             student=self,
@@ -62,13 +74,26 @@ class User(UserJsonSerializer, SyncableDocument):
         )
         return [relation.tutor for relation in relations]
 
+    ## Not acknowledged: Requests initiated by the current user have been accepted
     @property
-    def awaiting_students(self):
+    def not_acknowledged_tutors(self):
+        from MookAPI.services import tutoring_relations
+        relations = tutoring_relations.find(
+            student=self,
+            initiated_by='student',
+            accepted=True,
+            acknowledged=False
+        )
+        return [relation.tutor for relation in relations]
+
+    @property
+    def not_acknowledged_students(self):
         from MookAPI.services import tutoring_relations
         relations = tutoring_relations.find(
             tutor=self,
-            initiated_by='student',
-            accepted=False
+            initiated_by='tutor',
+            accepted=True,
+            acknowledged=False
         )
         return [relation.student for relation in relations]
 
