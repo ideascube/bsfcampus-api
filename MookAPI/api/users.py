@@ -17,10 +17,13 @@ bp = Blueprint('users', __name__, url_prefix="/users")
 @route(bp, "/current", methods=['GET', 'PATCH'], jsonify_wrap=False)
 @jwt_required()
 def current_user_info():
+    creds = current_user._get_current_object()
     user = current_user.user
 
     if request.method == 'GET':
-        return jsonify(data=user)
+        response = {'data': user.to_json()}
+        response['data']['username'] = creds.username
+        return jsonify(response)
 
     elif request.method == 'PATCH':
 
