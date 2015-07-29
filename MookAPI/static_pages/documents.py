@@ -13,8 +13,11 @@ class StaticPage(StaticPageJsonSerializer, SyncableDocument):
     footer_link_text = db.StringField(required=True)
     """The text that appears on the link towards this page"""
 
-    html_content = db.StringField(required=True)
+    html_content = db.StringField()
     """An HTML string containing the text of the page."""
+
+    external_link = db.StringField()
+    """if the link should redirect to an external page"""
 
     ### VIRTUAL PROPERTIES
 
