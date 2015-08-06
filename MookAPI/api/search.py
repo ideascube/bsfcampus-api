@@ -120,7 +120,10 @@ def search():
                 score += 2 * factor
             if search_word in resource.description.lower():
                 score += 1 * factor
+        if resource.is_additional:
+            score /= 2
         if score > 0:
             results.append({"type": "resource", "score": score, "document": resource.to_json_search_result()})
 
+    results = sorted(results, key=lambda r: r['score'], reverse=True)
     return results
