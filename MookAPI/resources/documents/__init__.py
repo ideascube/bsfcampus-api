@@ -32,7 +32,7 @@ class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
 
 
 class ResourceJsonSerializer(SyncableDocumentJsonSerializer):
-    __json_additional__ = ['breadcrumb', 'is_validated', 'bg_color', 'additional_resources_refs']
+    __json_additional__ = ['breadcrumb', 'is_validated', 'additional_resources_refs']
     __json_dbref__ = ['title', 'slug', 'resource_content']
 
 
@@ -206,13 +206,27 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
         """
         Returns an array of the breadcrumbs up until the current object: [Track_, Skill_, Lesson_, Resource_]
         """
+        rv = []
 
-        return [
-            self.track.to_json_dbref(),
-            self.skill.to_json_dbref(),
-            self.parent.to_json_dbref(),
-            self.to_json_dbref()
-        ]
+        if self.is_additional:
+            rv.extend([
+                self.parent_resource.track.to_json_dbref(),
+                self.parent_resource.skill.to_json_dbref(),
+                self.parent_resource.parent.to_json_dbref(),
+                self.parent_resource.to_json_dbref(),
+                self.to_json_dbref()
+                ]
+            )
+        else:
+            rv.extend([
+                self.track.to_json_dbref(),
+                self.skill.to_json_dbref(),
+                self.parent.to_json_dbref(),
+                self.to_json_dbref()
+                ]
+            )
+
+        return rv
 
     def __unicode__(self):
         return self.title

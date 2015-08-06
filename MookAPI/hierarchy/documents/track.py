@@ -31,9 +31,6 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
         """The URL where the track icon can be downloaded."""
         return url_for("hierarchy.get_track_icon", track_id=self.id, _external=True)
 
-    bg_color = db.StringField()
-    """The background color of pages in this Track_."""
-
     ### VIRTUAL PROPERTIES
 
     @property
