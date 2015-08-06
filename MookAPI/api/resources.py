@@ -47,17 +47,18 @@ def get_resource(resource_id):
     except:
         pass
     else:
-        from MookAPI.services import visited_resources
-        visited_resources.create(
-            credentials=current_user._get_current_object(),
-            resource=resource
-        )
-        current_user.add_started_track(resource.track)
-        if not exercise_resources._isinstance(resource):
-            current_user.add_completed_resource(resource)
-            if current_user.user.is_track_test_available_and_never_attempted(resource.track):
-                alert = {"code": "prompt_track_validation", "id": resource.track._data.get("id", None)}
-                response = jsonify(data=resource, alert=alert)
+        if not resource.is_additional:
+            from MookAPI.services import visited_resources
+            visited_resources.create(
+                credentials=current_user._get_current_object(),
+                resource=resource
+            )
+            current_user.add_started_track(resource.track)
+            if not exercise_resources._isinstance(resource):
+                current_user.add_completed_resource(resource)
+                if current_user.user.is_track_test_available_and_never_attempted(resource.track):
+                    alert = {"code": "prompt_track_validation", "id": resource.track._data.get("id", None)}
+                    response = jsonify(data=resource, alert=alert)
 
     if not response:
         response = jsonify(data=resource)

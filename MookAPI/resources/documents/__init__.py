@@ -32,8 +32,8 @@ class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
 
 
 class ResourceJsonSerializer(SyncableDocumentJsonSerializer):
-    __json_additional__ = ['breadcrumb', 'is_validated', 'bg_color']
-    __json_dbref__ = ['title', 'slug']
+    __json_additional__ = ['breadcrumb', 'is_validated', 'bg_color', 'additional_resources_refs']
+    __json_dbref__ = ['title', 'slug', 'resource_content']
 
 
 class Resource(ResourceJsonSerializer, SyncableDocument):
@@ -50,6 +50,9 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     }
 
     ### PROPERTIES
+
+    is_additional = db.BooleanField(default=False)
+    """True if the resource is an additional resource, i.e. has a Resource parent (instead of a Lesson)"""
 
     title = db.StringField(required=True)
     """The title of the Resource_."""
@@ -74,6 +77,9 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     """The date the Resource_ was created."""
 
     parent = db.ReferenceField('Lesson')
+    """The parent hierarchy object (usually Lesson, but can be overridden)."""
+
+    parent_resource = db.ReferenceField('Resource')
     """The parent hierarchy object (usually Lesson, but can be overridden)."""
 
     resource_content = db.EmbeddedDocumentField(ResourceContent)
@@ -110,6 +116,17 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     def track(self):
         """Shorthand virtual property to the parent Track_ of the parent Skill_ of the parent Lesson_."""
         return self.parent.skill.track
+
+    @property
+    def additional_resources(self):
+        """A queryset of the Resources_ objects that are additional resources to the current Resource_."""
+        from MookAPI.services import resources
+
+        return resources.find(parent_resource=self).order_by('order', 'title')
+
+    @property
+    def additional_resources_refs(self):
+        return [additional_resource.to_json_dbref() for additional_resource in self.additional_resources]
 
     ### METHODS
 
@@ -202,3 +219,11 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
 
     def top_level_syncable_document(self):
         return self.track
+
+    def all_syncable_items(self, local_server=None):
+        items = super(Resource, self).all_syncable_items(local_server=local_server)
+
+        for additional_resource in self.additional_resources:
+            items.extend(additional_resource.all_syncable_items(local_server=local_server))
+
+        return items

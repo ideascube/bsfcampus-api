@@ -1,5 +1,6 @@
 from flask.ext.admin import Admin
 from flask.ext.admin.contrib.mongoengine import ModelView
+from wtforms import ValidationError
 
 from MookAPI.services import \
     users, \
@@ -16,15 +17,41 @@ from MookAPI.services import \
     local_servers, \
     static_pages
 
+# Validators
+def parent_resource_required_if_additional(form, field):
+    if form.data['is_additional'] and field.data is None:
+        raise ValidationError('An additional resource must have a parent resource')
 
+def no_parent_additional_resource_if_additional(form, field):
+    if form.data['is_additional'] and field.data is not None and field.data['is_additional']:
+        raise ValidationError('An additional resource must not have another additional resource as parent')
+
+def no_parent_resource_if_not_additional(form, field):
+    if not form.data['is_additional'] and field.data is not None:
+        raise ValidationError('An standard resource must not have a parent resource')
+
+def parent_if_not_additional(form, field):
+    if not form.data['is_additional'] and field.data is None:
+        raise ValidationError('An standard resource must have a parent')
+
+def no_parent_if_additional(form, field):
+    if form.data['is_additional'] and field.data is not None:
+        raise ValidationError('An additional resource must not have a parent')
+
+
+# Admin views
 class UserView(ModelView):
     column_list = ('full_name', 'email', 'accept_cgu', 'roles')
     form_columns = ('full_name', 'email', 'accept_cgu', 'roles')
 
-
 class ResourceView(ModelView):
-    column_list = ('title', 'slug', 'description', 'order', 'keywords', 'parent')
-    form_columns = ('title', 'slug', 'description', 'order', 'keywords', 'parent', 'resource_content')
+    column_list = ('is_additional', 'title', 'slug', 'description', 'order', 'keywords', 'parent', 'parent_resource')
+    form_columns = ('is_additional', 'title', 'slug', 'description', 'order', 'keywords', 'parent', 'parent_resource', 'resource_content')
+
+    form_args = dict(
+        parent_resource=dict(validators=[parent_resource_required_if_additional, no_parent_resource_if_not_additional, no_parent_additional_resource_if_additional]),
+        parent=dict(validators=[parent_if_not_additional, no_parent_if_additional])
+    )
 
 
 class HierarchyTrackView(ModelView):
