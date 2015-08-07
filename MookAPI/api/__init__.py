@@ -15,8 +15,10 @@ def create_app(settings_override=None, register_security_blueprint=False):
 
     app.json_encoder = JSONEncoder
 
+    from ._mail import mail
     from ._security import cors, jwt
 
+    mail.init_app(app)
     cors.init_app(app)
     jwt.init_app(app)
 

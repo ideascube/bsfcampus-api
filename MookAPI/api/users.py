@@ -1,12 +1,16 @@
 from bson import ObjectId
 from mongoengine import NotUniqueError
+import random
+import string
 
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, request, jsonify, abort, current_app
 from flask_jwt import current_user
 from flask_mongoengine import ValidationError
+from flask_mail import Message
 
-from MookAPI.services import tracks, users, user_credentials
 from MookAPI.auth import jwt_required
+from MookAPI.helpers import is_local
+from MookAPI.services import tracks, users, user_credentials
 
 import activity
 
@@ -83,6 +87,67 @@ def current_user_change_password():
             return jsonify(response), 400
 
         return jsonify(data=creds)
+
+
+@route(bp, "/reset_password", methods=['POST'], jsonify_wrap=False)
+def user_reset_password():
+
+    if is_local():
+        return jsonify(
+            error="Cannot reset password on a local server",
+            code=1
+        ), 400
+
+    data = request.get_json()
+    email = data['email']
+    username = data['username']
+
+    try:
+        user = users.get(email=email)
+    except:
+        return jsonify(
+            error="There is no user with this email address",
+            code=2
+        ), 404
+    else:
+        try:
+            creds = user_credentials.get(user=user, username=username, local_server=None)
+        except:
+            return jsonify(
+                error="The username does not match the email address",
+                code=3
+            ), 400
+        else:
+            pwd_length = 8
+            new_password = ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(pwd_length))
+            creds.password = user_credentials.__model__.hash_pass(new_password)
+            try:
+                creds.save(validate=False) # FIXME This is related to the MongoEngine bug.
+            except ValidationError as e:
+                response = {
+                    "error": "Could not update user",
+                    "message": e.message
+                }
+                return jsonify(response), 400
+            else:
+                body = "New password: %s" % new_password
+                subject = "Password reset"
+                app_title = current_app.config.get("APP_TITLE", None)
+                if app_title:
+                    subject = "[%s] %s" % (app_title, subject)
+                sender = current_app.config["EMAIL_FROM"]
+
+                msg = Message(
+                    subject=subject,
+                    recipients=[email],
+                    body=body,
+                    sender=sender
+                )
+
+                from ._mail import mail
+                mail.send(msg)
+
+                return '', 204 # 204 = "No Content"
 
 
 @route(bp, "/current/dashboard")

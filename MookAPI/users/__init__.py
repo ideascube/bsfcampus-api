@@ -25,6 +25,6 @@ class UserCredentialsService(Service):
         if not kwargs.get('local_server', None):
             kwargs['local_server'] = None
         creds = super(UserCredentialsService, self).get(id=id, **kwargs)
-        if creds.verify_pass(password):
+        if not password or creds.verify_pass(password):
             return creds
         return None

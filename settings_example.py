@@ -8,3 +8,7 @@ class Config(object):
     CENTRAL_SERVER_HOST = 'http://localhost:5000'
     CENTRAL_SERVER_KEY = ''
     CENTRAL_SERVER_SECRET = ''
+    ## Central servers
+    MAIL_SERVER = 'localhost'
+    EMAIL_FROM = ("Name", "email@email.com")
+    APP_TITLE = "App Title"
