@@ -41,6 +41,7 @@ class SkillJsonSerializer(ResourceHierarchyJsonSerializer):
     __json_additional__.extend(ResourceHierarchyJsonSerializer.__json_additional__)
     __json_additional__.extend(['lessons_refs'])
     __json_rename__ = dict(lessons_refs='lessons')
+    __json_hierarchy_skeleton__ = ['lessons']
 
 
 class Skill(SkillJsonSerializer, ResourceHierarchy):

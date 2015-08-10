@@ -34,6 +34,8 @@ class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
 class ResourceJsonSerializer(SyncableDocumentJsonSerializer):
     __json_additional__ = ['breadcrumb', 'is_validated', 'additional_resources_refs']
     __json_dbref__ = ['title', 'slug', 'resource_content']
+    __json_hierarchy_skeleton__ = ['additional_resources']
+    __json_rename__ = dict(additional_resources_refs='additional_resources')
 
 
 class Resource(ResourceJsonSerializer, SyncableDocument):

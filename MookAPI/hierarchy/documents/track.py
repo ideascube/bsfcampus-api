@@ -14,6 +14,7 @@ class TrackJsonSerializer(ResourceHierarchyJsonSerializer):
     __json_additional__.extend(ResourceHierarchyJsonSerializer.__json_additional__)
     __json_additional__.extend(['skills_refs', 'is_started', 'test_is_unlocked', 'validation_test'])
     __json_rename__ = dict(skills_refs='skills')
+    __json_hierarchy_skeleton__ = ['skills']
 
 
 class Track(TrackJsonSerializer, ResourceHierarchy):

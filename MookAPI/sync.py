@@ -1,5 +1,6 @@
 import datetime
 import exceptions
+import collections
 
 from MookAPI.core import db
 from MookAPI.serialization import JsonSerializer
@@ -65,6 +66,7 @@ class UnresolvedReference(JsonSerializer, db.Document):
 
 
 class SyncableDocumentJsonSerializer(JsonSerializer):
+    __json_hierarchy_skeleton__ = None
 
     def to_json_dbref(self, for_distant=False):
         son = super(SyncableDocumentJsonSerializer, self).to_json_dbref(for_distant=for_distant)
@@ -83,6 +85,33 @@ class SyncableDocumentJsonSerializer(JsonSerializer):
         except:
             pass
         return son
+
+    def to_json_hierarchy_skeleton(self):
+        fields = self.__json_hierarchy_skeleton__ or []
+        renames = self.__json_rename__ or dict()
+
+        rv = {'_id': self.id}
+        for key in fields:
+            value = getattr(self, key)
+            if isinstance(value, collections.Iterable):
+                rv[key] = []
+                for child in value:
+                    if isinstance(child, SyncableDocumentJsonSerializer):
+                        rv[key].append(child.to_json_hierarchy_skeleton())
+                    else:
+                        rv[key].append(child)
+            elif isinstance(value, SyncableDocumentJsonSerializer):
+                rv[key] = value.to_json_hierarchy_skeleton()
+            else:
+                rv[key] = value
+        for key_before, key_after in renames.items():
+            try:
+                rv[key_after] = rv[key_before]
+                rv.pop(key_before, None)
+            except KeyError:
+                pass
+
+        return rv
 
 
 class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):

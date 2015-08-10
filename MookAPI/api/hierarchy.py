@@ -1,6 +1,6 @@
 import io
 
-from flask import Blueprint, send_file, abort
+from flask import Blueprint, jsonify, send_file, abort
 from flask_jwt import current_user, verify_jwt
 
 from MookAPI.auth import jwt_required
@@ -10,6 +10,19 @@ import activity
 from . import route
 
 bp = Blueprint("hierarchy", __name__, url_prefix="/hierarchy")
+
+### OVERALL HIERARCHY
+
+@route(bp, "", jsonify_wrap=False)
+@jwt_required()
+def get_overall_hierarchy_skeleton():
+    """
+    Get the most concise list of all the objects related to resources and their hierarchy
+    :return: a JSON object with all tracks, with their skills, lessons and resources
+    """
+
+    rv = map(lambda t: t.to_json_hierarchy_skeleton(), tracks.all())
+    return jsonify(data=rv)
 
 
 ### TRACKS

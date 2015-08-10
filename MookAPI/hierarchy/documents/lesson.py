@@ -10,6 +10,7 @@ class LessonJsonSerializer(ResourceHierarchyJsonSerializer):
     __json_additional__.extend(ResourceHierarchyJsonSerializer.__json_additional__)
     __json_additional__.extend(['resources_refs'])
     __json_rename__ = dict(resources_refs='resources')
+    __json_hierarchy_skeleton__ = ['resources']
 
 class Lesson(LessonJsonSerializer, ResourceHierarchy):
     """
