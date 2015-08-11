@@ -13,7 +13,10 @@ from MookAPI.services import \
     track_validation_attempts, \
     exercise_resources, \
     track_validation_resources, \
-    skills
+    skills, \
+    tracks, \
+    users, \
+    resources
 
 from MookAPI.serialization import UnicodeCSVWriter
 
@@ -273,7 +276,49 @@ def end_track_validation_attempt(attempt_id):
 
     return attempt
 
+
 ## Various activity related actions
+
+@route(bp, "/visited_dashboard/<user_id>", methods=['POST'])
+@jwt_required()
+def record_visited_user_dashboard_analytic(user_id):
+    """ Creates a new VisitedDashboardActivity object which is used to track analytics on the platform
+    :param user_id: the id of the user from which we want to get the dashboard
+    """
+    requested_user = users.get_or_404(user_id)
+    from MookAPI.services import visited_user_dashboards
+    user = current_user.user
+    return visited_user_dashboards.create(user=user, dashboard_user=requested_user)
+
+
+@route(bp, "/visited_resource/<resource_id>", methods=['POST'])
+@jwt_required()
+def record_visited_resource_analytic(resource_id):
+    resource = resources.get_or_404(resource_id)
+    from MookAPI.services import visited_resources
+    return visited_resources.create(
+        credentials=current_user._get_current_object(),
+        resource=resource
+    )
+
+
+@route(bp, "/visited_skill/<skill_id>", methods=['POST'])
+@jwt_required()
+def record_visited_skill_analytic(skill_id):
+    skill = skills.get_or_404(skill_id)
+    user = current_user.user
+    from MookAPI.services import visited_skills
+    return visited_skills.create(user=user, skill=skill)
+
+
+@route(bp, "/visited_track/<track_id>", methods=['POST'])
+@jwt_required()
+def record_visited_track_analytic(track_id):
+    track = tracks.get_or_404(track_id)
+    user = current_user.user
+    from MookAPI.services import visited_tracks
+    return visited_tracks.create(user=user, track=track)
+
 
 @route(bp, "/misc_analytics/<misc_type>", methods=['POST'])
 def record_simple_misc_analytic(misc_type):

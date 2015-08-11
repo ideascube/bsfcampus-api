@@ -44,10 +44,6 @@ def get_track(track_id):
         verify_jwt()
     except:
         pass
-    else:
-        user = current_user.user
-        from MookAPI.services import visited_tracks
-        visited_tracks.create(user=user, track=track)
 
     return track
 
@@ -91,10 +87,6 @@ def get_skill(skill_id):
         verify_jwt()
     except:
         pass
-    else:
-        user = current_user.user
-        from MookAPI.services import visited_skills
-        visited_skills.create(user=user, skill=skill)
 
     return skill
 

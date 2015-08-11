@@ -48,11 +48,6 @@ def get_resource(resource_id):
         pass
     else:
         if not resource.is_additional:
-            from MookAPI.services import visited_resources
-            visited_resources.create(
-                credentials=current_user._get_current_object(),
-                resource=resource
-            )
             current_user.add_started_track(resource.track)
             if not exercise_resources._isinstance(resource):
                 current_user.add_completed_resource(resource)

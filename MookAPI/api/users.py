@@ -174,9 +174,6 @@ def get_user_info(user_id):
 @jwt_required()
 def user_dashboard(user_id):
     requested_user = users.get_or_404(user_id)
-    from MookAPI.services import visited_user_dashboards
-    user = current_user.user
-    visited_user_dashboards.create(user=user, dashboard_user=requested_user)
 
     dashboard = dict(
         user=requested_user,
