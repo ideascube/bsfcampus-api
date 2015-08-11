@@ -81,7 +81,7 @@ class SyncableDocumentJsonSerializer(JsonSerializer):
         son = self.to_json_dbref()
         try:
             son['description'] = self.description
-            son['breadcrumb'] = self.breadcrumb
+            son['hirarchy'] = self.hierarchy
         except:
             pass
         return son

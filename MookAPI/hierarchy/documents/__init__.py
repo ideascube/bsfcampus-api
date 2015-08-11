@@ -7,7 +7,7 @@ from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
 from MookAPI.core import db
 
 class ResourceHierarchyJsonSerializer(SyncableDocumentJsonSerializer):
-    __json_additional__ = ['is_validated', 'progress', 'breadcrumb']
+    __json_additional__ = ['is_validated', 'progress', 'hierarchy']
     __json_dbref__ = ['title', 'slug']
 
 class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
@@ -103,7 +103,7 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
         return self.title
 
     @property
-    def breadcrumb(self):
+    def hierarchy(self):
         """Returns an array of the breadcrumbs up until the current object."""
         return []
 

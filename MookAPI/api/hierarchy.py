@@ -14,7 +14,6 @@ bp = Blueprint("hierarchy", __name__, url_prefix="/hierarchy")
 ### OVERALL HIERARCHY
 
 @route(bp, "", jsonify_wrap=False)
-@jwt_required()
 def get_overall_hierarchy_skeleton():
     """
     Get the most concise list of all the objects related to resources and their hierarchy

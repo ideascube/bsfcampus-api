@@ -16,7 +16,7 @@ class TrackValidationResource(TrackValidationResourceJsonSerializer, ExerciseRes
         return self.parent
 
     @property
-    def breadcrumb(self):
+    def hierarchy(self):
         """
         Returns an array of the breadcrumbs up until the current object: [Track_, Skill_, Lesson_, Resource_]
         """

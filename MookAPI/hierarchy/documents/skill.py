@@ -114,7 +114,7 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
         return self.track.bg_color
 
     @property
-    def breadcrumb(self):
+    def hierarchy(self):
         return [
             self.track.to_json_dbref(),
             self.to_json_dbref()

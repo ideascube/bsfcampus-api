@@ -53,7 +53,7 @@ class Lesson(LessonJsonSerializer, ResourceHierarchy):
         return {'current': current, 'max': len(self.resources)}
 
     @property
-    def breadcrumb(self):
+    def hierarchy(self):
         return [
             self.track.to_json_dbref(),
             self.skill.to_json_dbref(),

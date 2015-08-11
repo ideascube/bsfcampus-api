@@ -32,7 +32,7 @@ class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
 
 
 class ResourceJsonSerializer(SyncableDocumentJsonSerializer):
-    __json_additional__ = ['breadcrumb', 'is_validated', 'additional_resources_refs']
+    __json_additional__ = ['hierarchy', 'is_validated', 'additional_resources_refs']
     __json_dbref__ = ['title', 'slug', 'resource_content']
     __json_hierarchy_skeleton__ = ['additional_resources']
     __json_rename__ = dict(additional_resources_refs='additional_resources')
@@ -204,7 +204,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
         return response
 
     @property
-    def breadcrumb(self):
+    def hierarchy(self):
         """
         Returns an array of the breadcrumbs up until the current object: [Track_, Skill_, Lesson_, Resource_]
         """
