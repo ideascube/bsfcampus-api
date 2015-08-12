@@ -224,40 +224,81 @@ class UserCredentials(SyncableDocument):
 
     password = db.StringField()
 
+    def add_visited_resource(self, resource):
+        achievements = []
+        from MookAPI.services import exercise_resources, visited_resources
+        visited_resource = visited_resources.create(credentials=self, resource=resource)
+        if not resource.is_additional:
+            track_achievements = self.add_started_track(resource.track)
+            achievements.extend(track_achievements)
+            if not exercise_resources._isinstance(resource):
+                resource_achievements = self.add_completed_resource(resource)
+                achievements.extend(resource_achievements)
+        return visited_resource, achievements
+
     def add_completed_resource(self, resource):
+        achievements = []
         from MookAPI.services import completed_resources
         if completed_resources.find(user=self.user, resource=resource).count() == 0:
-            completed_resources.create(credentials=self, resource=resource)
+            completed_resource = completed_resources.create(
+                credentials=self,
+                resource=resource
+            )
+            achievements.append(completed_resource)
             skill = resource.parent.skill
             skill_progress = skill.user_progress(self.user)
             from MookAPI.services import completed_skills
             if completed_skills.find(user=self.user, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
-                self.add_completed_skill(skill=skill, is_validated_through_test=False)
+                skill_achievements = self.add_completed_skill(
+                    skill=skill,
+                    is_validated_through_test=False
+                )
+                achievements.extend(skill_achievements)
+        return achievements
 
     def add_completed_skill(self, skill, is_validated_through_test):
+        achievements = []
         from MookAPI.services import completed_skills
         if completed_skills.find(user=self.user, skill=skill).count() == 0:
-            completed_skills.create(credentials=self, skill=skill, is_validated_through_test=is_validated_through_test)
+            completed_skill = completed_skills.create(
+                credentials=self,
+                skill=skill,
+                is_validated_through_test=is_validated_through_test
+            )
+            achievements.append(completed_skill)
             track = skill.track
             track_progress = track.user_progress(self.user)
             from MookAPI.services import unlocked_track_tests
             if unlocked_track_tests.find(user=self.user, track=track).count() == 0 and track_progress['current'] >= track_progress['max']:
-                self.unlock_track_validation_test(track)
+                track_achievements = self.unlock_track_validation_test(track=track)
+                achievements.extend(track_achievements)
+        return achievements
 
     def add_started_track(self, track):
+        achievements = []
         from MookAPI.services import started_tracks
         if started_tracks.find(user=self.user, track=track).count() == 0:
-            started_tracks.create(credentials=self, track=track)
+            started_track = started_tracks.create(credentials=self, track=track)
+            achievements.append(started_track)
+        return achievements
+
 
     def unlock_track_validation_test(self, track):
+        achievements = []
         from MookAPI.services import unlocked_track_tests
         if unlocked_track_tests.find(user=self.user, track=track).count() == 0:
-            unlocked_track_tests.create(credentials=self, track=track)
+            unlocked_track_test = unlocked_track_tests.create(credentials=self, track=track)
+            achievements.append(unlocked_track_test)
+        return achievements
+
 
     def add_completed_track(self, track):
+        achievements = []
         from MookAPI.services import completed_tracks
         if completed_tracks.find(user=self.user, track=track).count() == 0:
-            completed_tracks.create(credentials=self, track=track)
+            completed_track = completed_tracks.create(credentials=self, track=track)
+            achievements.append(completed_track)
+        return achievements
 
     def is_track_test_available_and_never_attempted(self, track):
         return self.user.is_track_test_available_and_never_attempted(track)

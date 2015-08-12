@@ -314,19 +314,16 @@ def record_visited_resource_analytic():
         data = request.get_json()
         resource = resources.get_or_404(data['resource'])
         credentials = current_user._get_current_object()
-        obj = visited_resources.create(
-            credentials=credentials,
-            resource=resource
-        )
+        visited_resource, achievements = credentials.add_visited_resource(resource=resource)
 
-        if not resource.is_additional:
-            current_user.add_started_track(resource.track)
-            if not exercise_resources._isinstance(resource):
-                current_user.add_completed_resource(resource)
+
     except Exception as e:
         return jsonify(error=e.message), 400
     else:
-        return obj, 201
+        return jsonify(
+            data=visited_resource,
+            achievements=achievements
+        ), 201
 
 
 @route(bp, "/visited_skill", methods=['POST'])
