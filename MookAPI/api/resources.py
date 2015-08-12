@@ -36,32 +36,19 @@ def get_skill_resources(skill_id):
     return resources.find(parent__in=lessons_list).order_by('order', 'title')
 
 
-@route(bp, "/<resource_id>", jsonify_wrap=False)
+@route(bp, "/<resource_id>")
 # @jwt_required()
 def get_resource(resource_id):
-    resource = resources.get_or_404(resource_id)
-    response = None
 
-    try:
-        verify_jwt()
-    except:
-        pass
-    else:
-        if not resource.is_additional:
-            current_user.add_started_track(resource.track)
-            if not exercise_resources._isinstance(resource):
-                current_user.add_completed_resource(resource)
-                if current_user.user.is_track_test_available_and_never_attempted(resource.track):
-                    alert = {"code": "prompt_track_validation", "id": resource.track._data.get("id", None)}
-                    response = jsonify(data=resource, alert=alert)
+    # FIXME We need to find out what the best place is to alert that the track validation test is available
+    # This is how it was done before:
+    # if current_user.user.is_track_test_available_and_never_attempted(resource.track):
+    #     alert = {"code": "prompt_track_validation", "id": resource.track._data.get("id", None)}
+    #     return jsonify(data=resource, alert=alert)
 
-    if not response:
-        response = jsonify(data=resource)
+    return resources.get_or_404(resource_id)
 
-    return response
-
-
-@route(bp, "/<resource_id>/hierarchy", jsonify_wrap=False)
+@route(bp, "/<resource_id>/hierarchy")
 @jwt_required()
 def get_resource_hierarchy(resource_id):
     resource = resources.get_or_404(resource_id)
@@ -81,7 +68,7 @@ def get_resource_hierarchy(resource_id):
     )
 
 
-@route(bp, "/<resource_id>/content-file/<filename>", jsonify_wrap=False)
+@route(bp, "/<resource_id>/content-file/<filename>")
 # @jwt_required()
 def get_resource_content_file(resource_id, filename):
     resource = resources.get_or_404(resource_id)
@@ -98,7 +85,7 @@ def get_resource_content_file(resource_id, filename):
     abort(404)
 
 
-@route(bp, "/<resource_id>/content-image/<filename>", jsonify_wrap=False)
+@route(bp, "/<resource_id>/content-image/<filename>")
 # @jwt_required()
 def get_resource_content_image(resource_id, filename):
     resource = resources.get_or_404(resource_id)
@@ -115,7 +102,7 @@ def get_resource_content_image(resource_id, filename):
     abort(404)
 
 
-@route(bp, "/<resource_id>/question/<question_id>/image/<filename>", jsonify_wrap=False)
+@route(bp, "/<resource_id>/question/<question_id>/image/<filename>")
 # @jwt_required()
 def get_exercise_question_image(resource_id, question_id, filename):
     resource = exercise_resources.get_or_404(resource_id)

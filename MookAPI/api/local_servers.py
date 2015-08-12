@@ -55,7 +55,7 @@ def get_local_server_sync_list():
 
     return references
 
-@route(bp, "/add_item", methods=['POST'], jsonify_wrap=False)
+@route(bp, "/add_item", methods=['POST'])
 @local_server_required
 def add_item_from_local_server():
     local_server = authenticated_local_server._get_current_object()
@@ -74,7 +74,7 @@ def add_item_from_local_server():
     obj = service.__model__.from_json(data, from_distant=False)
     obj.save()
 
-    return jsonify(data=obj)
+    return obj
 
 @route(bp, "/subscribe", methods=['POST'], jsonify_wrap=False)
 @local_server_required
@@ -96,4 +96,4 @@ def subscribe_item_to_sync():
     except Exception as e:
         return jsonify(error=e.message), 400
     else:
-        return jsonify(data=local_server)
+        return local_server, 201

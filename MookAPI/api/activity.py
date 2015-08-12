@@ -4,7 +4,7 @@ from bson import json_util
 
 from flask import Blueprint, request, send_file, jsonify, abort
 from MookAPI.auth import jwt_required
-from flask_jwt import current_user
+from flask_jwt import current_user, verify_jwt
 
 from MookAPI.services import \
     activities, \
@@ -16,7 +16,12 @@ from MookAPI.services import \
     skills, \
     tracks, \
     users, \
-    resources
+    resources, \
+    misc_activities, \
+    visited_user_dashboards, \
+    visited_resources, \
+    visited_skills, \
+    visited_tracks
 
 from MookAPI.serialization import UnicodeCSVWriter
 
@@ -42,7 +47,7 @@ def post_exercise_attempt():
     attempt.credentials = current_user._get_current_object()
     attempt.save()
 
-    return attempt
+    return attempt, 201
 
 
 @route(bp, "/exercise_attempts/<attempt_id>")
@@ -73,7 +78,7 @@ def start_exercise_attempt_next_question(attempt_id):
     return attempt
 
 
-@route(bp, "/exercise_attempts/<attempt_id>/answer", methods=['POST'], jsonify_wrap=False)
+@route(bp, "/exercise_attempts/<attempt_id>/answer", methods=['POST'])
 @jwt_required()
 def post_exercise_attempt_question_answer(attempt_id):
     """POST answer to current question of an exercise attempt"""
@@ -128,7 +133,7 @@ def post_skill_validation_attempt():
     attempt.credentials = current_user._get_current_object()
     attempt.save()
 
-    return attempt
+    return attempt, 201
 
 
 @route(bp, "/skill_validation_attempts/<attempt_id>")
@@ -157,7 +162,7 @@ def start_skill_validation_attempt_next_question(attempt_id):
     return attempt
 
 
-@route(bp, "/skill_validation_attempts/<attempt_id>/answer", methods=['POST'], jsonify_wrap=False)
+@route(bp, "/skill_validation_attempts/<attempt_id>/answer", methods=['POST'])
 @jwt_required()
 def post_skill_validation_attempt_question_answer(attempt_id):
     """POST answer to current question of a skill validation attempt"""
@@ -211,7 +216,7 @@ def post_track_validation_attempt():
     attempt.credentials = current_user._get_current_object()
     attempt.save()
 
-    return attempt
+    return attempt, 201
 
 
 @route(bp, "/track_validation_attempts/<attempt_id>")
@@ -279,79 +284,115 @@ def end_track_validation_attempt(attempt_id):
 
 ## Various activity related actions
 
-@route(bp, "/visited_dashboard/<user_id>", methods=['POST'])
+@route(bp, "/visited_dashboard", methods=['POST'])
 @jwt_required()
-def record_visited_user_dashboard_analytic(user_id):
+def record_visited_user_dashboard_analytic():
     """ Creates a new VisitedDashboardActivity object which is used to track analytics on the platform
     :param user_id: the id of the user from which we want to get the dashboard
     """
-    requested_user = users.get_or_404(user_id)
-    from MookAPI.services import visited_user_dashboards
-    user = current_user.user
-    return visited_user_dashboards.create(user=user, dashboard_user=requested_user)
+    try:
+        data = request.get_json()
+        dashboard_user = users.get_or_404(data['dashboard_user'])
+        credentials = current_user._get_current_object()
+        obj = visited_user_dashboards.create(
+            credentials=credentials,
+            dashboard_user=dashboard_user
+        )
+    except Exception as e:
+        return jsonify(error=e.message), 400
+    else:
+        return obj, 201
 
 
-@route(bp, "/visited_resource/<resource_id>", methods=['POST'])
+@route(bp, "/visited_resource", methods=['POST'])
 @jwt_required()
-def record_visited_resource_analytic(resource_id):
-    resource = resources.get_or_404(resource_id)
-    from MookAPI.services import visited_resources
-    return visited_resources.create(
-        credentials=current_user._get_current_object(),
-        resource=resource
-    )
+def record_visited_resource_analytic():
+    """ Creates a new VisitedDashboardActivity object which is used to track analytics on the platform
+    :param user_id: the id of the user from which we want to get the dashboard
+    """
+    try:
+        data = request.get_json()
+        resource = resources.get_or_404(data['resource'])
+        credentials = current_user._get_current_object()
+        obj = visited_resources.create(
+            credentials=credentials,
+            resource=resource
+        )
+
+        if not resource.is_additional:
+            current_user.add_started_track(resource.track)
+            if not exercise_resources._isinstance(resource):
+                current_user.add_completed_resource(resource)
+    except Exception as e:
+        return jsonify(error=e.message), 400
+    else:
+        return obj, 201
 
 
-@route(bp, "/visited_skill/<skill_id>", methods=['POST'])
+@route(bp, "/visited_skill", methods=['POST'])
 @jwt_required()
-def record_visited_skill_analytic(skill_id):
-    skill = skills.get_or_404(skill_id)
-    user = current_user.user
-    from MookAPI.services import visited_skills
-    return visited_skills.create(user=user, skill=skill)
+def record_visited_skill_analytic():
+    """ Creates a new VisitedDashboardActivity object which is used to track analytics on the platform
+    :param user_id: the id of the user from which we want to get the dashboard
+    """
+    try:
+        data = request.get_json()
+        skill = skills.get_or_404(data['skill'])
+        credentials = current_user._get_current_object()
+        obj = visited_skills.create(
+            credentials=credentials,
+            skill=skill
+        )
+    except Exception as e:
+        return jsonify(error=e.message), 400
+    else:
+        return obj, 201
 
 
-@route(bp, "/visited_track/<track_id>", methods=['POST'])
+@route(bp, "/visited_track", methods=['POST'])
 @jwt_required()
-def record_visited_track_analytic(track_id):
-    track = tracks.get_or_404(track_id)
-    user = current_user.user
-    from MookAPI.services import visited_tracks
-    return visited_tracks.create(user=user, track=track)
+def record_visited_track_analytic():
+    """ Creates a new VisitedDashboardActivity object which is used to track analytics on the platform
+    :param user_id: the id of the user from which we want to get the dashboard
+    """
+    try:
+        data = request.get_json()
+        track = tracks.get_or_404(data['track'])
+        credentials = current_user._get_current_object()
+        obj = visited_tracks.create(
+            credentials=credentials,
+            track=track
+        )
+    except Exception as e:
+        return jsonify(error=e.message), 400
+    else:
+        return obj, 201
 
 
-@route(bp, "/misc_analytics/<misc_type>", methods=['POST'])
-def record_simple_misc_analytic(misc_type):
+@route(bp, "/misc", methods=['POST'])
+def record_misc_analytic():
     """ Creates a new MiscActivity object which is used to track analytics on the platform
     :param misc_type: the type of the analytic
     """
 
-    from MookAPI.services import misc_activities
+    data = request.get_json()
+    obj = misc_activities.new(**data)
+    try:
+        verify_jwt()
+    except:
+        pass
+    else:
+        obj.credentials = current_user._get_current_object()
 
-    return misc_activities.create(
-        credentials=current_user._get_current_object(),
-        type=misc_type,
-        object_title=""
-    )
-
-
-@route(bp, "/misc_analytics/<misc_type>/<misc_title>", methods=['POST'])
-def record_misc_analytic(misc_type, misc_title):
-    """ Creates a new MiscActivity object which is used to track analytics on the platform
-    :param misc_type: the type of the analytic
-    :param misc_title: the title of the analytic (to further differentiate misc analytics of the same type)
-    """
-
-    from MookAPI.services import misc_activities
-
-    return misc_activities.create(
-        credentials=current_user._get_current_object(),
-        type=misc_type,
-        object_title=misc_title
-    )
+    try:
+        obj.save()
+    except Exception as e:
+        return jsonify(error=e.message), 400
+    else:
+        return obj, 201
 
 
-@route(bp, "/analytics.csv", methods=['GET'], jsonify_wrap=False)
+@route(bp, "/analytics.csv", methods=['GET'])
 def get_general_analytics():
     """
     Returns a .csv file with all the activities which took place between the start_date and the end_date

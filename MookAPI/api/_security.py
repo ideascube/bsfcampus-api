@@ -14,7 +14,8 @@ jwt = JWT()
 
 @jwt.authentication_handler
 def authenticate(username, password):
-    activity.record_misc_analytic("auth_attempt", username)
+    from MookAPI.services import misc_activities
+    misc_activities.create(type="auth_attempt", object_title=username)
     try:
         from MookAPI.helpers import current_local_server, is_local
         from MookAPI.services import users, user_credentials
@@ -30,16 +31,24 @@ def authenticate(username, password):
         )
         if creds:
             if creds.user.active:
-                activity.record_misc_analytic("auth_success", username)
+                misc_activities.create(
+                    credentials=creds,
+                    type="auth_success",
+                    object_title=username
+                )
                 return creds
             else:
-                activity.record_misc_analytic("auth_fail", username)
+                misc_activities.create(
+                    credentials=creds,
+                    type="auth_fail",
+                    object_title=username
+                )
                 return creds
         else:
-            activity.record_misc_analytic("auth_fail", username)
+            misc_activities.create(type="auth_fail", object_title=username)
             return None
     except:
-        activity.record_misc_analytic("auth_fail", username)
+        misc_activities.create(type="auth_fail", object_title=username)
         return None
 
 @jwt.payload_handler

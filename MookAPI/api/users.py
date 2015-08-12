@@ -10,7 +10,7 @@ from flask_mail import Message
 
 from MookAPI.auth import jwt_required
 from MookAPI.helpers import is_local
-from MookAPI.services import tracks, users, user_credentials
+from MookAPI.services import tracks, users, user_credentials, misc_activities
 
 import activity
 
@@ -18,16 +18,17 @@ from . import route
 
 bp = Blueprint('users', __name__, url_prefix="/users")
 
-@route(bp, "/current", methods=['GET', 'PATCH'], jsonify_wrap=False)
+@route(bp, "/current", methods=['GET', 'PATCH'])
 @jwt_required()
 def current_user_info():
     creds = current_user._get_current_object()
     user = current_user.user
 
     if request.method == 'GET':
-        response = {'data': user.to_json()}
-        response['data']['username'] = creds.username
-        return jsonify(response)
+        return jsonify(
+            data=user,
+            username=creds.username
+        )
 
     elif request.method == 'PATCH':
 
@@ -37,15 +38,14 @@ def current_user_info():
         try:
             user.save()
         except ValidationError as e:
-            response = {
-                "error": "Could not update user",
-                "message": e.message
-            }
-            return response, 400
+            message = "Could not update user: %s" % e.message
+            return jsonify(
+                error=message
+            ), 400
 
-        return jsonify(data=user)
+        return user
 
-@route(bp, "/current/password", methods=['PATCH'], jsonify_wrap=False)
+@route(bp, "/current/password", methods=['PATCH'])
 @jwt_required()
 def current_user_change_password():
     creds = current_user._get_current_object()
@@ -86,10 +86,10 @@ def current_user_change_password():
             }
             return jsonify(response), 400
 
-        return jsonify(data=creds)
+        return creds
 
 
-@route(bp, "/reset_password", methods=['POST'], jsonify_wrap=False)
+@route(bp, "/reset_password", methods=['POST'])
 def user_reset_password():
 
     if is_local():
@@ -162,7 +162,7 @@ def current_user_dashboard():
     for track in tracks.all().order_by('order'):
         dashboard['tracks'].append(track.encode_mongo_for_dashboard(user))
 
-    return dashboard
+    return jsonify(data=dashboard)
 
 
 @route(bp, "/<user_id>")
@@ -183,13 +183,13 @@ def user_dashboard(user_id):
         dashboard['tracks'].append(track.encode_mongo_for_dashboard(requested_user))
     dashboard['tracks'].sort(key=lambda t: t['order'])
 
-    return dashboard
+    return jsonify(data=dashboard)
 
 
-@route(bp, "/register", methods=['POST'], jsonify_wrap=False)
+@route(bp, "/register", methods=['POST'])
 def register_user():
     """Registers a new user"""
-    activity.record_simple_misc_analytic("register_user_attempt")
+    misc_activities.create(type="register_user_attempt")
 
     # First, check that if this is a local server, it "knows itself":
     from MookAPI.helpers import is_local, current_local_server
@@ -258,7 +258,7 @@ def register_user():
     else:
 
         try:
-            user_credentials.create(
+            creds = user_credentials.create(
                 user=new_user,
                 username=username,
                 password=password,
@@ -282,8 +282,12 @@ def register_user():
                 local_server.clean()
                 local_server.save(validate=False) # FIXME Do validation when MongoEngine bug is fixed.
 
-            activity.record_misc_analytic("register_user_attempt", "success")
-            return jsonify(data=new_user)
+            misc_activities.create(
+                credentials=creds,
+                type="register_user_attempt",
+                object_title="success"
+            )
+            return new_user, 201
 
 @route(bp, "/phagocyte", methods=['POST'])
 @jwt_required()

@@ -8,10 +8,10 @@ from documents.completed_skill import CompletedSkill
 from documents.completed_track import CompletedTrack
 from documents.started_track import StartedTrack
 from documents.unlocked_track_test import UnlockedTrackTest
-from documents.visited_track_activity import VisitedTrack
-from documents.visited_skill_activity import VisitedSkill
-from documents.visited_resource_activity import VisitedResource
-from documents.visited_dashboard_activity import VisitedDashboard
+from documents.visited_track import VisitedTrack
+from documents.visited_skill import VisitedSkill
+from documents.visited_resource import VisitedResource
+from documents.visited_dashboard import VisitedDashboard
 from documents.misc_activity import MiscActivity
 
 class ActivitiesService(Service):

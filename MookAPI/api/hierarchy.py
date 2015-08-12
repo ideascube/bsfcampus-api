@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, send_file, abort
 from flask_jwt import current_user, verify_jwt
 
 from MookAPI.auth import jwt_required
-from MookAPI.services import tracks, skills, lessons
+from MookAPI.services import tracks, skills, lessons, misc_activities
 import activity
 
 from . import route
@@ -13,7 +13,7 @@ bp = Blueprint("hierarchy", __name__, url_prefix="/hierarchy")
 
 ### OVERALL HIERARCHY
 
-@route(bp, "", jsonify_wrap=False)
+@route(bp, "")
 def get_overall_hierarchy_skeleton():
     """
     Get the most concise list of all the objects related to resources and their hierarchy
@@ -31,7 +31,6 @@ def get_overall_hierarchy_skeleton():
 def get_tracks():
     """Get the list of all Track_ objects, ordered by ``order`` and ``title``, enveloped in a single-key JSON dictionary."""
 
-    activity.record_simple_misc_analytic("all_tracks")
     return tracks.all().order_by('order', 'title')
 
 @route(bp, "/tracks/<track_id>")
@@ -47,7 +46,7 @@ def get_track(track_id):
 
     return track
 
-@route(bp, "/tracks/<track_id>/icon", jsonify_wrap=False)
+@route(bp, "/tracks/<track_id>/icon")
 # @jwt_required()
 def get_track_icon(track_id):
     """Download the icon of the Track_ with id ``track_id``."""
@@ -90,7 +89,7 @@ def get_skill(skill_id):
 
     return skill
 
-@route(bp, "/skills/<skill_id>/icon", jsonify_wrap=False)
+@route(bp, "/skills/<skill_id>/icon")
 # @jwt_required()
 def get_skill_icon(skill_id):
     """Download the icon of the Skill_ with id ``skill_id``."""
