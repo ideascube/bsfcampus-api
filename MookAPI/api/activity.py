@@ -92,29 +92,18 @@ def post_exercise_attempt_question_answer(attempt_id):
     attempt.save_answer(question_id, form_data)
     attempt.save()
 
-    response = jsonify(data=attempt)
-    if attempt.is_exercise_completed():
-        attempt.is_validated = True
-        exercise_resource = attempt.exercise
-        current_user.add_completed_resource(exercise_resource)
-        if current_user.user.is_track_test_available_and_never_attempted(attempt.exercise.track):
-            alert = {"code": "prompt_track_validation", "id": attempt.exercise.track._data.get("id", None)}
-            response = jsonify(data=attempt, alert=alert)
-
-    return response
-
-
-@route(bp, "/exercise_attempts/<attempt_id>/end", methods=['POST'])
-@jwt_required()
-def end_exercise_attempt(attempt_id):
-    """ records the date and time when the user has finished (failed or succeeded) the attempt """
-
-    attempt = exercise_attempts.get_or_404(attempt_id)
-    if attempt.user != current_user.user:
-        abort(403)
-
-    attempt.end()
-    attempt.save()
+    if attempt.is_attempt_completed():
+        attempt.end()
+        if attempt.is_exercise_validated():
+            attempt.is_validated = True
+            attempt.save()
+            achievements = current_user.add_completed_resource(attempt.exercise)
+            return jsonify(
+                data=attempt,
+                achievements=achievements
+            )
+        else:
+            attempt.save()
 
     return attempt
 
@@ -176,30 +165,15 @@ def post_skill_validation_attempt_question_answer(attempt_id):
     attempt.save_answer(question_id, form_data)
     attempt.save()
 
-    response = jsonify(data=attempt)
-
-    if attempt.is_skill_validation_completed():
-        attempt.is_validated = True
-        skill = attempt.skill
-        current_user.add_completed_skill(skill, True)
-        if current_user.user.is_track_test_available_and_never_attempted(skill.track):
-            alert = {"code": "prompt_track_validation", "id": skill.track._data.get("id", None)}
-            response = jsonify(data=attempt, alert=alert)
-
-    return response
-
-
-@route(bp, "/skill_validation_attempts/<attempt_id>/end", methods=['POST'])
-@jwt_required()
-def end_skill_validation_attempt(attempt_id):
-    """ records the date and time when the user has finished (failed or succeeded) the attempt """
-
-    attempt = skill_validation_attempts.get_or_404(attempt_id)
-    if attempt.user != current_user.user:
-        abort(403)
-
-    attempt.end()
-    attempt.save()
+    if attempt.is_attempt_completed():
+        attempt.end()
+        if attempt.is_skill_validation_validated():
+            attempt.is_validated = True
+            attempt.save()
+            achievements = current_user.add_completed_skill(attempt.skill, True)
+            return jsonify(data=attempt, achievements=achievements)
+        else:
+            attempt.save()
 
     return attempt
 
@@ -259,25 +233,18 @@ def post_track_validation_attempt_question_answer(attempt_id):
     attempt.save_answer(question_id, form_data)
     attempt.save()
 
-    if attempt.is_exercise_completed():
-        attempt.is_validated = True
-        track = attempt.exercise.parent
-        current_user.add_completed_track(track)
-
-    return attempt
-
-
-@route(bp, "/track_validation_attempts/<attempt_id>/end", methods=['POST'])
-@jwt_required()
-def end_track_validation_attempt(attempt_id):
-    """ records the date and time when the user has finished (failed or succeeded) the attempt """
-
-    attempt = track_validation_attempts.get_or_404(attempt_id)
-    if attempt.user != current_user.user:
-        abort(403)
-
-    attempt.end()
-    attempt.save()
+    if attempt.is_attempt_completed():
+        attempt.end()
+        if attempt.is_exercise_validated():
+            attempt.is_validated = True
+            attempt.save()
+            achievements = current_user.add_completed_track(attempt.exercise.parent)
+            return jsonify(
+                data=attempt,
+                achievements=achievements
+            )
+        else:
+            attempt.save()
 
     return attempt
 
