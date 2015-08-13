@@ -76,7 +76,7 @@ def add_item_from_local_server():
 
     return obj
 
-@route(bp, "/subscribe", methods=['POST'], jsonify_wrap=False)
+@route(bp, "/subscribe", methods=['POST'])
 @local_server_required
 def subscribe_item_to_sync():
 
