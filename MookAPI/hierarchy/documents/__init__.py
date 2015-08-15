@@ -108,12 +108,9 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
         return []
 
     def encode_mongo_for_dashboard(self, user):
-        response = {
-            '_id': self._data.get("id", None),
-            'is_validated': self.is_validated_by_user(user),
-            'progress': self.user_progress(user),
-            'title': self.title,
-            'order': self.order
-        }
+        response = self.to_json_dbref()
+        response['is_validated'] = self.is_validated_by_user(user)
+        response['progress'] = self.user_progress(user)
+        response['order'] = self.order
 
         return response

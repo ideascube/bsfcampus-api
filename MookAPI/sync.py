@@ -90,7 +90,7 @@ class SyncableDocumentJsonSerializer(JsonSerializer):
         fields = self.__json_hierarchy_skeleton__ or []
         renames = self.__json_rename__ or dict()
 
-        rv = {'_id': self.id}
+        rv = self.to_json_dbref()
         for key in fields:
             value = getattr(self, key)
             if isinstance(value, collections.Iterable):

@@ -25,11 +25,6 @@ class ResourceContent(ResourceContentJsonSerializer, db.EmbeddedDocument):
         'abstract': True
     }
 
-    def encode_mongo_for_dashboard(self, user):
-        response = {'_cls': self._class_name}
-
-        return response
-
 
 class ResourceJsonSerializer(SyncableDocumentJsonSerializer):
     __json_additional__ = ['hierarchy', 'is_validated', 'additional_resources_refs']
@@ -187,13 +182,9 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
         return self.track.bg_color
 
     def encode_mongo_for_dashboard(self, user):
-        response = {
-            '_id': self._data.get("id", None),
-            'is_validated': self.is_validated_by_user(user),
-            'title': self.title,
-            'order': self.order,
-            'resource_content': self.resource_content.encode_mongo_for_dashboard(user)
-        }
+        response = self.to_json_dbref()
+        response['is_validated'] = self.is_validated_by_user(user)
+        response['order'] = self.order
 
         from MookAPI.services import visited_resources
 
