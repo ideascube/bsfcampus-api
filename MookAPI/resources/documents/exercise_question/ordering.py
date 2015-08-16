@@ -68,8 +68,7 @@ class OrderingExerciseQuestionAnswer(OrderingExerciseQuestionAnswerJsonSerialize
     @classmethod
     def init_with_data(cls, data):
         obj = cls()
-        obj.given_ordered_items = data['given_ordered_items']
-        print(obj.given_ordered_items)
+        obj.given_ordered_items = data['ordered_items']
         return obj
 
     def is_correct(self, question, parameters):

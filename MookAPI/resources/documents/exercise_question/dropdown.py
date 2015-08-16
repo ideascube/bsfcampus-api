@@ -64,7 +64,7 @@ class DropdownExerciseQuestion(DropdownExerciseQuestionJsonSerializer, ExerciseQ
         return DropdownExerciseQuestionAnswer.init_with_data(data)
 
     def get_propositions_by_id(self, propositionsId):
-        result = [];
+        result = []
         for dropdown in self.dropdowns:
             for proposition in dropdown.propositions:
                 if proposition._id in propositionsId:
@@ -85,8 +85,11 @@ class DropdownExerciseQuestionAnswer(DropdownExerciseQuestionAnswerJsonSerialize
     def init_with_data(cls, data):
         obj = cls()
         obj.given_propositions = []
-        for dropdown in data['dropdowns']:
-            obj.given_propositions.append(ObjectId(dropdown))
+        import re
+        for key in data:
+            match = re.match(r"dropdown-(\w+)", key)
+            if match:
+                obj.given_propositions.append(ObjectId(data[key]))
         return obj
 
     def is_correct(self, question, parameters):

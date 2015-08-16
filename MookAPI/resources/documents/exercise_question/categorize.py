@@ -95,12 +95,12 @@ class CategorizeExerciseQuestionAnswer(CategorizeExerciseQuestionAnswerJsonSeria
         obj = cls()
         obj.given_categories = []
         obj.given_categorized_items = []
-        for given_category in data['given_categorized_items']:
-            obj.given_categories.append(ObjectId(given_category['id']))
-            category = []
-            for given_item in given_category['items']:
-                category.append(ObjectId(given_item))
-            obj.given_categorized_items.append(category)
+        for category, items in data['categorized_items'].iteritems():
+            obj.given_categories.append(ObjectId(category))
+            categorized_items = []
+            for given_item in items:
+                categorized_items.append(ObjectId(given_item))
+            obj.given_categorized_items.append(categorized_items)
         return obj
 
     def is_correct(self, question, parameters):
