@@ -87,7 +87,7 @@ class DropdownExerciseQuestionAnswer(DropdownExerciseQuestionAnswerJsonSerialize
         obj.given_propositions = []
         import re
         for key in data:
-            match = re.match(r"dropdown-(\w+)", key)
+            match = re.match(r"dropdown_(\w+)", key)
             if match:
                 obj.given_propositions.append(ObjectId(data[key]))
         return obj
