@@ -1,9 +1,8 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 
 import re
 
 from MookAPI.services import tracks, skills, lessons, resources, user_credentials
-from MookAPI import helpers
 
 from . import route
 
@@ -28,7 +27,7 @@ def search_users():
             response.append(current_user_json)
             users.append(user)
         current_user_json['credentials'].append(creds.to_json())
-    return response
+    return jsonify(data=response)
 
 @route(bp, "")
 def search():
@@ -126,4 +125,4 @@ def search():
             results.append({"type": "resource", "score": score, "document": resource.to_json_search_result()})
 
     results = sorted(results, key=lambda r: r['score'], reverse=True)
-    return results
+    return jsonify(data=results)
