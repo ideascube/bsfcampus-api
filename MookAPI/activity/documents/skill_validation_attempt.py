@@ -41,6 +41,9 @@ class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
     ## Question answers
     question_answers = db.ListField(db.EmbeddedDocumentField(ExerciseAttemptQuestionAnswer))
 
+    is_validated = db.BooleanField(default=False)
+    """ Is exercise validated """
+
     end_date = db.DateTimeField()
     """ The date when the attempt is ended """
 
