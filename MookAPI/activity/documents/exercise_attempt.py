@@ -193,7 +193,7 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
         self.end_date = datetime.datetime.now
 
     def is_exercise_validated(self):
-        nb_total_questions = self.exercise.resource_content.number_of_questions or len(self.exercise.resource_content.questions)
+        nb_total_questions = len(self.question_answers)
         nb_max_mistakes = self.exercise.resource_content.max_mistakes
         answered_questions = filter(lambda a: a.given_answer is not None, self.question_answers)
         if len(answered_questions) >= nb_total_questions:
@@ -204,7 +204,7 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
         return False
 
     def is_attempt_completed(self):
-        nb_total_questions = self.exercise.resource_content.number_of_questions or len(self.exercise.resource_content.questions)
+        nb_total_questions = len(self.question_answers)
         answered_questions = filter(lambda a: a.given_answer is not None, self.question_answers)
         return len(answered_questions) >= nb_total_questions
 
