@@ -41,6 +41,25 @@ class User(UserJsonSerializer, SyncableDocument):
 
     roles = db.ListField(db.ReferenceField(Role))
 
+    def courses_info(self, analytics=False):
+        info = dict(
+            tracks=dict(),
+            skills=dict(),
+            resources=dict()
+        )
+
+        from MookAPI.services import tracks
+        for track in tracks.all():
+            info['tracks'][str(track.id)] = track.user_info(user=self, analytics=analytics)
+            for skill in track.skills:
+                info['skills'][str(skill.id)] = skill.user_info(user=self, analytics=analytics)
+                for lesson in skill.lessons:
+                    for resource in lesson.resources:
+                        info['resources'][str(resource.id)] = resource.user_info(user=self, analytics=analytics)
+
+        return info
+
+
     @property
     def tutors(self):
         from MookAPI.services import tutoring_relations

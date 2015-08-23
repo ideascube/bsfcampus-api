@@ -113,39 +113,40 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
     ### METHODS
 
-    def encode_mongo_for_dashboard(self, user):
-        response = super(Track, self).encode_mongo_for_dashboard(user)
-        response['icon_url'] = self.icon_url
-        response['is_started'] = self.is_started_by_user(user)
-        response['skills'] = [skill.encode_mongo_for_dashboard(user) for skill in self.skills]
-        response['skills'].sort(key=lambda s: s['order'])
+    def user_analytics(self, user):
+        analytics = super(Track, self).user_analytics(user)
 
         from MookAPI.services import track_validation_attempts, visited_tracks
 
-        if 'analytics' not in response:
-            response['analytics'] = {}
-        response['analytics']['progress'] = self.user_progress(user)
-        track_validation_attempts = track_validation_attempts.queryset()(user=user).order_by('-date')
-        response['analytics']['last_attempts_scores'] = map(
+        track_validation_attempts = track_validation_attempts.find(user=user).order_by('-date')
+        analytics['last_attempts_scores'] = map(
             lambda a: {"date": a.date, "nb_questions": a.nb_questions, "score": a.nb_right_answers},
-            track_validation_attempts[:5])
+            track_validation_attempts[:5]
+        )
 
         nb_finished_attempts = 0
         total_duration = datetime.timedelta(0)
-        for i in range(len(track_validation_attempts)):
-            attempt = track_validation_attempts[i]
+        for attempt in track_validation_attempts:
             if attempt.duration:
                 nb_finished_attempts += 1
                 total_duration += attempt.duration
         if nb_finished_attempts > 0:
-            response['analytics']['average_time_on_exercise'] = math.floor((total_duration / nb_finished_attempts).total_seconds())
+            analytics['average_time_on_exercise'] = math.floor((total_duration / nb_finished_attempts).total_seconds())
         else:
-            response['analytics']['average_time_on_exercise'] = 0
+            analytics['average_time_on_exercise'] = 0
 
-        response['analytics']['nb_attempts'] = len(track_validation_attempts)
-        response['analytics']['nb_visit'] = len(visited_tracks.queryset()(user=user)(track=self))
+        analytics['nb_attempts'] = track_validation_attempts.count()
+        analytics['nb_visits'] = visited_tracks.find(user=user, track=self).count()
 
-        return response
+        return analytics
+
+    def user_info(self, user, analytics=False):
+        rv = super(Track, self).user_info(user=user, analytics=analytics)
+
+        rv['is_started'] = self.is_started_by_user(user)
+        rv['test_is_unlocked'] = self.test_is_unlocked_by_user(user)
+
+        return rv
 
     def all_syncable_items(self, local_server=None):
         items = super(Track, self).all_syncable_items(local_server=local_server)

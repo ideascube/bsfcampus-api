@@ -146,29 +146,27 @@ class ExerciseResource(ExerciseResourceJsonSerializer, Resource):
         items.extend(super(ExerciseResource, self).all_syncable_items(local_server=local_server))
         return items
 
-    def encode_mongo_for_dashboard(self, user):
-        response = super(ExerciseResource, self).encode_mongo_for_dashboard(user)
+    def user_analytics(self, user):
+        rv = super(ExerciseResource, self).user_analytics(user)
 
-        if 'analytics' not in response:
-            response['analytics'] = {}
         from MookAPI.services import exercise_attempts
-        exercise_attempts = exercise_attempts.queryset()(user=user)(exercise=self).order_by('-date')
-        response['analytics']['last_attempts_scores'] = map(
+        exercise_attempts = exercise_attempts.find(user=user, exercise=self).order_by('-date')
+        rv['last_attempts_scores'] = map(
             lambda a: {"date": a.date, "nb_questions": a.nb_questions, "score": a.nb_right_answers},
-            exercise_attempts[:5])
+            exercise_attempts[:5]
+        )
 
         nb_finished_attempts = 0
         total_duration = datetime.timedelta(0)
-        for i in range(len(exercise_attempts)):
-            attempt = exercise_attempts[i]
+        for attempt in exercise_attempts:
             if attempt.duration:
                 nb_finished_attempts += 1
                 total_duration += attempt.duration
         if nb_finished_attempts > 0:
-            response['analytics']['average_time_on_exercise'] = math.floor((total_duration / nb_finished_attempts).total_seconds())
+            rv['average_time_on_exercise'] = math.floor((total_duration / nb_finished_attempts).total_seconds())
         else:
-            response['analytics']['average_time_on_exercise'] = 0
+            rv['average_time_on_exercise'] = 0
 
-        response['analytics']['nb_attempts'] = len(exercise_attempts)
+        rv['nb_attempts'] = exercise_attempts.count()
 
-        return response
+        return rv

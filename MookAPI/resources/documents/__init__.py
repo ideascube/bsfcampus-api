@@ -181,18 +181,19 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     def bg_color(self):
         return self.track.bg_color
 
-    def encode_mongo_for_dashboard(self, user):
-        response = self.to_json_dbref()
-        response['is_validated'] = self.is_validated_by_user(user)
-        response['order'] = self.order
-
+    def user_analytics(self, user):
         from MookAPI.services import visited_resources
+        return dict(
+            nb_visits=visited_resources.find(user=user, resource=self).count()
+        )
 
-        if 'analytics' not in response:
-            response['analytics'] = {}
-        response['analytics']['nb_visit'] = visited_resources.find(user=user, resource=self).count()
-
-        return response
+    def user_info(self, user, analytics=False):
+        info = dict(
+            is_validated=self.is_validated_by_user(user)
+        )
+        if analytics:
+            info['analytics'] = self.user_analytics(user)
+        return info
 
     @property
     def hierarchy(self):

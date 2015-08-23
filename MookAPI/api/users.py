@@ -27,7 +27,8 @@ def current_user_info():
     if request.method == 'GET':
         return jsonify(
             data=user,
-            username=creds.username
+            username=creds.username,
+            courses_info=user.courses_info()
         )
 
     elif request.method == 'PATCH':
@@ -153,16 +154,14 @@ def user_reset_password():
 @route(bp, "/current/dashboard")
 @jwt_required()
 def current_user_dashboard():
+    creds = current_user._get_current_object()
     user = current_user.user
 
-    dashboard = dict(
-        user=user,
-        tracks=[]
+    return jsonify(
+        data=user,
+        username=creds.username,
+        courses_info=user.courses_info(analytics=True)
     )
-    for track in tracks.all().order_by('order'):
-        dashboard['tracks'].append(track.encode_mongo_for_dashboard(user))
-
-    return jsonify(data=dashboard)
 
 
 @route(bp, "/<user_id>")
@@ -173,17 +172,12 @@ def get_user_info(user_id):
 @route(bp, "/<user_id>/dashboard")
 @jwt_required()
 def user_dashboard(user_id):
-    requested_user = users.get_or_404(user_id)
+    user = users.get_or_404(user_id)
 
-    dashboard = dict(
-        user=requested_user,
-        tracks=[]
+    return jsonify(
+        data=user,
+        courses_info=user.courses_info(analytics=True)
     )
-    for track in tracks.all():
-        dashboard['tracks'].append(track.encode_mongo_for_dashboard(requested_user))
-    dashboard['tracks'].sort(key=lambda t: t['order'])
-
-    return jsonify(data=dashboard)
 
 
 @route(bp, "/register", methods=['POST'])

@@ -107,10 +107,14 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
         """Returns an array of the breadcrumbs up until the current object."""
         return []
 
-    def encode_mongo_for_dashboard(self, user):
-        response = self.to_json_dbref()
-        response['is_validated'] = self.is_validated_by_user(user)
-        response['progress'] = self.user_progress(user)
-        response['order'] = self.order
+    def user_analytics(self, user):
+        return dict()
 
-        return response
+    def user_info(self, user, analytics=False):
+        info = dict(
+            is_validated=self.is_validated_by_user(user),
+            progress=self.user_progress(user)
+        )
+        if analytics:
+            info['analytics'] = self.user_analytics(user)
+        return info

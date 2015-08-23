@@ -134,44 +134,35 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
         else:
             return _add_instance_single_object(obj)
 
-    def encode_mongo_for_dashboard(self, user):
-        response = super(Skill, self).encode_mongo_for_dashboard(user)
-        response['icon_url'] = self.icon_url
-        response['short_description'] = self.short_description
-        response['lessons'] = []
-        for lesson in self.lessons:
-            response['lessons'].append(lesson.encode_mongo_for_dashboard(user))
-        response['lessons'].sort(key=lambda l: l['order'])
+    def user_analytics(self, user):
+        analytics = super(Skill, self).user_analytics(user)
 
         from MookAPI.services import skill_validation_attempts, completed_skills, visited_skills
 
-        if 'analytics' not in response:
-            response['analytics'] = {}
-        response['analytics']['progress'] = self.user_progress(user)
         skill_validation_attempts = skill_validation_attempts.find(user=user).order_by('-date')
-        response['analytics']['last_attempts_scores'] = map(
+        analytics['last_attempts_scores'] = map(
             lambda a: {"date": a.date, "nb_questions": a.nb_questions, "score": a.nb_right_answers},
-            skill_validation_attempts[:5])
+            skill_validation_attempts[:5]
+        )
 
         nb_finished_attempts = 0
         total_duration = datetime.timedelta(0)
-        for i in range(len(skill_validation_attempts)):
-            attempt = skill_validation_attempts[i]
+        for attempt in skill_validation_attempts:
             if attempt.duration:
                 nb_finished_attempts += 1
                 total_duration += attempt.duration
         if nb_finished_attempts > 0:
-            response['analytics']['average_time_on_exercise'] = math.floor((total_duration / nb_finished_attempts).total_seconds())
+            analytics['average_time_on_exercise'] = math.floor((total_duration / nb_finished_attempts).total_seconds())
         else:
-            response['analytics']['average_time_on_exercise'] = 0
+            analytics['average_time_on_exercise'] = 0
 
-        response['analytics']['nb_attempts'] = len(skill_validation_attempts)
+        analytics['nb_attempts'] = skill_validation_attempts.count()
         completed_skill = completed_skills.first(user=user, skill=self)
         if completed_skill:
-            response['analytics']['is_completed_through_test'] = completed_skill.is_validated_through_test
-        response['analytics']['nb_visit'] = visited_skills.find(user=user, skill=self).count()
+            analytics['is_completed_through_test'] = completed_skill.is_validated_through_test
+        analytics['nb_visits'] = visited_skills.find(user=user, skill=self).count()
 
-        return response
+        return analytics
 
     def top_level_syncable_document(self):
         return self.track

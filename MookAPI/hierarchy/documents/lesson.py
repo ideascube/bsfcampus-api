@@ -68,15 +68,6 @@ class Lesson(LessonJsonSerializer, ResourceHierarchy):
     def siblings_strict(self):
         return Lesson.objects.order_by('order', 'title').filter(skill=self.skill, id__ne=self.id)
 
-    def encode_mongo_for_dashboard(self, user):
-        response = super(Lesson, self).encode_mongo_for_dashboard(user)
-        response['resources'] = []
-        for resource in self.resources:
-            response['resources'].append(resource.encode_mongo_for_dashboard(user))
-        response['resources'].sort(key=lambda r: r['order'])
-
-        return response
-
     def top_level_syncable_document(self):
         return self.track
 
