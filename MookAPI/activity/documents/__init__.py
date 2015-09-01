@@ -55,9 +55,9 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
     This is supposed to be defaulted/initialized in each subclass """
 
     @property
-    def url(self):
+    def url(self, _external=False):
         print("Activity (%s) url: %s" % (self._cls, self.id))
-        return url_for("activity.get_activity", activity_id=self.id, _external=True)
+        return url_for("activity.get_activity", activity_id=self.id, _external=_external)
 
     @property
     def local_server_id(self):

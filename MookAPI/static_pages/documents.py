@@ -22,5 +22,5 @@ class StaticPage(StaticPageJsonSerializer, SyncableDocument):
     ### VIRTUAL PROPERTIES
 
     @property
-    def url(self):
-        return url_for("static_pages.get_static_page", page_id=self.page_id, _external=True)
+    def url(self, _external=False):
+        return url_for("static_pages.get_static_page", page_id=self.page_id, _external=_external)

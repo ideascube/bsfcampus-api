@@ -272,7 +272,7 @@ def register_user():
         else:
 
             if local_server:
-                local_server.append_syncable_item(document=new_user)
+                local_server.synced_users.append(new_user)
                 local_server.clean()
                 local_server.save(validate=False) # FIXME Do validation when MongoEngine bug is fixed.
 

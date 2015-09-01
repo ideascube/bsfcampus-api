@@ -16,9 +16,13 @@ class LocalServersService(Service):
     def get(self, id=None, **kwargs):
         secret = kwargs.pop('secret', None)
         local_server = super(LocalServersService, self).get(id=id, **kwargs)
-        if local_server.verify_secret(secret):
+        if secret:
+            if local_server.verify_secret(secret):
+                return local_server
+            else:
+                return None
+        else:
             return local_server
-        return None
 
     def get_current(self):
         key = current_app.config.get('CENTRAL_SERVER_KEY', None)

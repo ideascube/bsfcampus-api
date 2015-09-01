@@ -171,8 +171,8 @@ class User(UserJsonSerializer, SyncableDocument):
                 self_credentials.unlock_track_validation_test(track)
 
     @property
-    def url(self):
-        return url_for("users.get_user_info", user_id=self.id, _external=True)
+    def url(self, _external=False):
+        return url_for("users.get_user_info", user_id=self.id, _external=_external)
 
     def all_syncable_items(self, local_server=None):
         items = super(User, self).all_syncable_items()
@@ -323,8 +323,8 @@ class UserCredentials(SyncableDocument):
         return self.user.is_track_test_available_and_never_attempted(track)
 
     @property
-    def url(self):
-        return url_for("users.get_user_credentials", credentials_id=self.id, _external=True)
+    def url(self, _external=False):
+        return url_for("users.get_user_credentials", credentials_id=self.id, _external=_external)
 
     @staticmethod
     def hash_pass(password):

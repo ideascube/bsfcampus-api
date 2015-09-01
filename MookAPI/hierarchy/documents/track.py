@@ -28,15 +28,15 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
     """An icon to illustrate the Track_."""
 
     @property
-    def icon_url(self):
+    def icon_url(self, _external=True):
         """The URL where the track icon can be downloaded."""
-        return url_for("hierarchy.get_track_icon", track_id=self.id, _external=True)
+        return url_for("hierarchy.get_track_icon", track_id=self.id, _external=_external)
 
     ### VIRTUAL PROPERTIES
 
     @property
-    def url(self):
-        return url_for("hierarchy.get_track", track_id=self.id, _external=True)
+    def url(self, _external=False):
+        return url_for("hierarchy.get_track", track_id=self.id, _external=_external)
 
     @property
     def skills(self):

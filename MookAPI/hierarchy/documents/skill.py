@@ -74,13 +74,13 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
     ### VIRTUAL PROPERTIES
 
     @property
-    def icon_url(self):
+    def icon_url(self, _external=True):
         """The URL where the skill icon can be downloaded."""
-        return url_for("hierarchy.get_skill_icon", skill_id=self.id, _external=True)
+        return url_for("hierarchy.get_skill_icon", skill_id=self.id, _external=_external)
 
     @property
-    def url(self):
-        return url_for("hierarchy.get_skill", skill_id=self.id, _external=True)
+    def url(self, _external=False):
+        return url_for("hierarchy.get_skill", skill_id=self.id, _external=_external)
 
     @property
     def lessons(self):

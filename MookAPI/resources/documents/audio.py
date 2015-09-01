@@ -19,7 +19,7 @@ class AudioResourceContent(AudioResourceContentJsonSerializer, LinkedFileResourc
     """An image to show with the audio player."""
 
     @property
-    def image_url(self):
+    def image_url(self, _external=True):
         """The URL at which the illustration image can be downloaded."""
 
         if not self.image:
@@ -32,7 +32,7 @@ class AudioResourceContent(AudioResourceContentJsonSerializer, LinkedFileResourc
             "resources.get_resource_content_image",
             resource_id=self._instance.id,
             filename=self.image.filename,
-            _external=True
+            _external=_external
         )
 
 

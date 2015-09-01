@@ -38,7 +38,7 @@ class ExerciseQuestion(ExerciseQuestionJsonSerializer, db.EmbeddedDocument):
     question_image = db.ImageField()
 
     @property
-    def question_image_url(self):
+    def question_image_url(self, _external=True):
         if not self.question_image:
             return None
 
@@ -50,7 +50,7 @@ class ExerciseQuestion(ExerciseQuestionJsonSerializer, db.EmbeddedDocument):
             resource_id=str(self._instance._instance.id),
             question_id=str(self._id),
             filename=self.question_image.filename,
-            _external=True
+            _external=_external
         )
     
 

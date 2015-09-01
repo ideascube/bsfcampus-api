@@ -9,10 +9,10 @@ from .linked_file import LinkedFileResourceContentJsonSerializer, \
 class VideoResourceContentJsonSerializer(LinkedFileResourceContentJsonSerializer):
 
     # FIXME we should to this using the __json_*__ properties instead.
-    def encode_mongo(self, fields=None, for_distant=False):
+    def encode_mongo(self, fields=None, for_central=False):
         rv = super(VideoResourceContentJsonSerializer, self).encode_mongo(
             fields=fields,
-            for_distant=for_distant
+            for_central=for_central
         )
 
         if is_local():

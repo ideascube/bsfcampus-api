@@ -18,7 +18,7 @@ class JsonSerializer(object):
     __json_rename__ = None
     __json_dbref__ = None
 
-    def encode_mongo(self, fields=None, for_distant=False):
+    def encode_mongo(self, fields=None, for_central=False):
 
         Document = _import_class('Document')
         EmbeddedDocument = _import_class('EmbeddedDocument')
@@ -57,7 +57,7 @@ class JsonSerializer(object):
                     value = getattr(self, key, None)
                     if value:
                         if isinstance(value, Document):
-                            rv[key] = value.to_json_dbref(for_distant=for_distant)
+                            rv[key] = value.to_json_dbref(for_central=for_central)
                         elif isinstance(value, DBRef):
                             rv[key] = value
 
@@ -66,17 +66,17 @@ class JsonSerializer(object):
                     if issubclass(field.document_type_obj, JsonSerializer):
                         value = getattr(self, key, None)
                         if value:
-                            rv[key] = value.to_json(for_distant=for_distant)
+                            rv[key] = value.to_json(for_central=for_central)
 
                 ## ...or lists thereof.
                 elif isinstance(field, ListField):
                     if isinstance(field.field, EmbeddedDocumentField):
                         if issubclass(field.field.document_type_obj, JsonSerializer):
                             values = getattr(self, key, [])
-                            rv[key] = [value.to_json(for_distant=for_distant) for value in values]
+                            rv[key] = [value.to_json(for_central=for_central) for value in values]
                     elif isinstance(field.field, (ReferenceField, GenericReferenceField)):
                         values = getattr(self, key, [])
-                        rv[key] = [value.to_json_dbref(for_distant=for_distant) for value in values]
+                        rv[key] = [value.to_json_dbref(for_central=for_central) for value in values]
 
         return rv
 
@@ -89,7 +89,7 @@ class JsonSerializer(object):
             return self.__dict__.keys()
         return []
 
-    def to_json(self, for_distant=False):
+    def to_json(self, for_central=False):
         field_names = self.get_field_names()
 
         public = self.__json_public__ or field_names
@@ -101,7 +101,7 @@ class JsonSerializer(object):
         Document = _import_class('Document')
         EmbeddedDocument = _import_class('EmbeddedDocument')
         if isinstance(self, (Document, EmbeddedDocument)):
-            rv = self.encode_mongo(fields=public, for_distant=for_distant)
+            rv = self.encode_mongo(fields=public, for_central=for_central)
         else:
             rv = dict()
             for key in public:
@@ -140,18 +140,18 @@ class JsonSerializer(object):
             except:
                 pass
 
-        if for_distant:
-            rv['_id'] = rv.pop('distant_id', None)
+        if for_central:
+            rv['_id'] = rv.pop('central_id', None)
 
         return rv
 
-    def to_json_dbref(self, for_distant=False):
+    def to_json_dbref(self, for_central=False):
         fields = self.__json_dbref__ or []
         renames = self.__json_rename__ or dict()
 
         rv = dict()
-        if for_distant and hasattr(self, 'distant_id'):
-            rv['_id'] = self.distant_id
+        if for_central and hasattr(self, 'central_id'):
+            rv['_id'] = self.central_id
         else:
             rv['_id'] = self.id
         rv['_cls'] = self.__class__.__name__
@@ -167,7 +167,7 @@ class JsonSerializer(object):
         return rv
 
     @staticmethod
-    def _convert_value_from_json(value, key, field, instance, from_distant, path_in_instance, unresolved_references):
+    def _convert_value_from_json(value, key, field, instance, from_central, path_in_instance, unresolved_references):
 
         if field is None:
             return field.to_python(value)
@@ -177,52 +177,54 @@ class JsonSerializer(object):
         EmbeddedDocumentField = _import_class('EmbeddedDocumentField')
         ListField = _import_class('ListField')
 
-        ## ReferenceField: convert reference to use the local ``id`` instead of the distant one.
+        ## ReferenceField: convert reference to use the local ``id`` instead of the central one.
         if isinstance(field, ReferenceField):
             # FIXME This way of getting the id is not really clean.
             value = field.to_python(value['_id'])
             document_id = value.id
-            if from_distant:
+            if from_central:
                 try:
-                    document = field.document_type_obj.objects.get(distant_id=document_id)
+                    document = field.document_type_obj.objects.get(central_id=document_id)
                     return document
                 except Exception as e:
                     from MookAPI.sync import UnresolvedReference
                     ref = UnresolvedReference()
                     ref.field_path = path_in_instance
                     ref.class_name = field.document_type_obj.__name__
-                    ref.distant_id = document_id
+                    ref.central_id = document_id
                     unresolved_references.append(ref)
-                    return None
+                    return value # We keep an invalid DBRef as a placeholder
             else:
                 try:
                     document = field.document_type_obj.objects.get(id=document_id)
                     return document
                 except Exception as e:
-                    return None
+                    return value # We keep an invalid DBRef as a placeholder
 
-        ## GenericField: convert reference to use the local ``id`` instead of the distant one.
+        ## GenericField: convert reference to use the local ``id`` instead of the central one.
         elif isinstance(field, GenericReferenceField):
             # FIXME This way of getting the id is not really clean.
+            value = field.to_python(value['_id'])
+            document_id = value.id
             try:
                 from MookAPI.helpers import get_service_for_class
                 service = get_service_for_class(value['_cls'])
-                document = service.get(distant_id=value['_id'])
+                document = service.get(central_id=document_id)
                 return document
             except:
                 from MookAPI.sync import UnresolvedReference
                 ref = UnresolvedReference()
                 ref.field_path = path_in_instance
                 ref.class_name = field.document_type_obj.__name__
-                ref.distant_id = value['_id']
+                ref.central_id = value['_id']
                 unresolved_references.append(ref)
-                return None
+                return value # We keep an invalid DBRef as a placeholder
 
         ## EmbeddedDocumentField: instantiate MongoCoderEmbeddedDocument from JSON
         elif isinstance(field, EmbeddedDocumentField):
             return field.document_type_obj.from_json(
                 value,
-                from_distant=from_distant,
+                from_central=from_central,
                 path_in_instance=path_in_instance,
                 instance=instance,
                 unresolved_references=unresolved_references
@@ -239,7 +241,7 @@ class JsonSerializer(object):
                     key=key,
                     field=field.field,
                     instance=instance,
-                    from_distant=from_distant,
+                    from_central=from_central,
                     path_in_instance=next_path_in_instance,
                     unresolved_references=unresolved_references
                 )
@@ -252,7 +254,7 @@ class JsonSerializer(object):
 
     def _set_value_from_json(self, json, key, instance, **kwargs):
 
-        from_distant = kwargs.get('from_distant', False)
+        from_central = kwargs.get('from_central', False)
         path_in_instance = kwargs.get('path_in_instance', '')
         unresolved_references = kwargs.get('unresolved_references', [])
 
@@ -302,7 +304,7 @@ class JsonSerializer(object):
                 key=key,
                 field=field,
                 instance=instance,
-                from_distant=from_distant,
+                from_central=from_central,
                 path_in_instance=path_in_instance,
                 unresolved_references=unresolved_references
             )
@@ -311,10 +313,7 @@ class JsonSerializer(object):
     @classmethod
     def from_json(cls, json, **kwargs):
 
-        save = kwargs.get('save', False)
-        validate = kwargs.get('validate', True)
-        clean = kwargs.get('clean', True)
-        from_distant = kwargs.get('from_distant', False)
+        from_central = kwargs.get('from_central', False)
         overwrite_document = kwargs.get('overwrite_document', None)
         instance = kwargs.get('instance', None)
         path_in_instance = kwargs.get('path_in_instance', '')
@@ -325,36 +324,23 @@ class JsonSerializer(object):
         if not instance:
             instance = obj
 
+        Document = _import_class('Document')
+        if from_central and issubclass(cls, Document):
+            json['central_id'] = json.pop('_id')
+
         for key in json.iterkeys():
             next_path_in_instance = ("%s.%s" % (path_in_instance, key)).lstrip(".")
             obj._set_value_from_json(
                 json=json,
                 key=key,
                 instance=instance,
-                from_distant=from_distant,
+                from_central=from_central,
                 path_in_instance=next_path_in_instance,
                 unresolved_references=unresolved_references
             )
 
-        Document = _import_class('Document')
-        if from_distant and issubclass(cls, Document):
-            obj.distant_id = obj.id
-            obj.id = None
-
         if overwrite_document:
             obj.id = overwrite_document.id
-
-        if save:
-            Document = _import_class('Document')
-            if isinstance(obj, Document):
-                if (not validate) and clean:
-                    obj.clean()
-                    obj.save(validate=False)
-                else:
-                    obj.save(validate=validate, clean=clean)
-                for ref in unresolved_references:
-                    ref.document = instance
-                    ref.save()
 
         return obj
 

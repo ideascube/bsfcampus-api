@@ -11,7 +11,8 @@ bp = Blueprint("local_servers", __name__, url_prefix="/local_servers")
 
 @route(bp, "/")
 def get_all_local_servers():
-    return [local_server.to_json_dbref() for local_server in local_servers.all()]
+    list = [local_server.to_json_dbref() for local_server in local_servers.all()]
+    return jsonify(data=list)
 
 @route(bp, "/current")
 @local_server_required
@@ -43,21 +44,44 @@ def reset_local_server():
 def get_local_server_sync_list():
     local_server = authenticated_local_server._get_current_object()
     now = datetime.datetime.now
-    updates, deletes = local_server.get_sync_list()
+    sync_list = local_server.get_sync_list()
 
     references = dict(
-        update=[item.to_json_dbref() for item in updates],
-        delete=[item.to_json_dbref() for item in deletes]
+        updates=[item.to_json_dbref() for item in sync_list['updates']],
+        deletes=sync_list['deletes'] # Those are dictionaries containing the class name and a DBRef
     )
 
-    local_server.set_last_sync(now)
+    local_server.last_sync = now
     local_server.save()
 
-    return references
+    return jsonify(data=references)
 
 @route(bp, "/add_item", methods=['POST'])
 @local_server_required
 def add_item_from_local_server():
+    """Deprecated. Use the add_items route instead"""
+
+    local_server = authenticated_local_server._get_current_object()
+
+    try:
+        from bson.json_util import loads
+        item = loads(request.get_json())
+    except:
+        return jsonify(error="Invalid data", code=1), 400
+
+    from MookAPI.helpers import get_service_for_class
+    service = get_service_for_class(item['_cls'])
+    if not service:
+        return jsonify(error="Unrecognized class name", code=2), 400
+
+    obj = service.__model__.from_json(item, from_central=False)
+    obj.save()
+
+    return obj
+
+@route(bp, "/add_items", methods=['POST'])
+@local_server_required
+def add_items_from_local_server():
     local_server = authenticated_local_server._get_current_object()
 
     try:
@@ -67,33 +91,18 @@ def add_item_from_local_server():
         return jsonify(error="Invalid data", code=1), 400
 
     from MookAPI.helpers import get_service_for_class
-    service = get_service_for_class(data['_cls'])
-    if not service:
-        return jsonify(error="Unrecognized class name", code=2), 400
+    central_items = dict()
+    for local_id, item in data['items']:
+        try:
+            service = get_service_for_class(item['_cls'])
+            if not service:
+                pass # TODO Generate an error
 
-    obj = service.__model__.from_json(data, from_distant=False)
-    obj.save()
+            obj = service.__model__.from_json(item, from_central=False)
+            obj.save()
+        except:
+            pass # TODO Generate an error
+        else:
+            central_items[local_id] = obj
 
-    return obj
-
-@route(bp, "/subscribe", methods=['POST'])
-@local_server_required
-def subscribe_item_to_sync():
-
-    local_server = authenticated_local_server._get_current_object()
-
-    try:
-        data = request.get_json()
-    except:
-        return jsonify(error="Invalid data", code=1), 400
-    service_name = data.get('service', None)
-    document_id = data.get('document_id', None)
-
-    local_server.append_syncable_item(service_name=service_name, document_id=document_id)
-
-    try:
-        local_server.save()
-    except Exception as e:
-        return jsonify(error=e.message), 400
-    else:
-        return local_server, 201
+    return jsonify(data=dict(items=central_items)), 201

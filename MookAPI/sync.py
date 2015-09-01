@@ -38,14 +38,14 @@ class UnresolvedReference(JsonSerializer, db.Document):
 
     class_name = db.StringField()
 
-    distant_id = db.ObjectIdField()
+    central_id = db.ObjectIdField()
 
     def resolve(self):
         print "Trying to resolve %s" % unicode(self)
         try:
             from MookAPI.helpers import get_service_for_class
             service = get_service_for_class(self.class_name)
-            local_document = service.get(distant_id=self.distant_id)
+            local_document = service.get(central_id=self.central_id)
             self.document.set_value_for_field_path(local_document, self.field_path)
             self.document.clean()
             self.document.save(validate=False) # FIXME MongoEngine bug
@@ -59,17 +59,17 @@ class UnresolvedReference(JsonSerializer, db.Document):
     def __unicode__(self):
         try:
             return "Reference to %s document %s in document %s at field path %s" \
-                   % (self.class_name, str(self.distant_id), self.document, self.field_path)
+                   % (self.class_name, str(self.central_id), self.document, self.field_path)
         except:
             return "Reference to %s document %s in %s document at field path %s" \
-                   % (self.class_name, str(self.distant_id), self.document.__class__.__name__, self.field_path)
+                   % (self.class_name, str(self.central_id), self.document.__class__.__name__, self.field_path)
 
 
 class SyncableDocumentJsonSerializer(JsonSerializer):
     __json_hierarchy_skeleton__ = None
 
-    def to_json_dbref(self, for_distant=False):
-        son = super(SyncableDocumentJsonSerializer, self).to_json_dbref(for_distant=for_distant)
+    def to_json_dbref(self, for_central=False):
+        son = super(SyncableDocumentJsonSerializer, self).to_json_dbref(for_central=for_central)
         try:
             # FIXME Check if server is central instead (which means we need to be in application context)
             son['url'] = self.url
@@ -134,11 +134,11 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
     """
 
     ## Id of the document on the central server
-    distant_id = db.ObjectIdField()
+    central_id = db.ObjectIdField()
     """The id of the document on the central server."""
 
     @property
-    def url(self):
+    def url(self, _external=False):
         """
         The URL where a JSON representation of the document based on MongoCoderMixin_'s encode_mongo_ method can be found.
 
@@ -168,7 +168,7 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
 
     def delete(self, *args, **kwargs):
         reference = DeletedSyncableDocument()
-        reference.document = self
+        reference.document = self.to_json_dbref()
         reference.save()
         return super(SyncableDocument, self).delete(*args, **kwargs)
 
@@ -184,7 +184,7 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
 
         return [self]
 
-    def items_to_update(self, last_sync, local_server=None):
+    def items_to_update(self, local_server):
         """
         .. _items_to_update:
 
@@ -197,6 +197,7 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
         """
 
         items = []
+        last_sync = local_server.last_sync
 
         for item in self.all_syncable_items(local_server=local_server):
             if last_sync is None or item.last_modification is None or last_sync < item.last_modification:
@@ -204,7 +205,7 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
 
         return items
 
-    def items_to_delete(self, last_sync, local_server=None):
+    def items_to_delete(self, local_server):
         """
         .. _items_to_delete:
 
@@ -213,15 +214,15 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
         """
 
         items = []
+        last_sync = local_server.last_sync
 
-        for obj in DeletedSyncableDocument.objects.filter(top_level_document=self.top_level_syncable_document()):
+        for obj in DeletedSyncableDocument.objects.no_dereference().filter(top_level_document=self.top_level_syncable_document()):
             if last_sync is None or obj.date is None or last_sync < obj.date:
-                document = obj.to_json()['document']
-                items.append(document)
+                items.append(obj.document)
 
         return items
 
-    def items_to_sync(self, last_sync, local_server=None):
+    def items_to_sync(self, local_server=None):
         """
         Returns a dictionary ``dict`` with two keys:
 
@@ -234,8 +235,8 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
         """
 
         items = {}
-        items['update'] = self.items_to_update(last_sync, local_server=local_server)
-        items['delete'] = self.items_to_delete(last_sync, local_server=local_server)
+        items['update'] = self.items_to_update(local_server=local_server)
+        items['delete'] = self.items_to_delete(local_server=local_server)
         ## We should do some cleanup at this point, in particular remove deletable items from 'update' list.
         return items
 

@@ -85,8 +85,8 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     ### VIRTUAL PROPERTIES
 
     @property
-    def url(self):
-        return url_for("resources.get_resource", resource_id=self.id, _external=True)
+    def url(self, _external=False):
+        return url_for("resources.get_resource", resource_id=self.id, _external=_external)
 
     def is_validated_by_user(self, user):
         """Whether the current user (if any) has validated this Resource_."""

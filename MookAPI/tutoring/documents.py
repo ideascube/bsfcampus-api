@@ -14,5 +14,5 @@ class TutoringRelation(TutoringRelationJsonSerializer, SyncableDocument):
     INITIATORS = ('tutor, student')
     initiated_by = db.StringField(choices=INITIATORS)
 
-    def url(self):
-        return url_for("tutoring.get_relation", relation_id=self.id, _external=True)
+    def url(self, _external=False):
+        return url_for("tutoring.get_relation", relation_id=self.id, _external=_external)

@@ -15,7 +15,7 @@ class LinkedFileResourceContent(LinkedFileResourceContentJsonSerializer, Resourc
     """A file to download."""
 
     @property
-    def content_file_url(self):
+    def content_file_url(self, _external=True):
         """The URL at which the file can be downloaded."""
         if not self.content_file:
             return None
@@ -27,7 +27,7 @@ class LinkedFileResourceContent(LinkedFileResourceContentJsonSerializer, Resourc
             "resources.get_resource_content_file",
             resource_id=self._instance.id,
             filename=self.content_file.filename,
-            _external=True
+            _external=_external
         )
 
 class LinkedFileResourceJsonSerializer(ResourceJsonSerializer):
