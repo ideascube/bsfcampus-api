@@ -24,7 +24,6 @@ class DeletedSyncableDocument(JsonSerializer, db.Document):
     """The date at which the document was deleted."""
 
     def save(self, *args, **kwargs):
-        self.top_level_document = self.document.top_level_syncable_document()
         if self.date is None:
             self.date = datetime.datetime.now()
         return super(DeletedSyncableDocument, self).save(*args, **kwargs)
@@ -177,7 +176,8 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
 
     def delete(self, *args, **kwargs):
         reference = DeletedSyncableDocument()
-        reference.document = self.to_json_dbref()
+        reference.document = self
+        reference.top_level_document = self.top_level_syncable_document()
         reference.save()
         return super(SyncableDocument, self).delete(*args, **kwargs)
 
