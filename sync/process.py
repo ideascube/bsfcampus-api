@@ -134,7 +134,7 @@ class SyncProcess(object):
         if self.local_server:
             self.local_server.reload()
             for user in self.local_server.synced_users:
-                for document in user.all_syncable_items(local_server=self.local_server):
+                for document in user.all_synced_documents(local_server=self.local_server):
                     if not document.central_id:
                         try:
                             print "Sending document: %s" % document

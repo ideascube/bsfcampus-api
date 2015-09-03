@@ -167,11 +167,11 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
     def top_level_syncable_document(self):
         return self.track
 
-    def all_syncable_items(self, local_server=None):
-        items = super(Skill, self).all_syncable_items(local_server=local_server)
+    def all_synced_documents(self, local_server=None):
+        items = super(Skill, self).all_synced_documents(local_server=local_server)
 
         for lesson in self.lessons:
-            items.extend(lesson.all_syncable_items(local_server=local_server))
+            items.extend(lesson.all_synced_documents(local_server=local_server))
 
         return items
 

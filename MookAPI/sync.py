@@ -181,7 +181,7 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
         reference.save()
         return super(SyncableDocument, self).delete(*args, **kwargs)
 
-    def all_syncable_items(self, local_server=None):
+    def all_synced_documents(self, local_server=None):
         """
         Returns the list of references to atomic documents that should be looked at when syncing this document.
         Defaults to a one-element list containing a reference to self.
@@ -208,7 +208,7 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
         items = []
         last_sync = local_server.last_sync
 
-        for item in self.all_syncable_items(local_server=local_server):
+        for item in self.all_synced_documents(local_server=local_server):
             if last_sync is None or item.last_modification is None or last_sync < item.last_modification:
                 items.append(item)
 

@@ -148,13 +148,13 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
         return rv
 
-    def all_syncable_items(self, local_server=None):
-        items = super(Track, self).all_syncable_items(local_server=local_server)
+    def all_synced_documents(self, local_server=None):
+        items = super(Track, self).all_synced_documents(local_server=local_server)
 
         for skill in self.skills:
-            items.extend(skill.all_syncable_items(local_server=local_server))
+            items.extend(skill.all_synced_documents(local_server=local_server))
 
         for test in self.track_validation_tests:
-            items.extend(test.all_syncable_items(local_server=local_server))
+            items.extend(test.all_synced_documents(local_server=local_server))
 
         return items

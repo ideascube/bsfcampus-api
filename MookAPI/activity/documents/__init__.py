@@ -88,11 +88,11 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
     def top_level_syncable_document(self):
         return self.user
 
-    def all_syncable_items(self, local_server=None):
+    def all_synced_documents(self, local_server=None):
         if self.object:
             if not local_server.syncs_document(self.object):
                 return []
-        return super(Activity, self).all_syncable_items(local_server=local_server)
+        return super(Activity, self).all_synced_documents(local_server=local_server)
 
     def __unicode__(self):
         return "Activity with type %s for user %s" % (self.type, self.user)
