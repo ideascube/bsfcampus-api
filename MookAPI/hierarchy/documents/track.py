@@ -158,3 +158,15 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
             items.extend(test.all_synced_documents(local_server=local_server))
 
         return items
+
+    @classmethod
+    def pre_delete(cls, sender, document, **kwargs):
+        from MookAPI.services import local_servers
+        for local_server in local_servers.find(synced_tracks=document):
+            # The track is automatically pulled from the local server's sync list
+            # thanks to the "reverse_delete_rule=PULL" option.
+            # We just need to save the LS in order to update its LS last modification date
+            local_server.save()
+
+from mongoengine.signals import pre_delete
+pre_delete.connect(Track.pre_delete, sender=Track)
