@@ -1,12 +1,16 @@
 import sys
 
-def launch_process(config, *args):
-    from middleware import CentralServerConnector
-    from process import SyncProcess
-    from MookAPI.core import db
-    from MookAPI.factory import create_app
-    from MookAPI.services import local_servers
+from documents import SyncTasksService
+from middleware import CentralServerConnector
+from process import SyncProcess
+from MookAPI.factory import create_app
+from MookAPI.services import local_servers
 
+sync_tasks_service = SyncTasksService()
+
+def launch_process(config, *args):
+
+    from MookAPI.core import db
     db.init_app(create_app(__name__, settings_override=config))
 
     connector = CentralServerConnector(
@@ -16,7 +20,7 @@ def launch_process(config, *args):
     )
 
     if 'reset' in args:
-        r = connector.post("/local_servers/reset")
+        r = connector.reset()
         if r.status_code == 200:
             from settings_local import Config
             db_name = Config.MONGODB_DB # FIXME Get the MongoDB database name from current_app (requires between in app context)
@@ -34,7 +38,7 @@ def launch_process(config, *args):
         )
     except Exception as e:
         print "This local server is not in the database: trying to fetch from central server"
-        r = connector.get("/local_servers/current")
+        r = connector.get_current_local_server()
         if r.status_code == 200:
             try:
                 from bson import json_util

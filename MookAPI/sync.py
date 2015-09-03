@@ -189,6 +189,8 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
         .. note::
 
             Override this method if this document has children documents.
+            Children documents who reference this document should be inserted AFTER self.
+            Children documents referenced from this document should be inserted BEFORE self.
         """
 
         return [self]
