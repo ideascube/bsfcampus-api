@@ -137,6 +137,9 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
     central_id = db.ObjectIdField()
     """The id of the document on the central server."""
 
+    # A placeholder for unresolved references that need to be saved after the document is saved
+    unresolved_references = []
+
     @property
     def url(self, _external=False):
         """
@@ -164,7 +167,13 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
     def save(self, *args, **kwargs):
         self.last_modification = datetime.datetime.now()
 
-        return super(SyncableDocument, self).save(*args, **kwargs)
+        rv = super(SyncableDocument, self).save(*args, **kwargs)
+
+        for ref in self.unresolved_references:
+            ref.document = self
+            ref.save()
+
+        return rv
 
     def delete(self, *args, **kwargs):
         reference = DeletedSyncableDocument()
