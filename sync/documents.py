@@ -72,7 +72,6 @@ class SyncTask(db.Document):
             users_after = set(document.synced_users)
 
             for new_track in tracks_after - tracks_before:
-                # FIXME Apparently sometimes new_track.id is a local id. Why?
                 sync_tasks_service.fetch_tasks_whole_track(new_track.id, connector)
             for new_user in users_after - users_before:
                 sync_tasks_service.fetch_tasks_whole_user(new_user.id, connector)
