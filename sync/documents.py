@@ -170,12 +170,12 @@ class SyncTasksService(Service):
         updates = []
         deletes = []
 
-        for item in (data['updates'] or []):
+        for item in (data.get('updates', [])):
             db_item = self.create_update_task(item)
             updates.append(db_item)
             print "* Created task: %s" % db_item
 
-        for item in (data['deletes'] or []):
+        for item in (data.get('deletes', [])):
             db_item = self.create_delete_task(item)
             deletes.append(db_item)
             print "* Created task: %s" % db_item
