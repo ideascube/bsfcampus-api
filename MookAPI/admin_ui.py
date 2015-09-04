@@ -71,7 +71,8 @@ class HierarchyLessonView(ModelView):
 
 class LocalServerView(ModelView):
     def on_model_change(self, form, model, is_created):
-        model.secret = self.model.hash_secret(model.secret)
+        if not model.secret.startswith("$2a$"):
+            model.secret = self.model.hash_secret(model.secret)
         return
 
 class StaticPageView(ModelView):
