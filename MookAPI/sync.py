@@ -24,7 +24,6 @@ class DeletedSyncableDocument(JsonSerializer, db.Document):
     """The date at which the document was deleted."""
 
     def save(self, *args, **kwargs):
-        self.top_level_document = self.document.top_level_syncable_document()
         if self.date is None:
             self.date = datetime.datetime.now()
         return super(DeletedSyncableDocument, self).save(*args, **kwargs)
@@ -137,6 +136,9 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
     central_id = db.ObjectIdField()
     """The id of the document on the central server."""
 
+    # A placeholder for unresolved references that need to be saved after the document is saved
+    unresolved_references = []
+
     @property
     def url(self, _external=False):
         """
@@ -164,15 +166,22 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
     def save(self, *args, **kwargs):
         self.last_modification = datetime.datetime.now()
 
-        return super(SyncableDocument, self).save(*args, **kwargs)
+        rv = super(SyncableDocument, self).save(*args, **kwargs)
+
+        for ref in self.unresolved_references:
+            ref.document = self
+            ref.save()
+
+        return rv
 
     def delete(self, *args, **kwargs):
         reference = DeletedSyncableDocument()
-        reference.document = self.to_json_dbref()
+        reference.document = self
+        reference.top_level_document = self.top_level_syncable_document()
         reference.save()
         return super(SyncableDocument, self).delete(*args, **kwargs)
 
-    def all_syncable_items(self, local_server=None):
+    def all_synced_documents(self, local_server=None):
         """
         Returns the list of references to atomic documents that should be looked at when syncing this document.
         Defaults to a one-element list containing a reference to self.
@@ -180,6 +189,8 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
         .. note::
 
             Override this method if this document has children documents.
+            Children documents who reference this document should be inserted AFTER self.
+            Children documents referenced from this document should be inserted BEFORE self.
         """
 
         return [self]
@@ -199,7 +210,7 @@ class SyncableDocument(SyncableDocumentJsonSerializer, db.Document):
         items = []
         last_sync = local_server.last_sync
 
-        for item in self.all_syncable_items(local_server=local_server):
+        for item in self.all_synced_documents(local_server=local_server):
             if last_sync is None or item.last_modification is None or last_sync < item.last_modification:
                 items.append(item)
 

@@ -228,10 +228,10 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     def top_level_syncable_document(self):
         return self.track
 
-    def all_syncable_items(self, local_server=None):
-        items = super(Resource, self).all_syncable_items(local_server=local_server)
+    def all_synced_documents(self, local_server=None):
+        items = super(Resource, self).all_synced_documents(local_server=local_server)
 
         for additional_resource in self.additional_resources:
-            items.extend(additional_resource.all_syncable_items(local_server=local_server))
+            items.extend(additional_resource.all_synced_documents(local_server=local_server))
 
         return items

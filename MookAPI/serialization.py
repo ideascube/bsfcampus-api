@@ -339,6 +339,8 @@ class JsonSerializer(object):
                 unresolved_references=unresolved_references
             )
 
+        obj.unresolved_references = unresolved_references
+
         if overwrite_document:
             obj.id = overwrite_document.id
 

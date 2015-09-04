@@ -56,6 +56,34 @@ def get_local_server_sync_list():
 
     return jsonify(data=references)
 
+@route(bp, "/sync/track/<track_id>")
+@local_server_required
+def get_track_sync_documents(track_id):
+    local_server = authenticated_local_server._get_current_object()
+    from MookAPI.services import tracks
+
+    track = tracks.get(id=track_id)
+
+    references = dict(
+        updates=[document.to_json_dbref() for document in track.all_synced_documents(local_server)],
+    )
+
+    return jsonify(data=references)
+
+@route(bp, "/sync/user/<user_id>")
+@local_server_required
+def get_user_sync_documents(user_id):
+    local_server = authenticated_local_server._get_current_object()
+    from MookAPI.services import users
+
+    user = users.get(id=user_id)
+
+    references = dict(
+        updates=[document.to_json_dbref() for document in user.all_synced_documents(local_server)],
+    )
+
+    return jsonify(data=references)
+
 @route(bp, "/add_item", methods=['POST'])
 @local_server_required
 def add_item_from_local_server():
