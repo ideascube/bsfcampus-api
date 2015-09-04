@@ -21,7 +21,9 @@ from MookAPI.services import \
     visited_user_dashboards, \
     visited_resources, \
     visited_skills, \
-    visited_tracks
+    visited_tracks, \
+    video_resources, \
+    external_video_resources
 
 from MookAPI.serialization import UnicodeCSVWriter
 
@@ -333,6 +335,30 @@ def record_visited_track_analytic():
         return obj, 201
 
 
+@route(bp, "/complete_video_resource", methods=['POST'])
+@jwt_required
+def complete_video_resource(resource_id):
+    """
+    Set the is_validated attribute for the given video resource
+    :return: the updated resource data
+    """
+    data = request.get_json()
+    resource = resources.get_or_404(data['resource'])
+    if video_resources._isinstance(resource) or external_video_resources._isinstance(resource):
+        try:
+            credentials = current_user._get_current_object()
+            completed_resource, achievements = credentials.add_completed_resource(resource=resource)
+        except Exception as e:
+            return jsonify(error=e.message), 400
+        else:
+            return jsonify(
+                data=completed_resource,
+                achievements=achievements
+            ), 201
+
+    abort(404)
+
+
 @route(bp, "/misc", methods=['POST'])
 def record_misc_analytic():
     """ Creates a new MiscActivity object which is used to track analytics on the platform
@@ -394,3 +420,4 @@ def get_general_analytics():
         attachment_filename=file_name,
         mimetype='text/csv'
     )
+

@@ -12,6 +12,8 @@ from MookAPI.services import \
     audio_resources, \
     linked_file_resources
 
+from MookAPI.helpers import send_file_partial
+
 from . import route
 
 bp = Blueprint('resources', __name__, url_prefix="/resources")
@@ -76,11 +78,7 @@ def get_resource_content_file(resource_id, filename):
     if linked_file_resources._isinstance(resource):
         content_file = resource.resource_content.content_file
 
-        return send_file(
-            io.BytesIO(content_file.read()),
-            attachment_filename=content_file.filename,
-            mimetype=content_file.contentType
-        )
+        return send_file_partial(content_file)
 
     abort(404)
 

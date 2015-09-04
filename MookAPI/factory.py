@@ -19,6 +19,11 @@ def create_app(
         from .helpers import register_blueprints
         register_blueprints(app, package_name, package_path)
 
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Accept-Ranges', 'bytes')
+        return response
+
     from .admin_ui import admin_ui
     admin_ui.init_app(app)
 

@@ -245,12 +245,12 @@ class UserCredentials(SyncableDocument):
 
     def add_visited_resource(self, resource):
         achievements = []
-        from MookAPI.services import exercise_resources, visited_resources
+        from MookAPI.services import exercise_resources, video_resources, external_video_resources, visited_resources
         visited_resource = visited_resources.create(credentials=self, resource=resource)
         if not resource.is_additional:
             track_achievements = self.add_started_track(resource.track)
             achievements.extend(track_achievements)
-            if not exercise_resources._isinstance(resource):
+            if not exercise_resources._isinstance(resource) and not video_resources._isinstance(resource) and not external_video_resources._isinstance(resource):
                 resource_achievements = self.add_completed_resource(resource)
                 achievements.extend(resource_achievements)
         return visited_resource, achievements
