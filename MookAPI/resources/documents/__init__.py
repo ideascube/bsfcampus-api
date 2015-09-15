@@ -223,7 +223,7 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
         return rv
 
     def __unicode__(self):
-        return self.title
+        return "%s [%s]" % (self.title, self.__class__.__name__)
 
     def top_level_syncable_document(self):
         return self.track
