@@ -28,7 +28,7 @@ class JsonSerializer(object):
             return path_or_url
         else:
             from flask import url_for
-            return url_for("static", filename=path_or_url, _external=True)
+            return url_for("file.get_static_file", filename=path_or_url, _external=True)
 
     def encode_mongo(self, fields=None, for_central=False):
 
