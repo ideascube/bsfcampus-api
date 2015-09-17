@@ -11,7 +11,7 @@ class LinkedFileResourceContentJsonSerializer(ResourceContentJsonSerializer):
 
 class LinkedFileResourceContent(LinkedFileResourceContentJsonSerializer, ResourceContent):
     
-    content_file = db.FileField(required=True)
+    content_file = db.FileField()
     """A file to download."""
 
     @property
