@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 
 def create_app(
@@ -6,7 +8,13 @@ def create_app(
         settings_override=None,
         register_security_blueprint=True):
 
-    app = Flask(package_name, instance_relative_config=True)
+    static_folder = os.path.dirname(os.path.realpath(__file__))
+    static_folder = os.path.join(static_folder, '../static')
+    app = Flask(
+        package_name,
+        instance_relative_config=True,
+        static_folder=static_folder
+    )
 
     app.config.from_object('MookAPI.settings')
     app.config.from_pyfile('settings.cfg', silent=True)

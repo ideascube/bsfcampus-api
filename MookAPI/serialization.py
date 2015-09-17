@@ -14,9 +14,18 @@ class JsonSerializer(object):
     __json_public__ = None
     __json_hidden__ = None
     __json_additional__ = None
+    __json_files__ = None
     __json_modifiers__ = None
     __json_rename__ = None
     __json_dbref__ = None
+
+    @staticmethod
+    def make_file_url(path_or_url):
+        if "://" in path_or_url or path_or_url.startswith("//"):
+            return path_or_url
+        else:
+            from flask import url_for
+            return url_for("static", filename=path_or_url, _external=True)
 
     def encode_mongo(self, fields=None, for_central=False):
 
@@ -95,6 +104,7 @@ class JsonSerializer(object):
         public = self.__json_public__ or field_names
         hidden = self.__json_hidden__ or []
         additional = self.__json_additional__ or []
+        files = self.__json_files__ or []
         modifiers = self.__json_modifiers__ or dict()
         renames = self.__json_rename__ or dict()
 
@@ -107,6 +117,11 @@ class JsonSerializer(object):
             for key in public:
                 rv[key] = getattr(self, key)
 
+        for key in files:
+            url_key = key + '_url'
+            path_or_url = getattr(self, key)
+            value = self.make_file_url(path_or_url)
+            rv[url_key] = value
         for key in additional:
             value = getattr(self, key)
             if isinstance(value, Document):
