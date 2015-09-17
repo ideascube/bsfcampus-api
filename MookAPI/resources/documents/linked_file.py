@@ -7,28 +7,16 @@ from . import ResourceContentJsonSerializer, \
     Resource
 
 class LinkedFileResourceContentJsonSerializer(ResourceContentJsonSerializer):
-    pass
+    __json_files__ = ['content_file']
 
 class LinkedFileResourceContent(LinkedFileResourceContentJsonSerializer, ResourceContent):
-    
-    content_file = db.FileField()
-    """A file to download."""
 
-    @property
-    def content_file_url(self, _external=True):
-        """The URL at which the file can be downloaded."""
-        if not self.content_file:
-            return None
-
-        if not hasattr(self, '_instance'):
-            return None
-
-        return url_for(
-            "resources.get_resource_content_file",
-            resource_id=self._instance.id,
-            filename=self.content_file.filename,
-            _external=_external
-        )
+    content_file = db.StringField()
+    """
+    The URL or the name of the file to download.
+    If an absolute URL (containing "://" or starting with "//" is given, that URL will be used as the source.
+    Otherwise, the string will be interpreted as a path from the "static" folder.
+    """
 
 class LinkedFileResourceJsonSerializer(ResourceJsonSerializer):
     pass
