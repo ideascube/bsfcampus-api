@@ -21,6 +21,9 @@ class JsonSerializer(object):
 
     @staticmethod
     def make_file_url(path_or_url):
+        if path_or_url is None:
+            return None
+        
         if "://" in path_or_url or path_or_url.startswith("//"):
             return path_or_url
         else:
