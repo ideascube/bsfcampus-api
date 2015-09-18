@@ -1,8 +1,5 @@
-import os
-
 from flask.ext.admin import Admin
 from flask.ext.admin.contrib.mongoengine import ModelView
-from flask.ext.admin.contrib.fileadmin import FileAdmin
 from wtforms import ValidationError
 
 from MookAPI.services import \
@@ -83,9 +80,6 @@ class StaticPageView(ModelView):
 
 
 admin_ui = Admin()
-
-path = os.path.join(os.path.dirname(__file__), '../static')
-admin_ui.add_view(FileAdmin(path, name='Static Files'))
 
 admin_ui.add_view(StaticPageView(
     static_pages.__model__,

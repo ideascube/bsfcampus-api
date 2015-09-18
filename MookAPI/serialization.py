@@ -5,6 +5,7 @@ import requests
 from bson import json_util, DBRef
 from mongoengine.common import _import_class
 
+from flask import current_app
 from flask.json import JSONEncoder as BaseJSONEncoder
 
 from .core import db
@@ -27,8 +28,7 @@ class JsonSerializer(object):
         if "://" in path_or_url or path_or_url.startswith("//"):
             return path_or_url
         else:
-            from flask import url_for
-            return url_for("file.get_static_file", filename=path_or_url, _external=True)
+            return current_app.config.get('UPLOAD_FILES_URL') + path_or_url
 
     def encode_mongo(self, fields=None, for_central=False):
 

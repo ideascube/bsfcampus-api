@@ -35,4 +35,9 @@ def create_app(
     from .admin_ui import admin_ui
     admin_ui.init_app(app)
 
+    from flask.ext.admin.contrib.fileadmin import FileAdmin
+    path = app.config.get('UPLOAD_FILES_PATH')
+    admin_ui.add_view(FileAdmin(path, name='Static Files'))
+
+
     return app

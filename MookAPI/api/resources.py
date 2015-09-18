@@ -69,20 +69,6 @@ def get_resource_hierarchy(resource_id):
         cousins=resource.cousins()
     )
 
-
-@route(bp, "/<resource_id>/content-file/<filename>")
-# @jwt_required()
-def get_resource_content_file(resource_id, filename):
-    resource = resources.get_or_404(resource_id)
-
-    if linked_file_resources._isinstance(resource):
-        content_file = resource.resource_content.content_file
-
-        return send_file_partial(content_file)
-
-    abort(404)
-
-
 @route(bp, "/<resource_id>/content-image/<filename>")
 # @jwt_required()
 def get_resource_content_image(resource_id, filename):
