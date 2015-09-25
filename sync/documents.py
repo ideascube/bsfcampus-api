@@ -49,7 +49,8 @@ class SyncTask(db.Document):
             document = self.model.from_json(
                 son['data'],
                 from_central=True,
-                overwrite_document=local_document
+                overwrite_document=local_document,
+                upload_path=connector.local_files_path
             )
             document.clean()
             document.save(validate=False) # FIXME MongoEngine bug, hopefully fixed in next version

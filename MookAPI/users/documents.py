@@ -174,11 +174,16 @@ class User(UserJsonSerializer, SyncableDocument):
     def url(self, _external=False):
         return url_for("users.get_user_info", user_id=self.id, _external=_external)
 
+    def credentials(self, local_server=None):
+        from MookAPI.services import user_credentials
+        return user_credentials.find(user=self, local_server=local_server)
+
+
     def all_synced_documents(self, local_server=None):
         items = super(User, self).all_synced_documents()
 
-        from MookAPI.services import user_credentials, activities, tutoring_relations
-        for creds in user_credentials.find(user=self):
+        from MookAPI.services import activities, tutoring_relations
+        for creds in self.credentials(local_server=local_server):
             items.extend(creds.all_synced_documents(local_server=local_server))
         for activity in activities.find(user=self):
             items.extend(activity.all_synced_documents(local_server=local_server))
@@ -206,10 +211,8 @@ class User(UserJsonSerializer, SyncableDocument):
         for creds in user_credentials.find(user=other):
             creds.user = self
             creds.save(validate=False)
-        for local_server in local_servers.find(syncable_users__document=other):
-            local_server.unsync_user(other)
-            local_server.append_syncable_item(document=self)
-            local_server.save()
+        local_servers.find(synced_users=other).update(pull__synced_users=other)
+        local_servers.find(synced_users=other).update(push__synced_users=self)
         for activity in activities.find(user=other):
             activity.user = self
             activity.save()

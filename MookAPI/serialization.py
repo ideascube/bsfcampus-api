@@ -185,7 +185,7 @@ class JsonSerializer(object):
         return rv
 
     @staticmethod
-    def _convert_value_from_json(value, key, field, instance, from_central, path_in_instance, unresolved_references):
+    def _convert_value_from_json(value, key, field, instance, from_central, path_in_instance, unresolved_references, **kwargs):
 
         if field is None:
             return field.to_python(value)
@@ -245,7 +245,8 @@ class JsonSerializer(object):
                 from_central=from_central,
                 path_in_instance=path_in_instance,
                 instance=instance,
-                unresolved_references=unresolved_references
+                unresolved_references=unresolved_references,
+                **kwargs
             )
 
         ## ListField: recursively convert all elements in the list
@@ -261,7 +262,8 @@ class JsonSerializer(object):
                     instance=instance,
                     from_central=from_central,
                     path_in_instance=next_path_in_instance,
-                    unresolved_references=unresolved_references
+                    unresolved_references=unresolved_references,
+                    **kwargs
                 )
                 converted_value.append(value)
 
@@ -272,9 +274,10 @@ class JsonSerializer(object):
 
     def _set_value_from_json(self, json, key, instance, **kwargs):
 
-        from_central = kwargs.get('from_central', False)
-        path_in_instance = kwargs.get('path_in_instance', '')
-        unresolved_references = kwargs.get('unresolved_references', [])
+        from_central = kwargs.pop('from_central', False)
+        path_in_instance = kwargs.pop('path_in_instance', '')
+        unresolved_references = kwargs.pop('unresolved_references', [])
+        upload_path = kwargs.get('upload_path', '/tmp/')
 
         ## Get value from json
         value = json[key]
@@ -291,6 +294,7 @@ class JsonSerializer(object):
             return
 
         FileField = _import_class('FileField')
+        StringField = _import_class('StringField')
 
         if isinstance(field, FileField):
             url_key = key + '_url'
@@ -299,8 +303,7 @@ class JsonSerializer(object):
             # FIXME: add a dir path for these temp files
             filename = json[filename_key] or 'temp'
             with open(filename, 'wb') as handle:
-                # FIXME We ignore SSL errors for now, but verify should be a parameter defaulting to True.
-                r = requests.get(url, stream=True, verify=False)
+                r = requests.get(url, stream=True)
                 if not r.ok:
                     return  # Raise an exception
                 for block in r.iter_content(1024):
@@ -316,6 +319,21 @@ class JsonSerializer(object):
             except:
                 pass
 
+        elif key in (self.__json_files__ or []) and isinstance(field, StringField):
+            url_key = key + '_url'
+            url = json[url_key]
+            filename = value # FIXME If the value is an absolute URL, extract the filename
+            path = upload_path + filename
+            with open(path, 'wb') as handle:
+                r = requests.get(url, stream=True)
+                if not r.ok:
+                    return  # Raise an exception
+                for block in r.iter_content(1024):
+                    if not block:
+                        break
+                    handle.write(block)
+            setattr(self, key, value)
+
         else:
             value = self._convert_value_from_json(
                 value=value,
@@ -324,18 +342,19 @@ class JsonSerializer(object):
                 instance=instance,
                 from_central=from_central,
                 path_in_instance=path_in_instance,
-                unresolved_references=unresolved_references
+                unresolved_references=unresolved_references,
+                **kwargs
             )
             setattr(self, key, value)
 
     @classmethod
     def from_json(cls, json, **kwargs):
 
-        from_central = kwargs.get('from_central', False)
-        overwrite_document = kwargs.get('overwrite_document', None)
-        instance = kwargs.get('instance', None)
-        path_in_instance = kwargs.get('path_in_instance', '')
-        unresolved_references = kwargs.get('unresolved_references', [])
+        from_central = kwargs.pop('from_central', False)
+        overwrite_document = kwargs.pop('overwrite_document', None)
+        instance = kwargs.pop('instance', None)
+        path_in_instance = kwargs.pop('path_in_instance', '')
+        unresolved_references = kwargs.pop('unresolved_references', [])
 
         obj = cls()
 
@@ -354,7 +373,8 @@ class JsonSerializer(object):
                 instance=instance,
                 from_central=from_central,
                 path_in_instance=next_path_in_instance,
-                unresolved_references=unresolved_references
+                unresolved_references=unresolved_references,
+                **kwargs
             )
 
         obj.unresolved_references = unresolved_references

@@ -7,13 +7,15 @@ class CentralServerConnector(object):
         current_local_server="/local_servers/current",
         fetch_list="/local_servers/sync",
         fetch_whole_track="/local_servers/sync/track/%s",
-        fetch_whole_user="/local_servers/sync/user/%s"
+        fetch_whole_user="/local_servers/sync/user/%s",
+        send_documents="/local_servers/add_documents"
     )
 
-    def __init__(self, host, key, secret, **kwargs):
+    def __init__(self, host, key, secret, local_files_path, **kwargs):
         self.host = host
         self.key = key
         self.secret = secret
+        self.local_files_path = local_files_path
         self.verify_ssl = kwargs.get('verify_ssl', True)
 
     def get(self, path, **kwargs):
@@ -39,3 +41,6 @@ class CentralServerConnector(object):
 
     def fetch_list_whole_user(self, user_central_id, **kwargs):
         return self.get(self.PATHS["fetch_whole_user"] % str(user_central_id), **kwargs)
+
+    def send_documents(self, **kwargs):
+        return self.post(self.PATHS["send_documents"], **kwargs)

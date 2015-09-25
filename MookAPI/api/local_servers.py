@@ -84,53 +84,26 @@ def get_user_sync_documents(user_id):
 
     return jsonify(data=references)
 
-@route(bp, "/add_item", methods=['POST'])
+@route(bp, "/add_documents", methods=['POST'])
 @local_server_required
-def add_item_from_local_server():
-    """Deprecated. Use the add_items route instead"""
-
+def add_documents_from_local_server():
     local_server = authenticated_local_server._get_current_object()
 
     try:
         from bson.json_util import loads
-        item = loads(request.get_json())
+        documents = loads(request.get_json())
     except:
         return jsonify(error="Invalid data", code=1), 400
 
     from MookAPI.helpers import get_service_for_class
-    service = get_service_for_class(item['_cls'])
-    if not service:
-        return jsonify(error="Unrecognized class name", code=2), 400
+    new_documents = []
+    for (id, document) in documents:
+        service = get_service_for_class(document['_cls'])
+        if not service:
+            return jsonify(error="Unrecognized class name", code=2), 400
 
-    obj = service.__model__.from_json(item, from_central=False)
-    obj.save()
+        obj = service.__model__.from_json(document, from_central=False)
+        obj.save()
+        new_documents.append((id, obj))
 
-    return obj
-
-@route(bp, "/add_items", methods=['POST'])
-@local_server_required
-def add_items_from_local_server():
-    local_server = authenticated_local_server._get_current_object()
-
-    try:
-        from bson.json_util import loads
-        data = loads(request.get_json())
-    except:
-        return jsonify(error="Invalid data", code=1), 400
-
-    from MookAPI.helpers import get_service_for_class
-    central_items = dict()
-    for local_id, item in data['items']:
-        try:
-            service = get_service_for_class(item['_cls'])
-            if not service:
-                pass # TODO Generate an error
-
-            obj = service.__model__.from_json(item, from_central=False)
-            obj.save()
-        except:
-            pass # TODO Generate an error
-        else:
-            central_items[local_id] = obj
-
-    return jsonify(data=dict(items=central_items)), 201
+    return jsonify(data=new_documents)

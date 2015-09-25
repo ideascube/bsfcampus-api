@@ -27,7 +27,11 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
     secret = db.StringField()
 
     synced_tracks = db.ListField(db.ReferenceField('Track', reverse_delete_rule=PULL))
-    synced_users = db.ListField(db.ReferenceField('User', reverse_delete_rule=PULL))
+
+    @property
+    def synced_users(self):
+        from MookAPI.services import user_credentials
+        return [creds.user for creds in user_credentials.find(local_server=self)]
 
     @property
     def synced_documents(self):

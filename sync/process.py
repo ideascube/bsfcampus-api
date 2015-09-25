@@ -24,57 +24,64 @@ class SyncProcess(object):
             self.should_try_to_resolve_reference = True
             return result
 
-    def _post_document(self, document):
-        path = "/local_servers/add_item"
+    def _post_documents(self, documents):
         from bson.json_util import dumps, loads
-        json = dumps(document.to_json(for_central=True))
-        r = self.connector.post(path, json=json)
+        documents_json = [(d.id, d.to_json(for_central=True)) for d in documents]
+        r = self.connector.send_documents(json=dumps(documents_json))
 
         if r.status_code == 200:
             response = loads(r.text)
-            data = response['data']
+            central_documents = response['data']
 
             from MookAPI.helpers import get_service_for_class
-            service = get_service_for_class(data['_cls'])
-            try:
-                new_document = service.__model__.from_json(
-                    data,
-                    from_central=True,
-                    overwrite_document=document
-                )
-                new_document.clean()
-                new_document.save(validate=False) # FIXME MongoEngine bug, hopefully be fixed in next version
-                print "Overwrote local document with information from central server"
-                if service.__class__.__name__ == 'UsersService': # FIXME Do something cleaner
-                    self._subscribe_user(new_document)
-            except:
-                print "An error occurred while overwriting the local document"
+            for (local_id, central_document) in central_documents:
+                service = get_service_for_class(central_document['_cls'])
+                try:
+                    for document in documents:
+                        if document.id == local_id:
+                            overwrite_document = document
+                            break
+
+                    if not overwrite_document:
+                        break #FIXME Throw exception
+
+                    updated_document = service.__model__.from_json(
+                        central_document,
+                        from_central=True,
+                        overwrite_document=overwrite_document
+                    )
+                    updated_document.clean()
+                    updated_document.save(validate=False) # FIXME MongoEngine bug, hopefully be fixed in next version
+                    print "Overwrote local document with information from central server"
+                except:
+                    print "An error occurred while overwriting the local document"
         else:
             print "An error occurred on the central server when trying to send the document"
 
-    def _post_next_document(self):
+    def _post_next_documents(self):
         print "Checking if there is a document to post to the central server..."
-        if self.local_server:
-            self.local_server.reload()
-            for user in self.local_server.synced_users:
-                for document in user.all_synced_documents(local_server=self.local_server):
-                    if not document.central_id:
-                        try:
-                            print "Sending document: %s" % document
-                        except:
-                            print "Sending document: [Cannot get representation]"
-                        self._post_document(document)
-                        return True
-            print "No more document to post"
-            return False
-        print "This local server cannot identify itself (for now)"
+        self.local_server.reload()
+        from MookAPI.services import users, user_credentials
+        for user in self.local_server.synced_users:
+            documents_to_post = [
+                d for d in user.all_synced_documents(local_server=self.local_server)
+                if not d.central_id #FIXME This doesn't detect changes in local documents (users or credentials)
+            ]
+            for document in documents_to_post:
+                if users._isinstance(document) or user_credentials._isinstance(document):
+                    self._post_documents([document])
+                    return True
+            if documents_to_post:
+                self._post_documents(documents_to_post)
+                return True
+        print "No more document to post"
         return False
 
     def post_all_documents(self):
         succeeded = True
         counter = 0
         while succeeded:
-            succeeded = self._post_next_document()
+            succeeded = self._post_next_documents()
             if succeeded:
                 counter += 1
 
@@ -102,8 +109,8 @@ class SyncProcess(object):
             print "==> No more item to depile"
 
             self.resolve_references()
-            posted_documents = self.post_all_documents()
 
+            posted_documents = self.post_all_documents()
             if posted_documents > 0:
                 return 'post_local', posted_documents
 

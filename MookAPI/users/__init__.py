@@ -21,6 +21,10 @@ class UserCredentialsService(Service):
         if id:
             return super(UserCredentialsService, self).get(id=id)
 
+        central_id = kwargs.get('central_id', None)
+        if central_id:
+            return super(UserCredentialsService, self).get(central_id=central_id)
+
         password = kwargs.pop('password', None)
         if not kwargs.get('local_server', None):
             kwargs['local_server'] = None

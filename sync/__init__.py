@@ -16,7 +16,8 @@ def launch_process(config, *args):
     connector = CentralServerConnector(
         host=config.CENTRAL_SERVER_HOST,
         key=config.CENTRAL_SERVER_KEY,
-        secret=config.CENTRAL_SERVER_SECRET
+        secret=config.CENTRAL_SERVER_SECRET,
+        local_files_path=config.UPLOAD_FILES_PATH
     )
 
     if 'reset' in args:
