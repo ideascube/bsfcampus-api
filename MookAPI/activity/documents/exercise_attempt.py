@@ -218,8 +218,10 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
             question_answer_csv_row_data.append(str(question_answer.question_id))
             question = self.exercise.question(question_answer.question_id)
             question_answer_csv_row_data.append(question.question_heading)
-            question_answer_csv_row_data.append(question_answer.asked_date.strftime("%Y-%m-%d %H:%M:%S"))
-            question_answer_csv_row_data.append(question_answer.answered_date.strftime("%Y-%m-%d %H:%M:%S"))
+            asked_data = question_answer.asked_date.strftime("%Y-%m-%d %H:%M:%S") if question_answer.asked_date else ""
+            question_answer_csv_row_data.append(asked_data)
+            answered_date = question_answer.answered_date.strftime("%Y-%m-%d %H:%M:%S") if question_answer.answered_date else ""
+            question_answer_csv_row_data.append(answered_date)
             question_answer_csv_row_data.append(str(question_answer.is_answered_correctly))
             rv.append(question_answer_csv_row_data)
 
