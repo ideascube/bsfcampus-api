@@ -6,13 +6,12 @@ from MookAPI.core import db
 from MookAPI.factory import create_app as create_base_app
 from MookAPI.serialization import JSONEncoder
 
-def create_app(settings_override=None, register_security_blueprint=False):
+def create_app(settings_override=None):
 
     app = create_base_app(
         __name__,
         __path__,
-        settings_override,
-        register_security_blueprint=register_security_blueprint
+        settings_override
     )
 
     app.json_encoder = JSONEncoder

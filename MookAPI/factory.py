@@ -5,8 +5,7 @@ from flask import Flask
 def create_app(
         package_name,
         package_path=None,
-        settings_override=None,
-        register_security_blueprint=True):
+        settings_override=None):
 
     static_folder = os.path.dirname(os.path.realpath(__file__))
     static_folder = os.path.join(static_folder, '../static')
