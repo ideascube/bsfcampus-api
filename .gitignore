@@ -1,6 +1,7 @@
 *.sublime-project
 *.sublime-workspace
 *.pyc
-.idea/
+/.idea/
+/env/
 settings_central.py
 settings_local.py
