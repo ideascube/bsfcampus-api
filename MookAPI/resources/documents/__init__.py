@@ -107,12 +107,14 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     @property
     def skill(self):
         """Shorthand virtual property to the parent Skill_ of the parent Lesson_."""
+        if self.parent_resource:
+            return self.parent_resource.skill
         return self.parent.skill
 
     @property
     def track(self):
         """Shorthand virtual property to the parent Track_ of the parent Skill_ of the parent Lesson_."""
-        return self.parent.skill.track
+        return self.skill.track
 
     @property
     def additional_resources(self):
