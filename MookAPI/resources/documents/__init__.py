@@ -48,6 +48,9 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
 
     ### PROPERTIES
 
+    is_published = db.BooleanField(default=True)
+    """Whether the resource should appear on the platform"""
+
     is_additional = db.BooleanField(default=False)
     """True if the resource is an additional resource, i.e. has a Resource parent (instead of a Lesson)"""
 

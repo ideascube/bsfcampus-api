@@ -19,7 +19,7 @@ from MookAPI.services import \
 
 # Validators
 def parent_resource_required_if_additional(form, field):
-    if form.data['is_additional'] and field.data is None:
+    if form.data['is_published'] and form.data['is_additional'] and field.data is None:
         raise ValidationError('An additional resource must have a parent resource')
 
 def no_parent_additional_resource_if_additional(form, field):
@@ -31,8 +31,8 @@ def no_parent_resource_if_not_additional(form, field):
         raise ValidationError('An standard resource must not have a parent resource')
 
 def parent_if_not_additional(form, field):
-    if not form.data['is_additional'] and field.data is None:
-        raise ValidationError('An standard resource must have a parent')
+    if form.data['is_published'] and not form.data['is_additional'] and field.data is None:
+        raise ValidationError('A published standard resource must have a parent')
 
 def no_parent_if_additional(form, field):
     if form.data['is_additional'] and field.data is not None:
@@ -45,8 +45,8 @@ class UserView(ModelView):
     form_columns = ('full_name', 'email', 'accept_cgu', 'roles')
 
 class ResourceView(ModelView):
-    column_list = ('is_additional', 'title', 'slug', 'description', 'order', 'keywords', 'parent', 'parent_resource')
-    form_columns = ('is_additional', 'title', 'slug', 'description', 'order', 'keywords', 'parent', 'parent_resource', 'resource_content')
+    column_list = ('is_additional', 'is_published', 'title', 'slug', 'description', 'order', 'keywords', 'parent', 'parent_resource')
+    form_columns = ('is_additional', 'is_published', 'title', 'slug', 'description', 'order', 'keywords', 'parent', 'parent_resource', 'resource_content')
 
     form_args = dict(
         parent_resource=dict(validators=[parent_resource_required_if_additional, no_parent_resource_if_not_additional, no_parent_additional_resource_if_additional]),
@@ -55,19 +55,18 @@ class ResourceView(ModelView):
 
 
 class HierarchyTrackView(ModelView):
-    column_list = ('title', 'slug', 'description', 'order', 'icon')
-    form_columns = ('title', 'slug', 'description', 'order', 'icon')
+    column_list = ('is_published', 'title', 'slug', 'description', 'order', 'icon')
+    form_columns = ('is_published', 'title', 'slug', 'description', 'order', 'icon')
 
 
 class HierarchySkillView(ModelView):
-    column_list = ('title', 'slug', 'description', 'short_description', 'track', 'order', 'icon')
-    form_columns = (
-    'title', 'slug', 'description', 'short_description', 'track', 'order', 'icon', 'validation_exercise')
+    column_list = ('is_published', 'title', 'slug', 'description', 'short_description', 'track', 'order', 'icon')
+    form_columns = ('is_published', 'title', 'slug', 'description', 'short_description', 'track', 'order', 'icon', 'validation_exercise')
 
 
 class HierarchyLessonView(ModelView):
-    column_list = ('title', 'slug', 'description', 'order', 'skill')
-    form_columns = ('title', 'slug', 'description', 'order', 'skill')
+    column_list = ('is_published', 'title', 'slug', 'description', 'order', 'skill')
+    form_columns = ('is_published', 'title', 'slug', 'description', 'order', 'skill')
 
 class LocalServerView(ModelView):
     def on_model_change(self, form, model, is_created):

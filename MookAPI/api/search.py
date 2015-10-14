@@ -59,7 +59,7 @@ def search():
     results = []
 
     # search through tracks
-    for track in tracks.queryset():
+    for track in tracks.find(is_published__ne=False):
         score = 0
         for search_word in filtered_search_words:
             factor = 1
@@ -75,7 +75,7 @@ def search():
             results.append({"type": "track", "score": score, "document": track.to_json_search_result()})
 
     # search through skills
-    for skill in skills.queryset():
+    for skill in skills.find(is_published__ne=False):
         score = 0
         for search_word in filtered_search_words:
             factor = 1
@@ -91,7 +91,7 @@ def search():
             results.append({"type": "skill", "score": score, "document": skill.to_json_search_result()})
 
     # search through lessons
-    for lesson in lessons.queryset():
+    for lesson in lessons.find(is_published__ne=False):
         score = 0
         for search_word in filtered_search_words:
             factor = 1
@@ -107,7 +107,7 @@ def search():
             results.append({"type": "lesson", "score": score, "document": lesson.to_json_search_result()})
 
     # search through resources
-    for resource in resources.queryset():
+    for resource in resources.find(is_published__ne=False):
         score = 0
         for search_word in filtered_search_words:
             factor = 1

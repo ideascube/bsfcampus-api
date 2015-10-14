@@ -24,6 +24,9 @@ class ResourceHierarchy(ResourceHierarchyJsonSerializer, SyncableDocument):
 
     ### PROPERTIES
 
+    is_published = db.BooleanField(default=True)
+    """Whether the resource should appear on the platform"""
+
     title = db.StringField(required=True)
     """The title of the hierarchy level."""
 

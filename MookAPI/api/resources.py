@@ -22,20 +22,20 @@ bp = Blueprint('resources', __name__, url_prefix="/resources")
 @route(bp, "/")
 @jwt_required()
 def get_resources():
-    return resources.all().order_by('parent', 'order', 'title')
+    return resources.find(is_published__ne=False).order_by('parent', 'order', 'title')
 
 
 @route(bp, "/lesson/<lesson_id>")
 @jwt_required()
 def get_lesson_resources(lesson_id):
-    return resources.find(parent=lesson_id).order_by('order', 'title')
+    return resources.find(is_published__ne=False,parent=lesson_id).order_by('order', 'title')
 
 
 @route(bp, "/skill/<skill_id>")
 @jwt_required()
 def get_skill_resources(skill_id):
-    lessons_list = lessons.find(skill=skill_id)
-    return resources.find(parent__in=lessons_list).order_by('order', 'title')
+    lessons_list = lessons.find(is_published__ne=False,skill=skill_id)
+    return resources.find(is_published__ne=False,parent__in=lessons_list).order_by('order', 'title')
 
 
 @route(bp, "/<resource_id>")
@@ -48,7 +48,7 @@ def get_resource(resource_id):
     #     alert = {"code": "prompt_track_validation", "id": resource.track._data.get("id", None)}
     #     return jsonify(data=resource, alert=alert)
 
-    return resources.get_or_404(resource_id)
+    return resources.get_or_404(is_published__ne=False,id=resource_id)
 
 @route(bp, "/<resource_id>/hierarchy")
 @jwt_required()
@@ -72,7 +72,7 @@ def get_resource_hierarchy(resource_id):
 @route(bp, "/<resource_id>/content-image/<filename>")
 # @jwt_required()
 def get_resource_content_image(resource_id, filename):
-    resource = resources.get_or_404(resource_id)
+    resource = resources.get_or_404(is_published__ne=False,id=resource_id)
 
     if audio_resources._isinstance(resource):
         content_image = resource.resource_content.image
@@ -89,7 +89,7 @@ def get_resource_content_image(resource_id, filename):
 @route(bp, "/<resource_id>/question/<question_id>/image/<filename>")
 # @jwt_required()
 def get_exercise_question_image(resource_id, question_id, filename):
-    resource = exercise_resources.get_or_404(resource_id)
+    resource = exercise_resources.get_or_404(is_published__ne=False,id=resource_id)
 
     try:
         question = resource.question(question_id=question_id)
