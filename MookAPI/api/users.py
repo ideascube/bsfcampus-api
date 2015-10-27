@@ -1,16 +1,16 @@
 from bson import ObjectId
-from mongoengine import NotUniqueError
+from mongoengine import NotUniqueError, DoesNotExist
 import random
 import string
 
-from flask import Blueprint, request, jsonify, abort, current_app
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt import current_user
 from flask_mongoengine import ValidationError
 from flask_mail import Message
 
 from MookAPI.auth import jwt_required
 from MookAPI.helpers import is_local
-from MookAPI.services import tracks, users, user_credentials, misc_activities
+from MookAPI.services import users, user_credentials, misc_activities
 
 import activity
 
@@ -291,26 +291,40 @@ def absorb_user():
         local_server = ObjectId(data.get('local_server', None))
     except:
         local_server = None
+
     username = data.get('username', None)
     password = data.get('password', None)
 
-    creds = user_credentials.get(
-        local_server=local_server,
-        username=username,
-        password=password
-    )
-
-    if not creds:
-        abort(404)
-
-    user = current_user.user
-
-    user.phagocyte(
-        other=creds.user,
-        self_credentials=current_user._get_current_object()
-    )
-
-    return user
+    try:
+        creds = user_credentials.get(
+            local_server=local_server,
+            username=username,
+            password=password
+        )
+    except DoesNotExist as e:
+        return jsonify(
+            code=1,
+            error=e.message
+        ), 404
+    except Exception as e:
+        return jsonify(
+            code=2,
+            error=e.message
+        ), 500
+    else:
+        user = current_user.user
+        try:
+            user.phagocyte(
+                other=creds.user,
+                self_credentials=current_user._get_current_object()
+            )
+        except Exception as e:
+            return jsonify(
+                code=3,
+                error=e.message
+            ), 500
+        else:
+            return user
 
 @route(bp, "/credentials/<credentials_id>")
 def get_user_credentials(credentials_id):
