@@ -335,9 +335,9 @@ def record_visited_track_analytic():
         return obj, 201
 
 
-@route(bp, "/complete_video_resource", methods=['POST'])
-@jwt_required
-def complete_video_resource(resource_id):
+@route(bp, "/watched_video", methods=['POST'])
+@jwt_required()
+def mark_video_resource_watched():
     """
     Set the is_validated attribute for the given video resource
     :return: the updated resource data
@@ -347,12 +347,11 @@ def complete_video_resource(resource_id):
     if video_resources._isinstance(resource) or external_video_resources._isinstance(resource):
         try:
             credentials = current_user._get_current_object()
-            completed_resource, achievements = credentials.add_completed_resource(resource=resource)
+            achievements = credentials.add_completed_resource(resource=resource)
         except Exception as e:
             return jsonify(error=e.message), 400
         else:
             return jsonify(
-                data=completed_resource,
                 achievements=achievements
             ), 201
 
