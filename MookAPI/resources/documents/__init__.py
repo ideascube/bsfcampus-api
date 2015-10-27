@@ -1,5 +1,6 @@
 import datetime
 from slugify import slugify
+from bson import DBRef
 
 from flask import url_for
 from flask_jwt import current_user, verify_jwt
@@ -111,13 +112,15 @@ class Resource(ResourceJsonSerializer, SyncableDocument):
     def skill(self):
         """Shorthand virtual property to the parent Skill_ of the parent Lesson_."""
         if self.parent_resource:
-            return self.parent_resource.skill
-        return self.parent.skill
+            return self.parent_resource.skill if not isinstance(self.parent_resource, DBRef) else None
+        return self.parent.skill if not isinstance(self.parent, DBRef) else None
 
     @property
     def track(self):
         """Shorthand virtual property to the parent Track_ of the parent Skill_ of the parent Lesson_."""
-        return self.skill.track
+        if self.skill and not isinstance(self.skill, DBRef):
+            return self.skill.track
+        return None
 
     @property
     def additional_resources(self):
