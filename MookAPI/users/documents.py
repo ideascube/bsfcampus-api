@@ -205,14 +205,11 @@ class User(UserJsonSerializer, SyncableDocument):
 
         from MookAPI.services import \
             activities, \
-            local_servers, \
             tutoring_relations, \
             user_credentials
         for creds in user_credentials.find(user=other):
             creds.user = self
             creds.save(validate=False)
-        local_servers.find(synced_users=other).update(pull__synced_users=other)
-        local_servers.find(synced_users=other).update(push__synced_users=self)
         for activity in activities.find(user=other):
             activity.user = self
             activity.save()
