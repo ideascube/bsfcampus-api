@@ -17,7 +17,8 @@ def launch_process(config, *args):
         host=config.CENTRAL_SERVER_HOST,
         key=config.CENTRAL_SERVER_KEY,
         secret=config.CENTRAL_SERVER_SECRET,
-        local_files_path=config.UPLOAD_FILES_PATH
+        local_files_path=config.UPLOAD_FILES_PATH,
+        connection_error_sleep=getattr(config, "CONNECTION_ERROR_SLEEP", 600)
     )
 
     if 'reset' in args:
