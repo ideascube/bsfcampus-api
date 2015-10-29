@@ -1,3 +1,4 @@
+from bson import DBRef
 import datetime
 
 from flask import url_for
@@ -69,15 +70,15 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
 
     def clean(self):
         super(Activity, self).clean()
-        if self.object:
+        if self.object and not isinstance(self.object, DBRef):
             self.object_title = getattr(self.object, 'title', None)
-        if self.credentials:
+        if self.credentials and not isinstance(self.credentials, DBRef):
             self.user = self.credentials.user
             self.user_username = self.credentials.username
             self.local_server = self.credentials.local_server
-        if self.user:
+        if self.user and not isinstance(self.user, DBRef):
             self.user_name = self.user.full_name
-        if self.local_server:
+        if self.local_server and not isinstance(self.local_server, DBRef):
             self.local_server_name = self.local_server.name
 
     @classmethod
