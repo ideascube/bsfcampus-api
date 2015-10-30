@@ -10,12 +10,13 @@ class SkillValidationAttemptJsonSerializer(ActivityJsonSerializer):
     @staticmethod
     def question_answers_modifier(son, attempt):
         for (index, qa) in enumerate(attempt.question_answers):
-            question = attempt.skill.question(qa.question_id)
-            if qa.given_answer is not None:
-                son[index]['question'] = question.with_computed_correct_answer(qa.parameters)
-            else:
-                son[index]['question'] = question.without_correct_answer()
-                break
+            if attempt.skill and not isinstance(attempt.skill, DBRef):
+                question = attempt.skill.question(qa.question_id)
+                if qa.given_answer is not None:
+                    son[index]['question'] = question.with_computed_correct_answer(qa.parameters)
+                else:
+                    son[index]['question'] = question.without_correct_answer()
+                    break
 
         return son
 
