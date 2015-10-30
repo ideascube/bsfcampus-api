@@ -134,9 +134,10 @@ def user_reset_password():
                 return jsonify(response), 400
             else:
                 body = u"""Bonjour, voici vos nouveaux identifiants pour accéder à la plateforme :
-                Nom d'utilisateur : %s
-                Mot de passe : %s
-                Pensez à changer de mot de passe lors de votre prochaine connexion !""" % (username, new_password)
+    Nom d'utilisateur : %s
+    Mot de passe : %s
+Pensez à changer de mot de passe lors de votre prochaine connexion !
+À bientôt sur %s !""" % (username, new_password, current_app.config.get("APP_TITLE", "la plateforme"))
                 subject = u"Réinitialisation du mot de passe"
                 app_title = current_app.config.get("APP_TITLE", None)
                 if app_title:
