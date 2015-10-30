@@ -1,5 +1,5 @@
 import datetime
-from bson import ObjectId
+from bson import ObjectId, DBRef
 
 from MookAPI.core import db
 from . import ActivityJsonSerializer, Activity
@@ -49,7 +49,9 @@ class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
 
     @property
     def max_mistakes(self):
-        return self.skill.validation_exercise.max_mistakes
+        if self.skill and not isinstance(self.skill, DBRef):
+            return self.skill.validation_exercise.max_mistakes
+        return None
 
     @property
     def nb_right_answers(self):

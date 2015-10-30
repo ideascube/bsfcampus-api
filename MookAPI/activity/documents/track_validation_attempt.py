@@ -1,3 +1,5 @@
+from bson import DBRef
+
 from exercise_attempt import ExerciseAttemptJsonSerializer, ExerciseAttempt
 
 class TrackValidationAttemptJsonSerializer(ExerciseAttemptJsonSerializer):
@@ -10,7 +12,9 @@ class TrackValidationAttempt(TrackValidationAttemptJsonSerializer, ExerciseAttem
 
     @property
     def track(self):
-        return self.exercise.track
+        if self.exercise and not isinstance(self.exercise, DBRef):
+            return self.exercise.track
+        return None
 
     def clean(self):
         super(TrackValidationAttempt, self).clean()

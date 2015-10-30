@@ -1,5 +1,5 @@
 import datetime
-from bson import ObjectId
+from bson import ObjectId, DBRef
 
 from MookAPI.core import db
 from MookAPI.serialization import JsonSerializer
@@ -102,13 +102,16 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
 
     @property
     def max_mistakes(self):
-        return self.exercise.resource_content.max_mistakes
+        if self.exercise and not isinstance(self.exercise, DBRef):
+            return self.exercise.resource_content.max_mistakes
+        return None
 
     @property
     def fail_linked_resource(self):
-        if self.exercise.resource_content.fail_linked_resource:
-            return self.exercise.resource_content.fail_linked_resource
-        return
+        if self.exercise and not isinstance(self.exercise, DBRef):
+            if self.exercise.resource_content.fail_linked_resource:
+                return self.exercise.resource_content.fail_linked_resource
+        return None
 
     @property
     def nb_right_answers(self):
