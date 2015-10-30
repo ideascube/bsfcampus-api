@@ -33,6 +33,7 @@ def launch_process(config, *args):
         else:
             sys.exit("Reset failed, status code %d" % r.status_code)
 
+    local_server = None
     try:
         local_server = local_servers.get(
             key=config.CENTRAL_SERVER_KEY,
@@ -52,8 +53,10 @@ def launch_process(config, *args):
                 local_server.clean()
                 local_server.save(validate=False) # FIXME MongoEngine bug, hopefully be fixed in next version
             except Exception as ee:
-                sys.exit(ee.message)
+                sys.exit("The local server was unable to instantiate its DB representation: %s" % ee.message)
 
+    if not local_server:
+        sys.exit("The local server was unable to instantiate its DB representation")
 
     synchronizer = SyncProcess(
         connector=connector,
