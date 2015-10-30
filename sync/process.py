@@ -1,3 +1,4 @@
+from bson import DBRef
 import time
 
 from documents import SyncTasksService
@@ -63,17 +64,18 @@ class SyncProcess(object):
         self.local_server.reload()
         from MookAPI.services import users, user_credentials
         for user in self.local_server.synced_users:
-            documents_to_post = [
-                d for d in user.all_synced_documents(local_server=self.local_server)
-                if not d.central_id #FIXME This doesn't detect changes in local documents (users or credentials)
-            ]
-            for document in documents_to_post:
-                if users._isinstance(document) or user_credentials._isinstance(document):
-                    self._post_documents([document])
+            if not isinstance(user, DBRef):
+                documents_to_post = [
+                    d for d in user.all_synced_documents(local_server=self.local_server)
+                    if not d.central_id #FIXME This doesn't detect changes in local documents (users or credentials)
+                ]
+                for document in documents_to_post:
+                    if users._isinstance(document) or user_credentials._isinstance(document):
+                        self._post_documents([document])
+                        return True
+                if documents_to_post:
+                    self._post_documents(documents_to_post)
                     return True
-            if documents_to_post:
-                self._post_documents(documents_to_post)
-                return True
         print "No more document to post"
         return False
 

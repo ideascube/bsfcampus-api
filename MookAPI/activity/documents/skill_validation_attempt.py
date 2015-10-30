@@ -1,5 +1,5 @@
 import datetime
-from bson import ObjectId
+from bson import ObjectId, DBRef
 
 from MookAPI.core import db
 from . import ActivityJsonSerializer, Activity
@@ -10,12 +10,13 @@ class SkillValidationAttemptJsonSerializer(ActivityJsonSerializer):
     @staticmethod
     def question_answers_modifier(son, attempt):
         for (index, qa) in enumerate(attempt.question_answers):
-            question = attempt.skill.question(qa.question_id)
-            if qa.given_answer is not None:
-                son[index]['question'] = question.with_computed_correct_answer(qa.parameters)
-            else:
-                son[index]['question'] = question.without_correct_answer()
-                break
+            if attempt.skill and not isinstance(attempt.skill, DBRef):
+                question = attempt.skill.question(qa.question_id)
+                if qa.given_answer is not None:
+                    son[index]['question'] = question.with_computed_correct_answer(qa.parameters)
+                else:
+                    son[index]['question'] = question.without_correct_answer()
+                    break
 
         return son
 
@@ -49,7 +50,9 @@ class SkillValidationAttempt(SkillValidationAttemptJsonSerializer, Activity):
 
     @property
     def max_mistakes(self):
-        return self.skill.validation_exercise.max_mistakes
+        if self.skill and not isinstance(self.skill, DBRef):
+            return self.skill.validation_exercise.max_mistakes
+        return None
 
     @property
     def nb_right_answers(self):

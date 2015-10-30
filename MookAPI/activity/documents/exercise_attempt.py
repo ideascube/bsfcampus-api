@@ -1,5 +1,5 @@
 import datetime
-from bson import ObjectId
+from bson import ObjectId, DBRef
 
 from MookAPI.core import db
 from MookAPI.serialization import JsonSerializer
@@ -55,12 +55,13 @@ class ExerciseAttemptJsonSerializer(ActivityJsonSerializer):
     @staticmethod
     def question_answers_modifier(son, exercise_attempt):
         for (index, qa) in enumerate(exercise_attempt.question_answers):
-            question = exercise_attempt.exercise.question(qa.question_id)
-            if qa.given_answer is not None:
-                son[index]['question'] = question.with_computed_correct_answer(qa.parameters)
-            else:
-                son[index]['question'] = question.without_correct_answer()
-                break
+            if exercise_attempt.exercise and not isinstance(exercise_attempt.exercise, DBRef):
+                question = exercise_attempt.exercise.question(qa.question_id)
+                if qa.given_answer is not None:
+                    son[index]['question'] = question.with_computed_correct_answer(qa.parameters)
+                else:
+                    son[index]['question'] = question.without_correct_answer()
+                    break
 
         return son
 
@@ -102,13 +103,16 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
 
     @property
     def max_mistakes(self):
-        return self.exercise.resource_content.max_mistakes
+        if self.exercise and not isinstance(self.exercise, DBRef):
+            return self.exercise.resource_content.max_mistakes
+        return None
 
     @property
     def fail_linked_resource(self):
-        if self.exercise.resource_content.fail_linked_resource:
-            return self.exercise.resource_content.fail_linked_resource
-        return
+        if self.exercise and not isinstance(self.exercise, DBRef):
+            if self.exercise.resource_content.fail_linked_resource:
+                return self.exercise.resource_content.fail_linked_resource
+        return None
 
     @property
     def nb_right_answers(self):

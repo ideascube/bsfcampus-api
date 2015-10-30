@@ -17,7 +17,8 @@ def launch_process(config, *args):
         host=config.CENTRAL_SERVER_HOST,
         key=config.CENTRAL_SERVER_KEY,
         secret=config.CENTRAL_SERVER_SECRET,
-        local_files_path=config.UPLOAD_FILES_PATH
+        local_files_path=config.UPLOAD_FILES_PATH,
+        connection_error_sleep=getattr(config, "CONNECTION_ERROR_SLEEP", 600)
     )
 
     if 'reset' in args:
@@ -32,6 +33,7 @@ def launch_process(config, *args):
         else:
             sys.exit("Reset failed, status code %d" % r.status_code)
 
+    local_server = None
     try:
         local_server = local_servers.get(
             key=config.CENTRAL_SERVER_KEY,
@@ -51,8 +53,10 @@ def launch_process(config, *args):
                 local_server.clean()
                 local_server.save(validate=False) # FIXME MongoEngine bug, hopefully be fixed in next version
             except Exception as ee:
-                sys.exit(ee.message)
+                sys.exit("The local server was unable to instantiate its DB representation: %s" % ee.message)
 
+    if not local_server:
+        sys.exit("The local server was unable to instantiate its DB representation")
 
     synchronizer = SyncProcess(
         connector=connector,

@@ -1,3 +1,5 @@
+from bson import DBRef
+
 from MookAPI.core import db
 
 from . import ActivityJsonSerializer, Activity
@@ -25,5 +27,5 @@ class VisitedDashboard(VisitedDashboardJsonSerializer, Activity):
     def clean(self):
         super(VisitedDashboard, self).clean()
         self.type = "visited_profile"
-        if self.dashboard_user:
+        if self.dashboard_user and not isinstance(self.dashboard_user, DBRef):
             self.dashboard_user_full_name = self.dashboard_user.full_name

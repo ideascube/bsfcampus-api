@@ -26,7 +26,8 @@ class UserJsonSerializer(SyncableDocumentJsonSerializer):
         'pending_tutors',
         'pending_students',
         'not_acknowledged_tutors',
-        'not_acknowledged_students'
+        'not_acknowledged_students',
+        'all_credentials'
     ]
 
 class User(UserJsonSerializer, SyncableDocument):
@@ -174,6 +175,11 @@ class User(UserJsonSerializer, SyncableDocument):
     def url(self, _external=False):
         return url_for("users.get_user_info", user_id=self.id, _external=_external)
 
+    @property
+    def all_credentials(self):
+        from MookAPI.services import user_credentials
+        return user_credentials.find(user=self)
+
     def credentials(self, local_server=None):
         from MookAPI.services import user_credentials
         return user_credentials.find(user=self, local_server=local_server)
@@ -205,14 +211,11 @@ class User(UserJsonSerializer, SyncableDocument):
 
         from MookAPI.services import \
             activities, \
-            local_servers, \
             tutoring_relations, \
             user_credentials
         for creds in user_credentials.find(user=other):
             creds.user = self
             creds.save(validate=False)
-        local_servers.find(synced_users=other).update(pull__synced_users=other)
-        local_servers.find(synced_users=other).update(push__synced_users=self)
         for activity in activities.find(user=other):
             activity.user = self
             activity.save()
@@ -234,13 +237,19 @@ class User(UserJsonSerializer, SyncableDocument):
 
 
 class UserCredentialsJsonSerializer(SyncableDocumentJsonSerializer):
-    pass
+    __json_dbref__ = ["username", "local_server_name"]
 
-class UserCredentials(SyncableDocument):
+class UserCredentials(UserCredentialsJsonSerializer, SyncableDocument):
 
     user = db.ReferenceField(User, required=True)
 
     local_server = db.ReferenceField('LocalServer', required=False)
+
+    @property
+    def local_server_name(self):
+        if self.local_server:
+            return self.local_server.name
+        return None
 
     username = db.StringField(unique_with='local_server', required=True)
 

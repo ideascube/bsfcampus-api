@@ -1,4 +1,5 @@
-from requests import get, post
+from requests import get, post, ConnectionError
+import time
 
 class CentralServerConnector(object):
 
@@ -17,14 +18,25 @@ class CentralServerConnector(object):
         self.secret = secret
         self.local_files_path = local_files_path
         self.verify_ssl = kwargs.get('verify_ssl', True)
+        self.connection_error_sleep = kwargs.get('connection_error_sleep', 600)
 
-    def get(self, path, **kwargs):
+    def get(self, path):
         url = self.host + path
-        return get(url, auth=(self.key, self.secret), verify=self.verify_ssl)
+        try:
+            return get(url, auth=(self.key, self.secret), verify=self.verify_ssl)
+        except ConnectionError:
+            print "Could not connect to the internet: trying again in %d seconds" % self.connection_error_sleep
+            time.sleep(self.connection_error_sleep)
+            return self.get(path)
 
     def post(self, path, data=None, json=None):
         url = self.host + path
-        return post(url, data=data, json=json, auth=(self.key, self.secret), verify=self.verify_ssl)
+        try:
+            return post(url, data=data, json=json, auth=(self.key, self.secret), verify=self.verify_ssl)
+        except ConnectionError:
+            print "Could not connect to the internet: trying again in %d seconds" % self.connection_error_sleep
+            time.sleep(self.connection_error_sleep)
+            return self.post(path, data=data, json=json)
 
 
     def fetch_list(self, **kwargs):
