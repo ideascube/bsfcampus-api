@@ -90,7 +90,7 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
         return self.user
 
     def all_synced_documents(self, local_server=None):
-        if self.object:
+        if self.object and not isinstance(self.object, DBRef):
             if not local_server.syncs_document(self.object):
                 return []
         return super(Activity, self).all_synced_documents(local_server=local_server)
