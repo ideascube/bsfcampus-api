@@ -1,6 +1,7 @@
+from .views import ProtectedModelView
 from flask.ext.admin import Admin
-from flask.ext.admin.contrib.mongoengine import ModelView
 from wtforms import ValidationError
+from flask.ext.admin.contrib.mongoengine import ModelView
 
 from MookAPI.services import \
     users, \
@@ -14,6 +15,7 @@ from MookAPI.services import \
     video_resources, \
     downloadable_file_resources, \
     roles, \
+    back_office_users, \
     local_servers, \
     static_pages
 
@@ -44,7 +46,7 @@ class UserView(ModelView):
     column_list = ('full_name', 'email', 'accept_cgu', 'roles')
     form_columns = ('full_name', 'email', 'accept_cgu', 'roles')
 
-class ResourceView(ModelView):
+class ResourceView(ProtectedModelView):
     column_list = ('is_additional', 'is_published', 'title', 'slug', 'description', 'order', 'keywords', 'parent', 'parent_resource')
     form_columns = ('is_additional', 'is_published', 'title', 'slug', 'description', 'order', 'keywords', 'parent', 'parent_resource', 'resource_content')
 
@@ -54,49 +56,49 @@ class ResourceView(ModelView):
     )
 
 
-class HierarchyTrackView(ModelView):
-    column_list = ('is_published', 'title', 'slug', 'description', 'order', 'icon')
-    form_columns = ('is_published', 'title', 'slug', 'description', 'order', 'icon')
+class HierarchyTrackView(ProtectedModelView):
+    column_list = ('is_active', 'is_published', 'title', 'slug', 'description', 'order', 'icon')
+    form_columns = ('is_active', 'is_published', 'title', 'slug', 'description', 'order', 'icon')
 
 
-class HierarchySkillView(ModelView):
+class HierarchySkillView(ProtectedModelView):
     column_list = ('is_published', 'title', 'slug', 'description', 'short_description', 'track', 'order', 'icon')
     form_columns = ('is_published', 'title', 'slug', 'description', 'short_description', 'track', 'order', 'icon', 'validation_exercise')
 
 
-class HierarchyLessonView(ModelView):
+class HierarchyLessonView(ProtectedModelView):
     column_list = ('is_published', 'title', 'slug', 'description', 'order', 'skill')
     form_columns = ('is_published', 'title', 'slug', 'description', 'order', 'skill')
 
-class LocalServerView(ModelView):
+class LocalServerView(ProtectedModelView):
     def on_model_change(self, form, model, is_created):
         if not model.secret.startswith("$2a$"):
             model.secret = self.model.hash_secret(model.secret)
         return
 
-class StaticPageView(ModelView):
+class StaticPageView(ProtectedModelView):
     pass
 
 
-admin_ui = Admin()
+admin = Admin()
 
-admin_ui.add_view(StaticPageView(
+admin.add_view(StaticPageView(
     static_pages.__model__,
     name='Static Pages',
     category='Misc'
 ))
 
-admin_ui.add_view(ResourceView(
+admin.add_view(ResourceView(
     exercise_resources.__model__,
     name='Exercise',
     category='Resources'))
 
-admin_ui.add_view(ResourceView(
+admin.add_view(ResourceView(
     track_validation_resources.__model__,
     name='Track Validation Test',
     category='Resources'))
 
-admin_ui.add_view(ResourceView(
+admin.add_view(ResourceView(
     rich_text_resources.__model__,
     name='Rich Text',
     category='Resources'))
@@ -106,47 +108,52 @@ admin_ui.add_view(ResourceView(
 #     name='External Video',
 #     category='Resources'))
 
-admin_ui.add_view(ResourceView(
+admin.add_view(ResourceView(
     audio_resources.__model__,
     name='Audio',
     category='Resources'))
 
-admin_ui.add_view(ResourceView(
+admin.add_view(ResourceView(
     video_resources.__model__,
     name='Video',
     category='Resources'))
 
-admin_ui.add_view(ResourceView(
+admin.add_view(ResourceView(
     downloadable_file_resources.__model__,
     name='Downloadable File',
     category='Resources'))
 
-admin_ui.add_view(HierarchyTrackView(
+admin.add_view(HierarchyTrackView(
     tracks.__model__,
     name='Track',
     category='Hierarchy'))
 
-admin_ui.add_view(HierarchySkillView(
+admin.add_view(HierarchySkillView(
     skills.__model__,
     name='Skill',
     category='Hierarchy'))
 
-admin_ui.add_view(HierarchyLessonView(
+admin.add_view(HierarchyLessonView(
     lessons.__model__,
     name='Lesson',
     category='Hierarchy'))
 
-admin_ui.add_view(UserView(
+admin.add_view(UserView(
     users.__model__,
     name='User',
     category='Authentication'))
 
-admin_ui.add_view(ModelView(
+admin.add_view(ModelView(
     roles.__model__,
     name='Role',
     category='Authentication'))
 
-admin_ui.add_view(LocalServerView(
+admin.add_view(ModelView(
+    back_office_users.__model__,
+    name='Back office user',
+    category='Authentication'))
+
+admin.add_view(LocalServerView(
     local_servers.__model__,
     name='Local server',
     category='Authentication'))

@@ -31,12 +31,12 @@ def create_app(
         response.headers.add('Accept-Ranges', 'bytes')
         return response
 
-    from .admin_ui import admin_ui
-    admin_ui.init_app(app)
+    if app.config.get('SERVER_TYPE', 'central') == 'central':
+        from .admin import admin
+        from .admin.views import ProtectedFileAdmin
+        admin.init_app(app)
 
-    from flask.ext.admin.contrib.fileadmin import FileAdmin
-    path = app.config.get('UPLOAD_FILES_PATH')
-    admin_ui.add_view(FileAdmin(path, name='Static Files'))
-
+        path = app.config.get('UPLOAD_FILES_PATH')
+        admin.add_view(ProtectedFileAdmin(path, name='Static Files', category="Misc"))
 
     return app
