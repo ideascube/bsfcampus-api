@@ -15,7 +15,6 @@ from MookAPI.services import \
     video_resources, \
     downloadable_file_resources, \
     roles, \
-    back_office_users, \
     local_servers, \
     static_pages
 
@@ -148,10 +147,10 @@ admin.add_view(ModelView(
     name='Role',
     category='Authentication'))
 
-admin.add_view(ModelView(
-    back_office_users.__model__,
-    name='Back office user',
-    category='Authentication'))
+# admin.add_view(ModelView(
+#     back_office_users.__model__,
+#     name='Back office user',
+#     category='Authentication'))
 
 admin.add_view(LocalServerView(
     local_servers.__model__,
