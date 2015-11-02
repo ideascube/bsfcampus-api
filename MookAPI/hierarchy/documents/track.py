@@ -10,6 +10,9 @@ from . import ResourceHierarchyJsonSerializer, ResourceHierarchy
 
 
 class TrackJsonSerializer(ResourceHierarchyJsonSerializer):
+    __json_dbref__ = []
+    __json_dbref__.extend(ResourceHierarchyJsonSerializer.__json_dbref__)
+    __json_dbref__.extend(['is_active'])
     __json_additional__ = []
     __json_additional__.extend(ResourceHierarchyJsonSerializer.__json_additional__)
     __json_additional__.extend(['skills_refs', 'is_started', 'test_is_unlocked', 'validation_test'])
@@ -23,6 +26,8 @@ class Track(TrackJsonSerializer, ResourceHierarchy):
 
     Top level of Resource_ hierarchy. Their descendants are Skill_ objects.
     """
+
+    is_active = db.BooleanField(default=True)
 
     icon = db.ImageField()
     """An icon to illustrate the Track_."""
