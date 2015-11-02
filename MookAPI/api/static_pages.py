@@ -13,4 +13,4 @@ def get_static_page(page_id):
 
 @route(bp, "")
 def all_static_pages():
-    return static_pages.all()
+    return static_pages.all().order_by('order', 'title')

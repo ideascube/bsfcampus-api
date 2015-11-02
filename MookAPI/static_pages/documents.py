@@ -19,6 +19,8 @@ class StaticPage(StaticPageJsonSerializer, SyncableDocument):
     external_link = db.StringField()
     """if the link should redirect to an external page"""
 
+    order = db.IntField()
+
     ### VIRTUAL PROPERTIES
 
     @property
