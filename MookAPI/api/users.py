@@ -36,8 +36,11 @@ def current_user_info():
     elif request.method == 'PATCH':
 
         data = request.get_json()
-        user.full_name = data['full_name']
-        user.email = data['email']
+        user.full_name = data.get('full_name')
+        user.email = data.get('email')
+        user.country = data.get('country')
+        user.occupation = data.get('occupation')
+        user.organization = data.get('organization')
         try:
             user.save()
         except ValidationError as e:
@@ -225,14 +228,19 @@ def register_user():
         }
         return jsonify(response), 400
 
-    username = data['username']
-    full_name = data['full_name']
-    if not full_name:
-        full_name = username
+    username = data.get('username', None)
+    email = data.get('email', None)
+    full_name = data.get('full_name', username)
+    country = data.get('country', None)
+    occupation = data.get('occupation', None)
+    organization = data.get('organization', None)
 
     new_user = users.new(
+        email=email,
         full_name=full_name,
-        email=data['email'],
+        country=country,
+        occupation=occupation,
+        organization=organization,
         accept_cgu='accept_cgu' in data
     )
 

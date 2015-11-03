@@ -36,6 +36,12 @@ class User(UserJsonSerializer, SyncableDocument):
 
     email = db.EmailField(unique=False)
 
+    country = db.StringField()
+
+    occupation = db.StringField()
+
+    organization = db.StringField()
+
     active = db.BooleanField(default=True)
 
     accept_cgu = db.BooleanField(required=True, default=False)
