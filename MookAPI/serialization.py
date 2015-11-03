@@ -300,8 +300,7 @@ class JsonSerializer(object):
             url_key = key + '_url'
             filename_key = key + '_filename'
             url = json[url_key]
-            # FIXME: add a dir path for these temp files
-            filename = json[filename_key] or 'temp'
+            filename = os.path.join(upload_path, "tmp", json[filename_key] or 'temp')
             with open(filename, 'wb') as handle:
                 r = requests.get(url, stream=True)
                 if not r.ok:
@@ -323,7 +322,7 @@ class JsonSerializer(object):
             url_key = key + '_url'
             url = json[url_key]
             filename = value # FIXME If the value is an absolute URL, extract the filename
-            path = upload_path + filename
+            path = os.path.join(upload_path, filename)
             with open(path, 'wb') as handle:
                 r = requests.get(url, stream=True)
                 if not r.ok:
