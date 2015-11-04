@@ -76,3 +76,5 @@ admin.add_view(LocalServerView(
     category='Authentication'))
 
 admin.add_view(AnalyticsView(name="Analytics", endpoint="admin_analytics"))
+
+admin.add_view(BatchLoadLocalServersView(name="Upload local servers", endpoint="upload_local_servers", category="Authentication"))

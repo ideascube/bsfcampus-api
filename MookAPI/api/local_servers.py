@@ -1,6 +1,7 @@
 import datetime
+import os
 
-from flask import abort, Blueprint, jsonify, request
+from flask import abort, Blueprint, jsonify, request, current_app, redirect
 
 from MookAPI.services import local_servers
 
@@ -13,6 +14,37 @@ bp = Blueprint("local_servers", __name__, url_prefix="/local_servers")
 def get_all_local_servers():
     list = [local_server.to_json_dbref() for local_server in local_servers.all()]
     return jsonify(data=list)
+
+@route(bp, "/batch_load", methods=["POST"])
+def batch_load_local_servers():
+    def allowed_file(filename):
+        ALLOWED_EXTENSIONS = ("csv")
+        return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+    file = request.files['csv_file']
+    if file and allowed_file(file.filename):
+        created_local_servers = []
+        import csv
+        reader = csv.DictReader(file)
+        for row in reader:
+            if ('synced_tracks' in row) and row['synced_tracks']:
+                row['synced_tracks'] = row['synced_tracks'].split("|")
+            else:
+                del row['synced_tracks']
+            try:
+                local_server = local_servers.create(**row)
+            except Exception as e:
+                return jsonify(
+                    created_local_servers=created_local_servers,
+                    error=e.message
+                )
+            else:
+                created_local_servers.append(local_server)
+        return jsonify(
+            created_local_servers=created_local_servers
+        )
+    return jsonify(error="Could not read CSV file")
 
 @route(bp, "/current")
 @local_server_required

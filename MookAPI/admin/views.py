@@ -108,3 +108,9 @@ class AnalyticsView(ProtectedAdminViewMixin, BaseView):
     @expose("/")
     def index(self):
         return self.render("admin/analytics.html")
+
+
+class BatchLoadLocalServersView(ProtectedAdminViewMixin, BaseView):
+    @expose("/")
+    def index(self):
+        return self.render("admin/load_local_servers.html")
