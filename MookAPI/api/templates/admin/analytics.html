@@ -1,0 +1,24 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <form action="{{ url_for('activity.get_general_analytics') }}" class="col-sm-8 col-sm-offset-2">
+                <h2>Generate a CSV file containing all analytics for the selected time interval:</h2>
+                <div class="form-group">
+                    <label for="start_date" id="label_start_date">
+                        Start date:
+                    </label>
+                    <input class="form-control" type="date" name="start_date" id="start_date" placeholder="ex: 2015-07-18" maxlength="50" value="" required />
+                </div>
+                <div class="form-group">
+                    <label for="end_date" id="label_end_date">
+                        End date:
+                    </label>
+                    <input class="form-control" type="date" name="end_date" id="end_date" placeholder="ex: 2015-07-27" maxlength="50" value="" required />
+                </div>
+                <button class="btn btn-primary btn-block" type="submit">Get analytics</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
