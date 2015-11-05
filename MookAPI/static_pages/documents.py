@@ -25,4 +25,4 @@ class StaticPage(StaticPageJsonSerializer, SyncableDocument):
 
     @property
     def url(self, _external=False):
-        return url_for("static_pages.get_static_page", page_id=self.page_id, _external=_external)
+        return url_for("static_page.get_static_page", page_id=self.page_id, _external=_external)
