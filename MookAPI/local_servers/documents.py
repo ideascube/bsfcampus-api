@@ -35,9 +35,11 @@ class LocalServer(LocalServerJsonSerializer, SyncableDocument):
 
     @property
     def synced_documents(self):
+        from MookAPI.services import static_pages
         documents = []
         documents.extend(self.synced_tracks)
         documents.extend(self.synced_users)
+        documents.extend(static_pages.all())
         return documents
 
     last_sync = db.DateTimeField()
