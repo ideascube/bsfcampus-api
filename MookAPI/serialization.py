@@ -197,8 +197,8 @@ class JsonSerializer(object):
 
         ## ReferenceField: convert reference to use the local ``id`` instead of the central one.
         if isinstance(field, ReferenceField):
-            # FIXME This way of getting the id is not really clean.
-            value = field.to_python(value['_id'])
+            if isinstance(value, dict):
+                value = field.to_python(value['_id'])
             document_id = value.id
             if from_central:
                 try:
