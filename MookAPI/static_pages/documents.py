@@ -19,8 +19,10 @@ class StaticPage(StaticPageJsonSerializer, SyncableDocument):
     external_link = db.StringField()
     """if the link should redirect to an external page"""
 
+    order = db.IntField()
+
     ### VIRTUAL PROPERTIES
 
     @property
     def url(self, _external=False):
-        return url_for("static_pages.get_static_page", page_id=self.page_id, _external=_external)
+        return url_for("static_page.get_static_page", page_id=self.page_id, _external=_external)

@@ -197,8 +197,8 @@ class JsonSerializer(object):
 
         ## ReferenceField: convert reference to use the local ``id`` instead of the central one.
         if isinstance(field, ReferenceField):
-            # FIXME This way of getting the id is not really clean.
-            value = field.to_python(value['_id'])
+            if isinstance(value, dict):
+                value = field.to_python(value['_id'])
             document_id = value.id
             if from_central:
                 try:
@@ -300,8 +300,7 @@ class JsonSerializer(object):
             url_key = key + '_url'
             filename_key = key + '_filename'
             url = json[url_key]
-            # FIXME: add a dir path for these temp files
-            filename = json[filename_key] or 'temp'
+            filename = os.path.join(upload_path, "tmp", json[filename_key] or 'temp')
             with open(filename, 'wb') as handle:
                 r = requests.get(url, stream=True)
                 if not r.ok:
@@ -323,7 +322,7 @@ class JsonSerializer(object):
             url_key = key + '_url'
             url = json[url_key]
             filename = value # FIXME If the value is an absolute URL, extract the filename
-            path = upload_path + filename
+            path = os.path.join(upload_path, filename)
             with open(path, 'wb') as handle:
                 r = requests.get(url, stream=True)
                 if not r.ok:

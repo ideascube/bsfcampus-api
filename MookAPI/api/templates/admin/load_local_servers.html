@@ -1,0 +1,25 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <form action="{{ url_for('local_servers.batch_load_local_servers') }}" enctype="multipart/form-data" method="POST" class="col-sm-8 col-sm-offset-2">
+                <h2>Upload a CSV file containing a list of local servers.</h2>
+                <p>The file should contain the following columns:</p>
+                <ul class="list-group">
+                    <li class="list-group-item list-group-item-danger"><code>key</code> (required)</li>
+                    <li class="list-group-item list-group-item-danger"><code>secret</code> (required)</li>
+                    <li class="list-group-item"><code>name</code> (optional)</li>
+                    <li class="list-group-item"><code>synced_tracks</code> (optional): a list of track ids, delimited by a pipe (<code>|</code>)</li>
+                </ul>
+                <div class="form-group">
+                    <label for="csv_file">
+                        CSV File
+                    </label>
+                    <input class="form-control" type="file" name="csv_file" id="csv_file" required />
+                </div>
+                <button class="btn btn-primary btn-block" type="submit">Upload local servers</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

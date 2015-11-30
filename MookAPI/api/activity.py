@@ -1,5 +1,6 @@
 import datetime
 import io
+import os
 from bson import json_util
 
 from flask import Blueprint, request, send_file, jsonify, abort
@@ -404,15 +405,18 @@ def get_general_analytics():
     file_name = "analytics_"
     file_name += start_date_arg + "_" + end_date_arg
     file_name += ".csv"
-    csv_file = open(file_name, 'wb')
+    file_path = os.path.join("/tmp", file_name)
+    csv_file = open(file_path, 'wb')
     analytics_writer = UnicodeCSVWriter(csv_file)
     analytics_writer.writerow(activities.__model__.field_names_header_for_csv())
     for activity in all_analytics:
         analytics_writer.writeactivity(activity)
     csv_file.close()
-    csv_file = open(file_name, 'rb')
+    csv_file = open(file_path, 'rb')
     file_bytes = io.BytesIO(csv_file.read())
     csv_file.close()
+
+    os.remove(file_path)
 
     return send_file(
         file_bytes,

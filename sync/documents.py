@@ -124,7 +124,7 @@ class SyncTask(db.Document):
                 self.save()
                 return False
         except Exception as e:
-            self.errors.append(e.message or e.strerror)
+            self.errors.append(str(e.message) or str(e.strerror))
             self.save()
             rv = False
         else:
