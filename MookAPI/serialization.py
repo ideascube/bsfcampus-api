@@ -121,10 +121,14 @@ class JsonSerializer(object):
                 rv[key] = getattr(self, key)
 
         for key in files:
-            url_key = key + '_url'
-            path_or_url = getattr(self, key)
-            value = self.make_file_url(path_or_url)
-            rv[url_key] = value
+            path_or_url = getattr(self, key, None)
+            if path_or_url:
+                value = self.make_file_url(path_or_url)
+                url_key = key + '_url'
+                rv[url_key] = value
+            else:
+                rv[key] = None
+                continue
         for key in additional:
             value = getattr(self, key)
             if isinstance(value, Document):
@@ -320,18 +324,19 @@ class JsonSerializer(object):
 
         elif key in (self.__json_files__ or []) and isinstance(field, StringField):
             url_key = key + '_url'
-            url = json[url_key]
-            filename = value # FIXME If the value is an absolute URL, extract the filename
-            path = os.path.join(upload_path, filename)
-            with open(path, 'wb') as handle:
-                r = requests.get(url, stream=True)
-                if not r.ok:
-                    return  # Raise an exception
-                for block in r.iter_content(1024):
-                    if not block:
-                        break
-                    handle.write(block)
-            setattr(self, key, value)
+            if url_key in json:
+                url = json[url_key]
+                filename = value # FIXME If the value is an absolute URL, extract the filename
+                path = os.path.join(upload_path, filename)
+                with open(path, 'wb') as handle:
+                    r = requests.get(url, stream=True)
+                    if not r.ok:
+                        return  # Raise an exception
+                    for block in r.iter_content(1024):
+                        if not block:
+                            break
+                        handle.write(block)
+                setattr(self, key, value)
 
         else:
             value = self._convert_value_from_json(
