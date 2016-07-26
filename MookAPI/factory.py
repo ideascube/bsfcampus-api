@@ -32,8 +32,9 @@ def create_app(
         return response
 
     if app.config.get('SERVER_TYPE', 'central') == 'central':
-        from .admin import admin
+        from .admin import Admin
         from .admin.views import ProtectedFileAdmin
+        admin = Admin()
         admin.init_app(app)
 
         path = app.config.get('UPLOAD_FILES_PATH')
