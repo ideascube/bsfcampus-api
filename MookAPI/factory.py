@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from flask_login import LoginManager
 
 def create_app(
         package_name,
@@ -22,6 +23,18 @@ def create_app(
     from .core import db
     db.init_app(app)
 
+    # User authent
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        try:
+            from MookAPI.services import user_credentials
+            return user_credentials.get(id=user_id)
+        except:
+            return None
+
     if package_path:
         from .helpers import register_blueprints
         register_blueprints(app, package_name, package_path)
@@ -38,6 +51,6 @@ def create_app(
         admin.init_app(app)
 
         path = app.config.get('UPLOAD_FILES_PATH')
-        admin.add_view(ProtectedFileAdmin(path, name='Static Files', category="Misc"))
+        admin.add_view(ProtectedFileAdmin(path, name='Static Files', category="Misc", authorized_roles=('admin', 'contenu')))
 
     return app

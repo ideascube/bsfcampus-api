@@ -1,0 +1,33 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+{{ super() }}
+<div class="row-fluid">
+    <h1>Administration pages</h1>
+    <div>
+      {% if current_user.is_authenticated %}
+        <p>Welcome {{ current_user.user.full_name }}.</p>
+        <p>You are properly authenticated. You may not have access to all pages
+ depending of your authorizations.</p>
+      {% else %}
+        <p>You need to authenticate.</p>
+        <form method="POST" action="">
+            {{ form.hidden_tag() if form.hidden_tag }}
+            <dl>
+            {% for f in form if f.type != 'CSRFTokenField' %}
+            <dt>{{ f.label }} :</dt>
+            <dd>{{ f }}
+            {% if f.errors %}
+            <ul>
+                {% for e in f.errors %}
+                <li>{{ e }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            </dd>
+            {% endfor %}
+            <button class="btn" type="submit">Submit</button>
+        </form>
+      {% endif %}
+    </div>
+</div>
+{% endblock body %}

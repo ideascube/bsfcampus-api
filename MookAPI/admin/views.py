@@ -5,24 +5,30 @@ from flask import abort, redirect, url_for, request
 from flask.ext.admin.contrib.mongoengine import ModelView
 from flask.ext.admin.contrib.fileadmin import FileAdmin
 from flask.ext.admin import BaseView, expose
-# from flask_security import current_user
+from flask_login import current_user
 
+class ProtectedAdminViewMixin(object):
+    def __init__(self, *args, **kwargs):
+        authorized_roles = kwargs.pop('authorized_roles', [])
+        super(ProtectedAdminViewMixin, self).__init__(*args, **kwargs)
+        self.authorized_roles = authorized_roles
 
-class ProtectedAdminViewMixin:
     def is_accessible(self):
-        return True
-        # if not current_user.is_active or not current_user.is_authenticated:
-        #     return False
-        # if current_user.has_role("admin"):
-        #     return True
-        # return False
+        if not current_user.is_active or not current_user.is_authenticated:
+            return False
 
-        # def _handle_view(self, name, **kwargs):
-        #     if not self.is_accessible():
-        #         if not current_user.is_anonymous:
-        #             abort(403)
-        #         else:
-        #             return redirect(url_for('security.login', next=request.url))
+        for role in self.authorized_roles:
+            if current_user.has_role(role):
+                return True
+
+        return False
+
+    def inaccessible_callback(self, name, **kwargs):
+        # redirect to login page if user doesn't have access
+        if not current_user.is_anonymous:
+            abort(403)
+        else:
+            return redirect(url_for('admin.login_view', next=request.url))
 
 
 class ProtectedFileAdmin(ProtectedAdminViewMixin, FileAdmin):

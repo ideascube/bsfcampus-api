@@ -18,7 +18,7 @@ def test_login_succeed_authent(client):
     from MookAPI.services import users, user_credentials
     user = users.new(
               email=None,
-              full_name="Joe Dante",
+              full_name="Test user",
               country=None,
               occupation=None,
               organization=None,
@@ -28,13 +28,13 @@ def test_login_succeed_authent(client):
 
     creds = user_credentials.create(
                 user=user,
-                username="joed",
+                username="user",
                 password="password"
             )
 
     rv = client.post('/auth',
                      content_type='application/json',
-                     data=json.dumps({'username': 'joed', 'password': 'password'}))
+                     data=json.dumps({'username': 'user', 'password': 'password'}))
     assert rv.status_code == 200
 
 

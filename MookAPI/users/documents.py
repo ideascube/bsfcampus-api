@@ -1,6 +1,7 @@
 from passlib.hash import bcrypt
 
 from flask import url_for
+from flask_login import UserMixin
 
 from MookAPI.core import db
 from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
@@ -245,7 +246,10 @@ class User(UserJsonSerializer, SyncableDocument):
 class UserCredentialsJsonSerializer(SyncableDocumentJsonSerializer):
     __json_dbref__ = ["username", "local_server_name"]
 
-class UserCredentials(UserCredentialsJsonSerializer, SyncableDocument):
+
+class UserCredentials(UserCredentialsJsonSerializer,
+                      SyncableDocument,
+                      UserMixin):
 
     user = db.ReferenceField(User, required=True)
 
@@ -260,6 +264,13 @@ class UserCredentials(UserCredentialsJsonSerializer, SyncableDocument):
     username = db.StringField(unique_with='local_server', required=True)
 
     password = db.StringField()
+
+    @property
+    def is_active(self):
+        return self.user.active
+
+    def has_role(self, rolename):
+        return rolename in [r.name for r in self.user.roles]
 
     def add_visited_resource(self, resource):
         achievements = []

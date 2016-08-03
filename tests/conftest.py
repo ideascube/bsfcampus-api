@@ -5,6 +5,7 @@ import os.path as op
 from pymongo import MongoClient
 import json
 from flask.testing import FlaskClient
+import mock
 
 def create_config(test_path):
     static_path = op.join(test_path, "static/")
@@ -28,7 +29,23 @@ def create_config(test_path):
 
 class AuthClient(FlaskClient):
     def __init__(self, *args, **kwargs):
+        from MookAPI.services import users, user_credentials
         FlaskClient.__init__(self, *args, **kwargs)
+        self.user = users.new(
+                  email=None,
+                  full_name="Joe Dante",
+                  country=None,
+                  occupation=None,
+                  organization=None,
+                  accept_cgu=True
+              )
+        self.user.save()
+
+        self.creds = user_credentials.create(
+                   user=self.user,
+                   username="joed",
+                   password="password"
+              )
         self._auth_token = None
 
     def open(self, *args, **kwargs):
@@ -51,22 +68,6 @@ def app(tmpdir):
 
 @pytest.fixture
 def conn_client(client):
-    from MookAPI.services import users, user_credentials
-    user = users.new(
-              email=None,
-              full_name="Joe Dante",
-              country=None,
-              occupation=None,
-              organization=None,
-              accept_cgu=True
-          )
-    user.save()
-    
-    creds = user_credentials.create(
-                user=user,
-                username="joed",
-                password="password"
-            )
     rv = client.post('/auth',
                      content_type='application/json',
                      data=json.dumps({'username': 'joed', 'password': 'password'}))
@@ -74,3 +75,9 @@ def conn_client(client):
     client._auth_token = result['token']
     
     return client
+
+@pytest.yield_fixture
+def admin_conn_client(client):
+    with mock.patch('flask_login._get_user', spec=True) as _get_user:
+        _get_user.return_value = client.creds
+        yield client

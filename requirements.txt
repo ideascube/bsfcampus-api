@@ -28,3 +28,4 @@ Unidecode==0.4.18
 Werkzeug==0.10.4
 WTForms==2.0.2
 pytest-flask==0.10.0
+mock==2.0.0
