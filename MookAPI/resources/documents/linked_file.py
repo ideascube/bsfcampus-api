@@ -18,6 +18,10 @@ class LinkedFileResourceContent(LinkedFileResourceContentJsonSerializer, Resourc
     Otherwise, the string will be interpreted as a path from the "static" folder.
     """
 
+    def clean(self):
+        super(LinkedFileResourceContent, self).clean()
+        self.content_file = self.content_file.strip()
+
 class LinkedFileResourceJsonSerializer(ResourceJsonSerializer):
     pass
 
