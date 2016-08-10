@@ -59,11 +59,13 @@ def no_parent_if_additional(form, field):
 
 
 class UserView(ProtectedModelView):
+    column_searchable_list = ('full_name', 'email')
     column_list = ('full_name', 'email', 'accept_cgu', 'roles')
     form_columns = ('full_name', 'email', 'accept_cgu', 'roles')
 
 
 class ResourceView(ProtectedModelView):
+    column_searchable_list = ('title', 'slug', 'description')
     column_list = (
     'is_additional', 'is_published', 'title', 'slug', 'description', 'order', 'keywords', 'parent', 'parent_resource')
     form_columns = (
@@ -78,22 +80,26 @@ class ResourceView(ProtectedModelView):
 
 
 class HierarchyTrackView(ProtectedModelView):
+    column_searchable_list = ('title', 'slug', 'description')
     column_list = ('is_active', 'is_published', 'title', 'slug', 'description', 'order', 'icon')
     form_columns = ('is_active', 'is_published', 'title', 'slug', 'description', 'order', 'icon')
 
 
 class HierarchySkillView(ProtectedModelView):
+    column_searchable_list = ('title', 'slug', 'description')
     column_list = ('is_published', 'title', 'slug', 'description', 'short_description', 'track', 'order', 'icon')
     form_columns = ('is_published', 'title', 'slug', 'description', 'short_description', 'track', 'order', 'icon',
                     'validation_exercise')
 
 
 class HierarchyLessonView(ProtectedModelView):
+    column_searchable_list = ('title', 'slug', 'description')
     column_list = ('is_published', 'title', 'slug', 'description', 'order', 'skill')
     form_columns = ('is_published', 'title', 'slug', 'description', 'order', 'skill')
 
 
 class LocalServerView(ProtectedModelView):
+    column_searchable_list = ('name', 'key')
     def on_model_change(self, form, model, is_created):
         if not model.secret.startswith("$2a$"):
             model.secret = self.model.hash_secret(model.secret)
@@ -101,7 +107,7 @@ class LocalServerView(ProtectedModelView):
 
 
 class StaticPageView(ProtectedModelView):
-    pass
+    column_searchable_list = ('page_id', 'html_content')
 
 
 class AnalyticsView(ProtectedAdminViewMixin, BaseView):
