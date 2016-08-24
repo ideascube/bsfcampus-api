@@ -3,7 +3,7 @@ import flask_admin as admin
 import flask_login as login
 from flask_wtf import form
 from wtforms import TextField, PasswordField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, ValidationError
 from flask_admin import helpers, expose
 from MookAPI.services import *
 from MookAPI.api import _security
@@ -20,7 +20,7 @@ class LoginForm(form.Form):
         self.creds = _security.authenticate(username, password)
 
         if self.creds is None:
-            raise validators.ValidationError('Invalid user or password.')
+            raise ValidationError('Invalid user or password.')
 
     def get_creds(self):
         return self.creds
