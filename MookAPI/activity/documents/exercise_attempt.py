@@ -220,7 +220,14 @@ class ExerciseAttempt(ExerciseAttemptJsonSerializer, Activity):
             csv_fields = self.get_field_names_for_csv()
             question_answer_csv_row_data = self.to_csv_from_field_names(csv_fields)
             question_answer_csv_row_data.append(str(question_answer.question_id))
-            question = self.exercise.question(question_answer.question_id)
+            exercise = self.exercise
+            if isinstance(exercise, DBRef):
+                continue
+            try:
+                question = self.exercise.question(question_answer.question_id)
+            except KeyError:
+                print "question", question_answer.question_id, "no found in", question_answer
+                continue
             question_answer_csv_row_data.append(question.question_heading)
             asked_data = question_answer.asked_date.strftime("%Y-%m-%d %H:%M:%S") if question_answer.asked_date else ""
             question_answer_csv_row_data.append(asked_data)
