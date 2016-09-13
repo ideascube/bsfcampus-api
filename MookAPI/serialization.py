@@ -434,6 +434,9 @@ class JSONEncoder(BaseJSONEncoder):
         except:
             return super(JSONEncoder, self).default(o)
 
+Document = _import_class('Document')
+ObjectIdField = _import_class('ObjectIdField')
+DateTimeField = _import_class('DateTimeField')
 
 class CsvSerializer(object):
     def to_csv(self):
@@ -451,9 +454,6 @@ class CsvSerializer(object):
 
     def to_csv_from_field_names(self, field_names):
         rv = []
-        Document = _import_class('Document')
-        ObjectIdField = _import_class('ObjectIdField')
-        DateTimeField = _import_class('DateTimeField')
         for key in field_names:
             field = getattr(self, key)
             csv_value = ""
@@ -491,37 +491,29 @@ class CsvSerializer(object):
 
 class UnicodeCSVWriter:
     """
-    A CSV writer which will write rows to CSV file "f",
-    which is encoded in the given encoding.
+    A CSV writer which will yield rows which is encoded
+    in the given encoding.
     """
 
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+    def __init__(self, dialect=csv.excel, encoding="utf-8", **kwds):
         # Redirect output to a queue
         self.queue = cStringIO.StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
-        self.stream = f
-        self.encoder = codecs.getincrementalencoder(encoding)()
+        self.encoding = encoding
 
-    def writeactivity(self, o):
+    def csv_object_serialize(self, o):
         if isinstance(o, CsvSerializer):
             csv_data, is_list = o.to_csv()
             if is_list:
-                self.writerows(csv_data)
+                return self.csv_rows_serialize(csv_data)
             else:
-                self.writerow(csv_data)
+                return self.csv_row_serialize(csv_data)
 
-    def writerow(self, row):
-        self.writer.writerow([s.encode("utf-8") for s in row])
-        # Fetch UTF-8 output from the queue ...
+    def csv_row_serialize(self, row):
+        self.writer.writerow([s.encode(self.encoding) for s in row])
         data = self.queue.getvalue()
-        data = data.decode("utf-8")
-        # ... and reencode it into the target encoding
-        data = self.encoder.encode(data)
-        # write to the target stream
-        self.stream.write(data)
-        # empty queue
         self.queue.truncate(0)
+        return data
 
-    def writerows(self, rows):
-        for row in rows:
-            self.writerow(row)
+    def csv_rows_serialize(self, rows):
+        return "".join(self.csv_row_serialize(row) for row in rows)

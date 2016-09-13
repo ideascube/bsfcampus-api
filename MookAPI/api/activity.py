@@ -3,7 +3,7 @@ import io
 import os
 from bson import json_util
 
-from flask import Blueprint, request, send_file, jsonify, abort
+from flask import Blueprint, request, jsonify, abort, Response
 from MookAPI.auth import jwt_required
 from flask_jwt import current_user, verify_jwt
 
@@ -406,21 +406,16 @@ def get_general_analytics():
     file_name += start_date_arg + "_" + end_date_arg
     file_name += ".csv"
     file_path = os.path.join("/tmp", file_name)
-    csv_file = open(file_path, 'wb')
-    analytics_writer = UnicodeCSVWriter(csv_file)
-    analytics_writer.writerow(activities.__model__.field_names_header_for_csv())
-    for activity in all_analytics:
-        analytics_writer.writeactivity(activity)
-    csv_file.close()
-    csv_file = open(file_path, 'rb')
-    file_bytes = io.BytesIO(csv_file.read())
-    csv_file.close()
 
-    os.remove(file_path)
+    def write():
+         analytics_writer = UnicodeCSVWriter()
+         yield analytics_writer.csv_row_serialize(activities.__model__.field_names_header_for_csv())
+         for activity in all_analytics:
+             yield analytics_writer.csv_object_serialize(activity)
 
-    return send_file(
-        file_bytes,
-        attachment_filename=file_name,
-        mimetype='text/csv'
-    )
+    response = Response(write())
+    response.headers['Content-Disposition'] = "attachment; filename=%s"%file_name
+    response.headers['Content-type'] = 'text/csv'
+
+    return response
 
