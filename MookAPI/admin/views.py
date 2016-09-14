@@ -1,11 +1,20 @@
+import datetime
+import io
+import os
+
 from wtforms import ValidationError
 
-from flask import abort, redirect, url_for, request
+from flask import abort, redirect, url_for, request, Response
 
 from flask.ext.admin.contrib.mongoengine import ModelView
 from flask.ext.admin.contrib.fileadmin import FileAdmin
 from flask.ext.admin import BaseView, expose
 from flask_login import current_user
+from MookAPI.services import activities, users
+from MookAPI.serialization import UnicodeCSVWriter
+from mongoengine.common import _import_class
+
+from bson import DBRef
 
 class ProtectedAdminViewMixin(object):
     def __init__(self, *args, **kwargs):
@@ -120,6 +129,44 @@ class AnalyticsView(ProtectedAdminViewMixin, BaseView):
     @expose("/")
     def index(self):
         return self.render("admin/analytics.html")
+
+    @expose("/user.csv")
+    def get_prepared_analytics(self):
+        """
+        Returns a .csv file with all the activities which took place between the start_date and the end_date
+        """
+        start_date_arg = request.args.get('start_date', None)
+        if start_date_arg is None:
+            start_date = datetime.datetime.fromtimestamp(0)
+        else:
+            start_date = datetime.datetime.strptime(start_date_arg, "%Y-%m-%d").date()
+
+        end_date_arg = request.args.get('end_date', None)
+        if end_date_arg is None:
+            end_date = datetime.datetime.now()
+        else:
+            end_date = datetime.datetime.strptime(end_date_arg, "%Y-%m-%d").date() + datetime.timedelta(days=1)
+
+        file_name = "users_"
+        file_name += (start_date_arg or "begining") + "_" + (end_date_arg or "now")
+        file_name += ".csv"
+
+        all_users = activities.__model__.objects.filter(date__gte=start_date, date__lte=end_date).only('user').distinct('user')
+
+        def write():
+            analytics_writer = UnicodeCSVWriter()
+            yield analytics_writer.csv_row_serialize(users.__model__.field_names_header_for_csv())
+            for user in all_users:
+                if isinstance(user, DBRef):
+                    continue
+                d = analytics_writer.csv_object_serialize(user)
+                yield d
+
+        response = Response(write())
+        response.headers['Content-Disposition'] = "attachment; filename=%s"%file_name
+        response.headers['Content-type'] = 'text/csv'
+
+        return response
 
 
 class BatchLoadLocalServersView(ProtectedAdminViewMixin, BaseView):

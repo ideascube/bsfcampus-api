@@ -5,6 +5,9 @@ from flask_login import UserMixin
 
 from MookAPI.core import db
 from MookAPI.sync import SyncableDocumentJsonSerializer, SyncableDocument
+from MookAPI.serialization import CsvSerializer
+
+from datetime import datetime
 
 class RoleJsonSerializer(SyncableDocumentJsonSerializer):
     pass
@@ -31,7 +34,7 @@ class UserJsonSerializer(SyncableDocumentJsonSerializer):
         'all_credentials'
     ]
 
-class User(UserJsonSerializer, SyncableDocument):
+class User(UserJsonSerializer, CsvSerializer, SyncableDocument):
 
     full_name = db.StringField(unique=False, required=True)
 
@@ -48,6 +51,35 @@ class User(UserJsonSerializer, SyncableDocument):
     accept_cgu = db.BooleanField(required=True, default=False)
 
     roles = db.ListField(db.ReferenceField(Role))
+
+    @property
+    def inscription_time(self):
+        from MookAPI.services import misc_activities
+        creation_activity = misc_activities.first(user=self, type="register_user_attempt", object_title="success")
+        return creation_activity.date if creation_activity else "#NO INSCRIPTION DATE FOUND#"
+
+    @property
+    def inscription_date(self):
+        inscription_date = self.inscription_time
+        if isinstance(inscription_date, datetime):
+             inscription_date = inscription_date.strftime("%Y-%m-%d")
+        return inscription_date
+
+    @property
+    def tracks(self):
+        from MookAPI.services import completed_tracks
+        completedTracks = completed_tracks.__model__.objects(user=self).only('track').distinct('track')
+        return "|".join(
+            track.title for track in completedTracks
+        )
+
+    @property
+    def skills(self):
+        from MookAPI.services import completed_skills
+        completedSkills = completed_skills.__model__.objects(user=self).only('skill').distinct('skill')
+        return "|".join(
+            skill.title for skill in completedSkills
+        )
 
     def courses_info(self, analytics=False):
         info = dict(
@@ -183,6 +215,13 @@ class User(UserJsonSerializer, SyncableDocument):
         return url_for("users.get_user_info", user_id=self.id, _external=_external)
 
     @property
+    def username(self):
+        credentials = self.all_credentials
+        if not credentials:
+            return "#NO USERNAME FOUND#"
+        return credentials[0].username
+
+    @property
     def all_credentials(self):
         from MookAPI.services import user_credentials
         return user_credentials.find(user=self)
@@ -242,6 +281,12 @@ class User(UserJsonSerializer, SyncableDocument):
 
         return self
 
+    @classmethod
+    def field_names_header_for_csv(cls):
+        return ['Full name', 'Username', 'Email', 'Country', 'Occupation', 'Organization', 'Inscription date', 'Tracks', 'Skills']
+
+    def get_field_names_for_csv(cls):
+        return 'full_name username email country occupation organization inscription_date tracks skills'.split()
 
 class UserCredentialsJsonSerializer(SyncableDocumentJsonSerializer):
     __json_dbref__ = ["username", "local_server_name"]
