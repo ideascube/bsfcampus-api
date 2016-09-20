@@ -10,11 +10,12 @@ from flask.ext.admin.contrib.mongoengine import ModelView
 from flask.ext.admin.contrib.fileadmin import FileAdmin
 from flask.ext.admin import BaseView, expose
 from flask_login import current_user
-from MookAPI.services import activities, users
+from MookAPI.services import activities, users, tracks, skills, lessons
 from MookAPI.serialization import UnicodeCSVWriter
 from mongoengine.common import _import_class
 
 from bson import DBRef
+from jinja2 import Markup
 
 class ProtectedAdminViewMixin(object):
     def __init__(self, *args, **kwargs):
@@ -77,7 +78,12 @@ class UserView(ProtectedModelView):
     column_searchable_list = ('full_name', 'email')
     column_list = ('full_name', 'email', 'accept_cgu', 'roles')
     form_columns = ('full_name', 'email', 'accept_cgu', 'roles')
+    list_formatters = dict(full_name=lambda v, c, m, p: Markup(u"<a href='/admin/user/info/{u.id}'>{u.full_name}</a>".format(u=m)))
 
+    @expose('/info/<user_id>')
+    def user_info(self, user_id):
+        user = users.get_or_404(user_id)
+        return self.render("admin/user_info.html", user=user, tracks=tracks, skills=skills, lessons=lessons)
 
 class ResourceView(ProtectedModelView):
     column_searchable_list = ('title', 'slug', 'description')

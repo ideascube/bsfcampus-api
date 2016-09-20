@@ -1,0 +1,18 @@
+
+
+
+td {
+  padding: 0 1em;
+}
+
+ul.tracks {
+
+}
+
+.tracks li {
+list-style-type: none;
+}
+
+.tracks .name {
+font-size: 1.3em;
+}

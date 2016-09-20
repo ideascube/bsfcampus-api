@@ -1,0 +1,52 @@
+{% extends 'admin/master.html' %}
+
+{% block head_css %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='admin/user_info.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='vendor/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet">
+
+{% endblock %}
+
+{% block body %}
+{{ super() }}
+<h1>User information</h1>
+<table>
+<tr><td>User name :</td><td>{{ user.username }}</td></tr>
+<tr><td>Full name :</td><td>{{ user.full_name }}</td></tr>
+<tr><td>Email :</td><td>{{ user.email }}</td></tr>
+<tr><td>Country :</td><td>{{ user.country }}</td></tr>
+<tr><td>Organisation :</td><td>{{ user.organization }}</td></tr>
+<tr><td>Inscription date :</td><td>{{ user.inscription_date }}</td></tr>
+</table>
+
+<h2>Tracks</h2>
+<ul class="tracks">
+{% set courses_info = user.courses_info() %}
+{% for track_id, track_info in courses_info['tracks'].items() %}
+  {% set track = tracks.get(track_id) %}
+  <li><span class="name">
+    {% if track_info.is_validated %}
+        <i class="fa fa-check-square-o" title="Validated"></i>
+    {% elif track_info.test_is_unlocked %}
+        <i class="fa fa-pencil-square-o" title="Test unlocked"></i>
+    {% elif track_info.is_started %}
+        <i class="fa fa-square-o" title="Started"></i>
+    {% endif %}
+    {{ track }}</span>
+    ({{ track_info.progress.current }}/{{ track_info.progress.max }})
+    <ul>
+      {% for skill in track.skills %}
+      <li>
+      {% if courses_info['skills'][skill.id|string].is_validated %}
+          <i class="fa fa-check-square-o" title="Validated"></i>
+      {% elif track_info.is_started %}
+          <i class="fa fa-square-o" title="Started"></i>
+      {% endif %}
+      {{ skill }}
+      </li>
+      {% endfor %}
+    </ul>
+  </li>
+{% endfor %}
+</ul>
+{% endblock body %}
