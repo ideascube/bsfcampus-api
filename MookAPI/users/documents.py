@@ -192,19 +192,13 @@ class User(UserJsonSerializer, CsvSerializer, SyncableDocument):
     def update_progress(self, self_credentials):
         from MookAPI.services import \
             completed_resources, \
-            completed_skills, \
             unlocked_track_tests
-        skills = []
-        tracks = []
+        skills = set()
+        tracks = set()
         for activity in completed_resources.find(user=self):
-            if activity.resource.skill not in skills:
-                skills.append(activity.resource.skill)
+            skills.add(activity.resource.skill)
         for skill in skills:
-            if skill.track not in tracks:
-                tracks.append(skill.track)
-            skill_progress = skill.user_progress(self)
-            if completed_skills.find(user=self, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
-                self_credentials.add_completed_skill(skill, False)
+            tracks.add(skill.track)
         for track in tracks:
             track_progress = track.user_progress(self)
             if unlocked_track_tests.find(user=self, track=track).count() == 0 and track_progress['current'] >= track_progress['max']:
@@ -338,25 +332,18 @@ class UserCredentials(UserCredentialsJsonSerializer,
                 resource=resource
             )
             achievements.append(completed_resource)
-            skill = resource.parent.skill
-            skill_progress = skill.user_progress(self.user)
-            from MookAPI.services import completed_skills
-            if completed_skills.find(user=self.user, skill=skill).count() == 0 and skill_progress['current'] >= skill_progress['max']:
-                skill_achievements = self.add_completed_skill(
-                    skill=skill,
-                    is_validated_through_test=False
-                )
-                achievements.extend(skill_achievements)
         return achievements
 
-    def add_completed_skill(self, skill, is_validated_through_test):
+    def add_completed_skill(self, skill):
         achievements = []
         from MookAPI.services import completed_skills
-        if completed_skills.find(user=self.user, skill=skill).count() == 0:
+        if completed_skills.find(user=self.user,
+                                 skill=skill,
+                                 is_validated_through_test=True).count() == 0:
             completed_skill = completed_skills.create(
                 credentials=self,
                 skill=skill,
-                is_validated_through_test=is_validated_through_test
+                is_validated_through_test=True
             )
             achievements.append(completed_skill)
             track = skill.track

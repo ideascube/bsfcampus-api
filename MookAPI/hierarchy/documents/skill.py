@@ -97,7 +97,7 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
         """Whether the current_user validated the hierarchy level based on their activity."""
         from MookAPI.services import completed_skills
 
-        return completed_skills.find(skill=self, user=user).count() > 0
+        return completed_skills.find(skill=self, user=user, is_validated_through_test=True).count() > 0
 
     def user_progress(self, user):
         current = 0
@@ -137,7 +137,7 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
     def user_analytics(self, user):
         analytics = super(Skill, self).user_analytics(user)
 
-        from MookAPI.services import skill_validation_attempts, completed_skills, visited_skills
+        from MookAPI.services import skill_validation_attempts, visited_skills
 
         skill_validation_attempts = skill_validation_attempts.find(user=user).order_by('-date')
         analytics['last_attempts_scores'] = map(
@@ -157,9 +157,6 @@ class Skill(SkillJsonSerializer, ResourceHierarchy):
             analytics['average_time_on_exercise'] = 0
 
         analytics['nb_attempts'] = skill_validation_attempts.count()
-        completed_skill = completed_skills.first(user=user, skill=self)
-        if completed_skill:
-            analytics['is_completed_through_test'] = completed_skill.is_validated_through_test
         analytics['nb_visits'] = visited_skills.find(user=user, skill=self).count()
 
         return analytics

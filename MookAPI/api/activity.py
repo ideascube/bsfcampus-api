@@ -173,7 +173,7 @@ def post_skill_validation_attempt_question_answer(attempt_id):
         if attempt.is_skill_validation_validated():
             attempt.is_validated = True
             attempt.save()
-            achievements = current_user.add_completed_skill(attempt.skill, True)
+            achievements = current_user.add_completed_skill(attempt.skill)
             return jsonify(data=attempt, achievements=achievements)
         else:
             attempt.save()

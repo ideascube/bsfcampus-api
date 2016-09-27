@@ -36,13 +36,15 @@
     ({{ track_info.progress.current }}/{{ track_info.progress.max }})
     <ul>
       {% for skill in track.skills %}
+      {% set skill_info = courses_info['skills'][skill.id|string] %}
       <li>
-      {% if courses_info['skills'][skill.id|string].is_validated %}
+      {% if skill_info.is_validated %}
           <i class="fa fa-check-square-o" title="Validated"></i>
       {% elif track_info.is_started %}
           <i class="fa fa-square-o" title="Started"></i>
       {% endif %}
       {{ skill }}
+      ({{ skill_info.progress.current }}/{{ skill_info.progress.max }})
       </li>
       {% endfor %}
     </ul>
