@@ -14,6 +14,10 @@ from MookAPI.services import activities, users, tracks, skills, lessons
 from MookAPI.serialization import UnicodeCSVWriter
 from mongoengine.common import _import_class
 
+from collections import defaultdict
+import pygal
+
+
 from bson import DBRef
 from jinja2 import Markup
 
@@ -173,6 +177,51 @@ class AnalyticsView(ProtectedAdminViewMixin, BaseView):
         response.headers['Content-type'] = 'text/csv'
 
         return response
+
+    @expose("/user_graph.svg")
+    def get_user_graph(self):
+        """
+        Returns a .svg graph with the user visits.
+        """
+        start_date_arg = request.args.get('start_date', "2016-05-01")
+        if start_date_arg is None:
+            start_date = datetime.datetime.fromtimestamp(0)
+        else:
+            start_date = datetime.datetime.strptime(start_date_arg, "%Y-%m-%d").date()
+
+        end_date_arg = request.args.get('end_date', None)
+        if end_date_arg is None:
+            end_date = datetime.datetime.now()
+        else:
+            end_date = datetime.datetime.strptime(end_date_arg, "%Y-%m-%d").date() + datetime.timedelta(days=1)
+
+        by_day = request.args.get('by_day', False)
+        if by_day:
+            time_str = 'day'
+            get_key = lambda a: a.date()
+            format_x_label = lambda d : d
+        else:
+            time_str = 'week'
+            get_key = lambda a: a.isocalendar()[:-1]
+            format_x_label = lambda d : "Week %d, year %d"%(d[::-1])
+
+        activities_ = activities.__model__.objects.filter(date__gte=start_date, date__lte=end_date).only('date', 'user')
+
+        activities_ = ( (get_key(i.date), i.user) for i in activities_)
+        res = defaultdict(set)
+        for key, v in activities_:
+            res[key].add(v)
+
+        res = sorted((k,len(v)) for k,v in res.items())
+
+        chart = pygal.Bar(show_legend=False,
+                          explicit_size=False,
+                          x_label_rotation=50,
+                          style=pygal.style.BlueStyle)
+        chart.x_labels = [format_x_label(i[0]) for i in res]
+        chart.add('user per %s'%time_str, [i[1] for i in res])
+
+        return chart.render_response()
 
 
 class BatchLoadLocalServersView(ProtectedAdminViewMixin, BaseView):
