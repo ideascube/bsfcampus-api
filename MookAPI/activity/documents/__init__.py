@@ -16,7 +16,12 @@ class Activity(ActivityJsonSerializer, CsvSerializer, SyncableDocument):
     """Describes any kind of user activity."""
 
     meta = {
-        'allow_inheritance': True
+        'allow_inheritance': True,
+        'indexes': [
+            '+date',
+            'user',
+            'type'
+        ]
     }
 
     ### PROPERTIES
